@@ -68,7 +68,7 @@ const SplashScreen = () => {
             alt="shiro no game no life"
             width={913}
             height={1302}
-            className="w-full h-full object-cover object-[center_25%] lg:object-top"
+            className="w-full h-full object-cover object-[center_25%] lg:object-top select-none pointer-events-none"
             priority
             onLoad={handleImageLoad}
             quality={75}
@@ -91,7 +91,7 @@ const SplashScreen = () => {
             alt="shiro no game no life"
             width={913}
             height={1302}
-            className="w-full h-full object-cover object-[center_25%] lg:object-top"
+            className="w-full h-full object-cover object-[center_25%] lg:object-top select-none pointer-events-none"
             priority
             onLoad={handleImageLoad}
             quality={75}
@@ -116,7 +116,7 @@ const SplashScreen = () => {
             alt="sora no game no life"
             width={913}
             height={1302}
-            className="w-full h-full object-cover object-top"
+            className="w-full h-full object-cover object-top select-none pointer-events-none"
             priority
             onLoad={handleImageLoad}
             quality={75}
@@ -139,7 +139,7 @@ const SplashScreen = () => {
             alt="sora no game no life"
             width={913}
             height={1302}
-            className="w-full h-full object-cover object-top"
+            className="w-full h-full object-cover object-top select-none pointer-events-none"
             priority
             onLoad={handleImageLoad}
             quality={75}
@@ -170,18 +170,18 @@ const SplashScreen = () => {
             }}
             className="absolute inset-0text-primary z-10 text-center font-jaro drop-shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]"
           >
-            <p className="leading-none mt-0 text-[20vw] lg:text-[10vw] tracking-tight bg-[linear-gradient(45deg,_#f9ab4a_20%,_#fff35b_100%)] drop-shadow-[0px_3px_8px_rgba(0,0,0,_0.5)] [text-outline:1px_solid_black] bg-clip-text text-transparent">
+            <p className="select-none pointer-events-none leading-none mt-0 text-[20vw] lg:text-[10vw] tracking-tight bg-[linear-gradient(45deg,_#f9ab4a_20%,_#fff35b_100%)] drop-shadow-[0px_3px_8px_rgba(0,0,0,_0.5)] [text-outline:1px_solid_black] bg-clip-text text-transparent">
               RANOBE
             </p>
-            <p className="leading-none -mt-[6vw] lg:-mt-[3vw] text-[21vw] lg:text-[10.25vw] tracking-tight bg-[linear-gradient(45deg,_#f9ab4a_20%,_#fff35b_100%)] drop-shadow-[0px_3px_8px_rgba(0,0,0,_0.5)] [text-outline:1px_solid_black] bg-clip-text text-transparent">
+            <p className="select-none pointer-events-none leading-none -mt-[6vw] lg:-mt-[3vw] text-[21vw] lg:text-[10.25vw] tracking-tight bg-[linear-gradient(45deg,_#f9ab4a_20%,_#fff35b_100%)] drop-shadow-[0px_3px_8px_rgba(0,0,0,_0.5)] [text-outline:1px_solid_black] bg-clip-text text-transparent">
               READER
             </p>
           </motion.div>
           <div className="text-white drop-shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)] text-center font-jaro">
-            <p className="leading-none mt-0 text-[20vw] lg:text-[10vw] tracking-tight">
+            <p className="select-none pointer-events-none leading-none mt-0 text-[20vw] lg:text-[10vw] tracking-tight">
               RANOBE
             </p>
-            <p className="leading-none -mt-[6vw] lg:-mt-[3vw] text-[21vw] lg:text-[10.25vw] tracking-tight">
+            <p className="select-none pointer-events-none leading-none -mt-[6vw] lg:-mt-[3vw] text-[21vw] lg:text-[10.25vw] tracking-tight">
               READER
             </p>
           </div>
