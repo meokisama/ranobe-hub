@@ -45,20 +45,26 @@ exports.subscribe = async (req, res) => {
         // Kiểm tra email đã tồn tại chưa
         const existingSubscriber = await Subscriber.findOne({ email });
         if (existingSubscriber) {
-            return res.status(400).json({ message: 'Email này đã được đăng ký trước đó' });
+            if (existingSubscriber.isActive) {
+                return res.status(400).json({ message: 'Email này đã được đăng ký trước đó' });
+            } else {
+                // Nếu email tồn tại nhưng không active, cập nhật lại thành active
+                existingSubscriber.isActive = true;
+                await existingSubscriber.save();
+                res.status(200).json({ message: 'Đăng ký thành công' });
+            }
+        } else {
+            // Tạo subscriber mới
+            const subscriber = new Subscriber({ email });
+            await subscriber.save();
+            res.status(201).json({ message: 'Đăng ký thành công' });
         }
-
-        // Tạo subscriber mới
-        const subscriber = new Subscriber({ email });
-        await subscriber.save();
-
-        // Trả về response ngay lập tức
-        res.status(201).json({ message: 'Đăng ký thành công' });
 
         // Xử lý gửi email ở background
         (async () => {
             try {
                 // Gửi email xác nhận cho người đăng ký
+                const isReactivation = existingSubscriber && !existingSubscriber.isActive;
                 await transporter.sendMail({
                     from: process.env.EMAIL_USER,
                     to: email,
@@ -67,8 +73,8 @@ exports.subscribe = async (req, res) => {
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
                     <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">✨ Đăng ký thành công!</h1>
                     <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <p style="margin: 15px 0; line-height: 1.6;">Cảm ơn bạn đã đăng ký nhận tin từ Ranobe Reader! 🎉</p>
-                        <p style="margin: 15px 0; line-height: 1.6;">Bạn sẽ là người đầu tiên biết khi có sách mới được đăng tải. ( ๑ ˃ᴗ˂)و</p>
+                        <p style="margin: 15px 0; line-height: 1.6;">Bạn đã ${isReactivation ? 'đăng ký tiếp tục' : 'đăng ký'} nhận tin sách mới từ Ranobe Reader! 🎉</p>
+                        <p style="margin: 15px 0; line-height: 1.6;">Bạn sẽ là người đầu tiên được thông báo khi có sách mới được đăng tải. ( ๑ ˃ᴗ˂)و</p>
                         <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
                             <p style="margin: 0;">Nếu bạn muốn hủy đăng ký, vui lòng click vào link sau:</p>
                             <a href="${process.env.FRONTEND_URL}/unsubscribe?email=${email}" 
@@ -99,9 +105,17 @@ exports.unsubscribe = async (req, res) => {
     try {
         const { email } = req.query;
 
+        if (!email) {
+            return res.status(400).json({ message: 'Email không hợp lệ' });
+        }
+
         const subscriber = await Subscriber.findOne({ email });
         if (!subscriber) {
             return res.status(404).json({ message: 'Không tìm thấy email đăng ký' });
+        }
+
+        if (!subscriber.isActive) {
+            return res.status(400).json({ message: 'Email này đã được hủy đăng ký trước đó' });
         }
 
         subscriber.isActive = false;
