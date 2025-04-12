@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -43,7 +43,7 @@ export default function SubscribeForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || "Có lỗi xảy ra");
+        throw new Error(result.message);
       }
 
       setStatus("success");
@@ -56,11 +56,21 @@ export default function SubscribeForm() {
     } catch (error) {
       setStatus("error");
       toast.error("Có lỗi xảy ra", {
-        description: "Vui lòng thử lại sau.",
+        description:
+          error instanceof Error ? error.message : "Vui lòng thử lại sau.",
         duration: 5000,
       });
     }
   };
+
+  useEffect(() => {
+    if (errors.email) {
+      toast.error(errors.email.message, {
+        description: "Vui lòng nhập đúng định dạng email.",
+        duration: 5000,
+      });
+    }
+  }, [errors.email]);
 
   return (
     <div className="relative backdrop-blur-xs overflow-hidden">
@@ -80,7 +90,7 @@ export default function SubscribeForm() {
           >
             <path
               d="M 0 50 Q 32 50 64 75 Q 128 125 192 75 Q 224 50 256 50 Q 288 50 320 75 Q 384 125 448 75 Q 480 50 512 50 Q 544 50 576 75 Q 640 125 704 75 Q 736 50 768 50 Q 800 50 832 75 Q 896 125 960 75 Q 992 50 1024 50 Q 1056 50 1088 75 Q 1152 125 1216 75 Q 1248 50 1280 50 Q 1312 50 1344 75 Q 1408 125 1472 75 Q 1504 50 1536 50 L 1280 0 L 0 0 Z"
-              fill="#ffffff"
+              fill="#fffbfb"
             ></path>
           </svg>
         </div>
@@ -120,7 +130,7 @@ export default function SubscribeForm() {
                     className="sm:flex items-center"
                   >
                     <input
-                      className="w-full mb-3 sm:mb-0 sm:mr-4 py-3 px-4 text-md text-gray-900 placeholder-gray-400 border border-gray-200 focus:border-purple-500 focus:outline-purple rounded-lg shadow-md shadow-gray-300/40 bg-white"
+                      className="w-full mb-3 sm:mb-0 sm:mr-4 py-3 px-4 text-md text-gray-900 placeholder-gray-400 border border-gray-200 focus:border-purple-500 focus:outline-purple rounded-lg bg-white"
                       type="email"
                       placeholder="email@ranobe.vn"
                       {...register("email")}
@@ -149,11 +159,6 @@ export default function SubscribeForm() {
                       </div>
                     </button>
                   </form>
-                  {errors.email && (
-                    <p className="mt-1 ml-1 text-sm text-red-500 font-light">
-                      {errors.email && errors.email.message}!
-                    </p>
-                  )}
                 </div>
               </div>
               <div className="w-full lg:w-1/2 px-4">

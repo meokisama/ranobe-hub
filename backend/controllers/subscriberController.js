@@ -45,7 +45,7 @@ exports.subscribe = async (req, res) => {
         // Kiểm tra email đã tồn tại chưa
         const existingSubscriber = await Subscriber.findOne({ email });
         if (existingSubscriber) {
-            return res.status(400).json({ message: 'Email đã được đăng ký' });
+            return res.status(400).json({ message: 'Email này đã được đăng ký trước đó' });
         }
 
         // Tạo subscriber mới

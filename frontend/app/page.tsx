@@ -9,7 +9,7 @@ export default function HomePage() {
   return (
     <div>
       <SplashScreen />
-      <div className="space-y-6">
+      <div className="space-y-6 bg-[#fffbfb]">
         {/* <Image
           src="/sneaker.webp"
           alt="background image"
