@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 const notifyAdmin = async (subscriberEmail) => {
     try {
         await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+            from: `"Ranobe Reader" <${process.env.EMAIL_USER}>`,
             to: process.env.ADMIN_EMAIL,
             subject: 'Có người đăng ký mới!',
             html: `
@@ -66,7 +66,7 @@ exports.subscribe = async (req, res) => {
                 // Gửi email xác nhận cho người đăng ký
                 const isReactivation = existingSubscriber && !existingSubscriber.isActive;
                 await transporter.sendMail({
-                    from: process.env.EMAIL_USER,
+                    from: `"Ranobe Reader" <${process.env.EMAIL_USER}>`,
                     to: email,
                     subject: 'Đăng ký nhận tin thành công',
                     html: `
@@ -135,7 +135,7 @@ exports.sendNotification = async (bookTitle) => {
 
         for (const subscriber of subscribers) {
             await transporter.sendMail({
-                from: process.env.EMAIL_USER,
+                from: `"Ranobe Reader" <${process.env.EMAIL_USER}>`,
                 to: subscriber.email,
                 subject: 'Có sách mới!',
                 html: `

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Table,
   TableBody,
@@ -27,6 +27,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { EbookFilters } from "./ebook-filters";
+import { Pagination } from "../ui/pagination";
 
 interface EbookTableProps {
   ebooks: Ebook[];
@@ -42,41 +43,62 @@ export function EbookTable({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [ebookToDelete, setEbookToDelete] = useState<Ebook | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [filteredEbooks, setFilteredEbooks] = useState<Ebook[]>(initialEbooks);
+  const [allEbooks, setAllEbooks] = useState<Ebook[]>(initialEbooks);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedPublisher, setSelectedPublisher] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+  const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let filtered = [...initialEbooks];
+    const fetchEbooks = async () => {
+      try {
+        const res = await api.get("/ebooks");
+        setAllEbooks(res.data);
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách ebook:", error);
+        toast.error("Lỗi", {
+          description: "Không thể tải danh sách ebook. Vui lòng thử lại sau.",
+        });
+      }
+    };
 
-    // Áp dụng tìm kiếm
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(
-        (ebook) =>
-          ebook.name.toLowerCase().includes(query) ||
-          ebook.author.toLowerCase().includes(query) ||
-          ebook.illustrator.toLowerCase().includes(query)
-      );
-    }
+    fetchEbooks();
+  }, []);
 
-    // Áp dụng lọc theo nhãn hiệu
-    if (selectedPublisher) {
-      filtered = filtered.filter(
-        (ebook) => ebook.publisher._id === selectedPublisher
-      );
-    }
+  // Reset current page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortOrder, selectedPublisher]);
 
-    // Áp dụng sắp xếp theo ngày phát hành
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.releaseDate).getTime();
-      const dateB = new Date(b.releaseDate).getTime();
-      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-    });
+  // Filter and sort ebooks
+  const filteredEbooks = allEbooks.filter((ebook) => {
+    const matchesSearch = searchQuery
+      ? ebook.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ebook.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ebook.illustrator.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
 
-    setFilteredEbooks(filtered);
-  }, [initialEbooks, searchQuery, sortOrder, selectedPublisher]);
+    const matchesPublisher = selectedPublisher
+      ? ebook.publisher._id === selectedPublisher
+      : true;
+
+    return matchesSearch && matchesPublisher;
+  });
+
+  // Sort ebooks
+  const sortedEbooks = [...filteredEbooks].sort((a, b) => {
+    const dateA = new Date(a.releaseDate).getTime();
+    const dateB = new Date(b.releaseDate).getTime();
+    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+  });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedEbooks.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEbooks = sortedEbooks.slice(startIndex, endIndex);
 
   const handleDelete = async () => {
     if (!ebookToDelete) return;
@@ -88,6 +110,10 @@ export function EbookTable({
         description: `Đã xóa "${ebookToDelete.name}" khỏi thư viện`,
       });
       onDeleteSuccess();
+      // Update local state after deletion
+      setAllEbooks(
+        allEbooks.filter((ebook) => ebook._id !== ebookToDelete._id)
+      );
     } catch (error) {
       console.error("Lỗi khi xóa ebook:", error);
       toast.error("Lỗi", {
@@ -105,7 +131,20 @@ export function EbookTable({
     setIsDeleteDialogOpen(true);
   };
 
-  if (initialEbooks.length === 0) {
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Smooth scroll to filter section
+    if (filterRef.current) {
+      const filterTop =
+        filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
+      window.scrollTo({
+        top: filterTop,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  if (allEbooks.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
         Chưa có ebook nào trong thư viện
@@ -115,11 +154,13 @@ export function EbookTable({
 
   return (
     <>
-      <EbookFilters
-        onSearch={setSearchQuery}
-        onSort={setSortOrder}
-        onPublisherFilter={setSelectedPublisher}
-      />
+      <div ref={filterRef}>
+        <EbookFilters
+          onSearch={setSearchQuery}
+          onSort={setSortOrder}
+          onPublisherFilter={setSelectedPublisher}
+        />
+      </div>
 
       <div className="rounded-md border">
         <Table>
@@ -135,7 +176,7 @@ export function EbookTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredEbooks.map((ebook) => (
+            {currentEbooks.map((ebook) => (
               <TableRow key={ebook._id}>
                 <TableCell>
                   <div className="relative h-12 w-9 overflow-hidden rounded">
@@ -198,6 +239,16 @@ export function EbookTable({
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-8">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
 
       <AlertDialog
         open={isDeleteDialogOpen}
