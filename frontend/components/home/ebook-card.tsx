@@ -19,6 +19,9 @@ export function EbookCard({ ebook }: EbookCardProps) {
             width={300}
             height={430}
             className="w-full h-full object-cover scale-[101.5%]"
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQzMCIgdmlld0JveD0iMCAwIDMwMCA0MzAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSI0MzAiIGZpbGw9InVybCgjbGluZWFyLWdyYWRpZW50KSIvPjxwYXRoIGQ9Ik0xNTAgMTUwQzE1MCAxMzQuMDMxIDE2My4wMzEgMTIxIDE3OSAxMjFIMjIxQzIzNi45NjkgMTIxIDI1MCAxMzQuMDMxIDI1MCAxNTBWMjUwQzI1MCAyNjUuOTY5IDIzNi45NjkgMjc5IDIyMSAyNzlIMTc5QzE2My4wMzEgMjc5IDE1MCAyNjUuOTY5IDE1MCAyNTBWMTUwWiIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PHBhdGggZD0iTTE1MCAxNTBDMTUwIDEzNC4wMzEgMTYzLjAzMSAxMjEgMTc5IDEyMUgyMjFDMTg1LjAzMSAxMjEgMTUwIDEzNC4wMzEgMTUwIDE1MFYyNTBDMTUwIDI2NS45NjkgMTg1LjAzMSAyNzkgMjIxIDI3OUgxNzlDMTYzLjAzMSAyNzkgMTUwIDI2NS45NjkgMTUwIDI1MFYxNTBaIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utb3BhY2l0eT0iMC4yIiBzdHJva2Utd2lkdGg9IjIiLz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImxpbmVhci1ncmFkaWVudCIgeDE9IjAiIHkxPSIwIiB4Mj0iMzAwIiB5Mj0iNDMwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI2U1ZTVlNSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QxZDFkMSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjwvc3ZnPg=="
           />
         </div>
         <div className="mt-4 font-['Yu_Mincho']">

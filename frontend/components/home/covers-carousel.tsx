@@ -9,8 +9,8 @@ export const CoverCarousel = () => {
             Tôi tin rằng chia sẻ truyện raw xét trên một khía cạnh nào đó vẫn có
             những giá trị nhất định. Cho những người đam mê dịch thuật và cho
             những độc giả không có điều kiện tiếp cận bản gốc. Xưa được cho, nay
-            đi cho. Cho đi là nhận lại, nhưng việc "cho đi" để bị lợi dụng cho
-            mục đích thương mại đã khiến tôi phải suy nghĩ.
+            đi cho. Cho đi là nhận lại, nhưng việc &quot;cho đi&quot; để bị lợi
+            dụng cho mục đích thương mại đã khiến tôi phải suy nghĩ.
           </p>
           <p>
             Tôi vẫn sẽ tiếp tục chia sẻ, nhưng sẽ thay đổi hình thức. Thay vì

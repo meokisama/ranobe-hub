@@ -11,7 +11,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -60,6 +59,7 @@ export function LoginForm() {
         description: "Đang chuyển hướng đến trang quản trị...",
       });
       router.push("/admin");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error("Đăng nhập thất bại", {
         description: error.response?.data?.msg || "Có lỗi xảy ra",

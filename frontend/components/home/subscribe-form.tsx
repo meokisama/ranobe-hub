@@ -94,10 +94,11 @@ export default function SubscribeForm() {
             ></path>
           </svg>
         </div>
-        <img
+        <Image
           className="absolute top-0 left-0 h-full w-full opacity-70 select-none pointer-events-none"
           src="/light-left-top-double.png"
           alt=""
+          fill
         />
         <div className="relative container px-4 mx-auto inset-shadow-lg mt-20 md:mt-24">
           <div className="max-w-7xl mx-auto">
@@ -163,10 +164,11 @@ export default function SubscribeForm() {
               </div>
               <div className="w-full lg:w-1/2 px-4">
                 <div className="relative pl-20 lg:pl-16 xl:pl-0 max-w-lg mx-auto">
-                  <img
+                  <Image
                     className="absolute w-125 h-125 object-contain bottom-0 left-0 -mb-32 sm:-mb-0 -ml-8 xs:-ml-20 md:-ml-40 lg:-ml-24 xl:-ml-52 select-none pointer-events-none"
                     src="/circle-star-bg.png"
                     alt=""
+                    fill
                   />
                   <Image
                     src="/sleeping_chibi.png"
