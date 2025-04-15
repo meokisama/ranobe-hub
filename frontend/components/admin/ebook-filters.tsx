@@ -9,8 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Search, ArrowUpDown } from "lucide-react";
+import { Search } from "lucide-react";
 import { api } from "@/lib/api";
 
 interface Publisher {
@@ -81,7 +80,7 @@ export function EbookFilters({
         <SelectContent className="py-2">
           <SelectItem value="all">Tất cả</SelectItem>
           {publishers.map((publisher) => (
-            <SelectItem key={publisher._id} value={publisher.name} className="">
+            <SelectItem key={publisher._id} value={publisher._id} className="">
               {publisher.name}
             </SelectItem>
           ))}

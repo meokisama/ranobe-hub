@@ -27,7 +27,8 @@ const EbookSchema = new mongoose.Schema({
         required: true
     },
     publisher: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Publisher',
         required: true
     },
     createdAt: {

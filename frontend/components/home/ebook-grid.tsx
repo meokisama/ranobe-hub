@@ -50,7 +50,7 @@ export function EbookGrid() {
     // Áp dụng lọc theo nhãn hiệu
     if (selectedPublisher) {
       filtered = filtered.filter(
-        (ebook) => ebook.publisher === selectedPublisher
+        (ebook) => ebook.publisher._id === selectedPublisher
       );
     }
 

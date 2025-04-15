@@ -1,3 +1,8 @@
+export interface Publisher {
+  _id: string;
+  name: string;
+}
+
 export interface Ebook {
   _id: string;
   name: string;
@@ -8,5 +13,5 @@ export interface Ebook {
   createdAt: string;
   updatedAt: string;
   releaseDate: string;
-  publisher: string;
+  publisher: Publisher;
 }

@@ -1,4 +1,5 @@
 const Ebook = require('../models/Ebook');
+const Publisher = require('../models/Publisher');
 const path = require('path');
 const fs = require('fs');
 const { clearCache } = require('../middleware/cache');
@@ -7,7 +8,7 @@ const { sendNotification } = require('./subscriberController');
 // Lấy tất cả ebook
 exports.getAllEbooks = async (req, res) => {
     try {
-        const ebooks = await Ebook.find().select('-__v');
+        const ebooks = await Ebook.find().select('-__v').populate('publisher', 'name');
         res.json(ebooks);
     } catch (err) {
         console.error(err.message);
@@ -18,7 +19,7 @@ exports.getAllEbooks = async (req, res) => {
 // Lấy ebook theo ID
 exports.getEbookById = async (req, res) => {
     try {
-        const ebook = await Ebook.findById(req.params.id);
+        const ebook = await Ebook.findById(req.params.id).populate('publisher', 'name');
         if (!ebook) {
             return res.status(404).json({ msg: 'Không tìm thấy ebook' });
         }
@@ -42,6 +43,12 @@ exports.createEbook = async (req, res) => {
             return res.status(400).json({ msg: 'Cần upload cả cover và file ebook' });
         }
 
+        // Tìm publisher theo ID
+        const publisherObj = await Publisher.findById(publisher);
+        if (!publisherObj) {
+            return res.status(404).json({ msg: 'Không tìm thấy nhãn hiệu' });
+        }
+
         const coverFile = req.files.cover[0];
         const ebookFile = req.files.ebook[0];
 
@@ -52,10 +59,13 @@ exports.createEbook = async (req, res) => {
             coverImage: coverFile.filename,
             filePath: ebookFile.filename,
             releaseDate,
-            publisher
+            publisher: publisherObj._id
         });
 
         const ebook = await newEbook.save();
+
+        // Populate publisher data before returning
+        const populatedEbook = await Ebook.findById(ebook._id).populate('publisher', 'name');
 
         // Xóa cache cho danh sách ebook
         await clearCache('cache:/api/ebooks*');
@@ -63,7 +73,7 @@ exports.createEbook = async (req, res) => {
         // Gửi thông báo cho subscribers
         await sendNotification(name);
 
-        res.json(ebook);
+        res.json(populatedEbook);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Lỗi server');
@@ -75,12 +85,18 @@ exports.updateEbook = async (req, res) => {
     try {
         const { name, author, illustrator, releaseDate, publisher } = req.body;
 
+        // Tìm publisher theo ID
+        const publisherObj = await Publisher.findById(publisher);
+        if (!publisherObj) {
+            return res.status(404).json({ msg: 'Không tìm thấy nhãn hiệu' });
+        }
+
         const ebookFields = {
             name,
             author,
             illustrator,
             releaseDate,
-            publisher,
+            publisher: publisherObj._id,
             updatedAt: Date.now()
         };
 
@@ -123,7 +139,7 @@ exports.updateEbook = async (req, res) => {
             req.params.id,
             { $set: ebookFields },
             { new: true }
-        );
+        ).populate('publisher', 'name');
 
         // Xóa cache cho danh sách ebook và ebook cụ thể
         await clearCache('cache:/api/ebooks*');

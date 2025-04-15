@@ -73,7 +73,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
       releaseDate: ebook?.releaseDate
         ? new Date(ebook.releaseDate).toISOString().split("T")[0]
         : "",
-      publisher: ebook?.publisher || "",
+      publisher: ebook?.publisher._id || "",
     },
   });
 
@@ -290,7 +290,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                             {publishers.map((publisher) => (
                               <SelectItem
                                 key={publisher._id}
-                                value={publisher.name}
+                                value={publisher._id}
                               >
                                 {publisher.name}
                               </SelectItem>

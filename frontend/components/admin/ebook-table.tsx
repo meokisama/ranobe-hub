@@ -64,7 +64,7 @@ export function EbookTable({
     // Áp dụng lọc theo nhãn hiệu
     if (selectedPublisher) {
       filtered = filtered.filter(
-        (ebook) => ebook.publisher === selectedPublisher
+        (ebook) => ebook.publisher._id === selectedPublisher
       );
     }
 
@@ -163,7 +163,9 @@ export function EbookTable({
                     year: "numeric",
                   })}
                 </TableCell>
-                <TableCell className="font-light">{ebook.publisher}</TableCell>
+                <TableCell className="font-light">
+                  {ebook.publisher.name}
+                </TableCell>
                 <TableCell className="text-end">
                   <div className="flex justify-end gap-2">
                     <Button size="icon" variant="outline" asChild>

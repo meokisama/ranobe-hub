@@ -80,7 +80,7 @@ export function EbookFilters({
         <SelectContent>
           <SelectItem value="all">Tất cả</SelectItem>
           {publishers.map((publisher) => (
-            <SelectItem key={publisher._id} value={publisher.name}>
+            <SelectItem key={publisher._id} value={publisher._id}>
               {publisher.name}
             </SelectItem>
           ))}
