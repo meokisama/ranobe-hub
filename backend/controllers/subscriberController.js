@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 const notifyAdmin = async (subscriberEmail) => {
     try {
         await transporter.sendMail({
-            from: `"Ranobe Reader" <${process.env.EMAIL_USER}>`,
+            from: `"【Ranobe Reader】Ranobe.vn" <${process.env.EMAIL_USER}>`,
             to: process.env.ADMIN_EMAIL,
             subject: 'Có người đăng ký mới!',
             html: `
@@ -66,14 +66,14 @@ exports.subscribe = async (req, res) => {
                 // Gửi email xác nhận cho người đăng ký
                 const isReactivation = existingSubscriber && !existingSubscriber.isActive;
                 await transporter.sendMail({
-                    from: `"Ranobe Reader" <${process.env.EMAIL_USER}>`,
+                    from: `"【Ranobe Reader】Ranobe.vn" <${process.env.EMAIL_USER}>`,
                     to: email,
                     subject: 'Đăng ký nhận tin thành công',
                     html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
                     <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">✨ Đăng ký thành công!</h1>
                     <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <p style="margin: 15px 0; line-height: 1.6;">Bạn đã ${isReactivation ? 'đăng ký tiếp tục' : 'đăng ký'} nhận tin sách mới từ Ranobe Reader! 🎉</p>
+                        <p style="margin: 15px 0; line-height: 1.6;">Bạn đã ${isReactivation ? 'đăng ký tiếp tục' : 'đăng ký'} nhận tin sách mới từ 【Ranobe Reader】Ranobe.vn! 🎉</p>
                         <p style="margin: 15px 0; line-height: 1.6;">Bạn sẽ là người đầu tiên được thông báo khi có sách mới được đăng tải. ( ๑ ˃ᴗ˂)و</p>
                         <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
                             <p style="margin: 0;">Nếu bạn muốn hủy đăng ký, vui lòng click vào link sau:</p>
@@ -135,7 +135,7 @@ exports.sendNotification = async (bookTitle) => {
 
         for (const subscriber of subscribers) {
             await transporter.sendMail({
-                from: `"Ranobe Reader" <${process.env.EMAIL_USER}>`,
+                from: `"【Ranobe Reader】Ranobe.vn" <${process.env.EMAIL_USER}>`,
                 to: subscriber.email,
                 subject: 'Có sách mới!',
                 html: `
