@@ -142,7 +142,6 @@ exports.sendNotification = async (bookTitle) => {
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
               <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">📚 Sách mới đã ra mắt!</h1>
               <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                  <p style="margin: 15px 0; line-height: 1.6;">Chào mừng bạn đến với câu chuyện mới!</p>
                   <p style="margin: 15px 0; line-height: 1.6;"><strong>「${bookTitle}」</strong> đã được đăng tải trên Ranobe Reader.</p>
                   <div style="margin: 20px 0; text-align: center;">
                       <a href="${process.env.FRONTEND_URL}" 
