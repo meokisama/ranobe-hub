@@ -4,16 +4,16 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-const adminAuth = require('../../middleware/adminAuth');
-const ebookController = require('../../controllers/ebookController');
-const { cache } = require('../../middleware/cache');
+const adminAuth = require('../middleware/adminAuth');
+const ebookController = require('../controllers/ebookController');
+const { cache } = require('../middleware/cache');
 
 // Tạo thư mục upload nếu chưa tồn tại
 const createUploadDirs = () => {
     const dirs = [
-        path.join(__dirname, '../../uploads'),
-        path.join(__dirname, '../../uploads/covers'),
-        path.join(__dirname, '../../uploads/ebooks')
+        path.join(__dirname, '../uploads'),
+        path.join(__dirname, '../uploads/covers'),
+        path.join(__dirname, '../uploads/ebooks')
     ];
 
     dirs.forEach(dir => {
@@ -32,9 +32,9 @@ const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         let uploadPath = '';
         if (file.fieldname === 'cover') {
-            uploadPath = path.join(__dirname, '../../uploads/covers');
+            uploadPath = path.join(__dirname, '../uploads/covers');
         } else if (file.fieldname === 'ebook') {
-            uploadPath = path.join(__dirname, '../../uploads/ebooks');
+            uploadPath = path.join(__dirname, '../uploads/ebooks');
         }
         cb(null, uploadPath);
     },

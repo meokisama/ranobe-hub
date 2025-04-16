@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const config = require('../../config/config');
-const { loginLimiter } = require('../../middleware/security');
-const adminAuth = require('../../middleware/adminAuth');
+const config = require('../config/config');
+const { loginLimiter } = require('../middleware/security');
+const adminAuth = require('../middleware/adminAuth');
 
 // @route   GET api/admin/csrf-token
 // @desc    Lấy CSRF token
