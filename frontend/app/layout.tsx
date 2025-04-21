@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lexend } from "next/font/google";
+import { Lexend, Poppins, Playfair_Display } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import localFont from "next/font/local";
 import { GoogleAnalytics } from "@next/third-parties/google";
@@ -14,6 +14,19 @@ const jaro = localFont({
   weight: "400",
   src: "./Jaro.ttf",
   variable: "--font-jaro",
+  display: "swap",
+});
+
+const playfair_display = Playfair_Display({
+  subsets: ["vietnamese"],
+  variable: "--font-playfair_display",
+  display: "swap",
+});
+
+const poppins = Poppins({
+  weight: "900",
+  subsets: ["latin"],
+  variable: "--font-poppins",
   display: "swap",
 });
 
@@ -61,7 +74,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lexend.variable} ${jaro.variable} antialiased`}>
+      <body
+        className={`${lexend.variable} ${jaro.variable} ${playfair_display.variable} ${poppins.variable} antialiased`}
+      >
         {children}
         <Toaster richColors />
       </body>

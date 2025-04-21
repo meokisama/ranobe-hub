@@ -7,6 +7,7 @@ const csrf = require('csurf');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
 const ebookRoutes = require('./routes/ebookRoutes');
+const konoranoRoutes = require('./routes/konoranoRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const publisherRoutes = require('./routes/publisherRoutes');
 const subscriberRoutes = require('./routes/subscriberRoutes');
@@ -56,9 +57,12 @@ connectDB();
 // Áp dụng rate limiting cho các routes
 app.use('/api/ebooks', apiLimiter);
 app.use('/api/ebooks/upload', uploadLimiter);
+app.use('/api/konoranos', apiLimiter);
+app.use('/api/konoranos/upload', uploadLimiter);
 
 // Routes
 app.use('/api/ebooks', ebookRoutes);
+app.use('/api/konoranos', konoranoRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/publishers', publisherRoutes);
 app.use('/api/subscribers', subscriberRoutes);
@@ -66,6 +70,7 @@ app.use('/api/subscribers', subscriberRoutes);
 // Serve reader
 app.use('/reader', express.static(path.join(__dirname, 'reader')));
 app.use('/uploads/covers', express.static(path.join(__dirname, 'uploads', 'covers')));
+
 app.use('/uploads/ebooks', (req, res, next) => {
     const referer = req.get('referer');
     if (!referer) {

@@ -98,7 +98,7 @@ export function EbookGrid() {
   }
 
   return (
-    <div className="max-w-screen-xl mx-auto p-4 min-h-screen pb-12">
+    <div className="max-w-screen-xl mx-auto p-4 min-h-screen">
       <div ref={filterRef}>
         <EbookFilters
           onSearch={setSearchQuery}

@@ -73,7 +73,7 @@ export default function SubscribeForm() {
   }, [errors.email]);
 
   return (
-    <div className="relative backdrop-blur-xs overflow-hidden">
+    <div className="relative backdrop-blur-xs overflow-hidden mt-12">
       <Image
         src="/sneaker.webp"
         alt="background image"
