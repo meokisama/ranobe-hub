@@ -26,8 +26,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { KonoranoFilters } from "./konorano-filters";
-import { Pagination } from "../ui/pagination";
+import { ContentFilters } from "@/components/common/content-filters";
+import { Pagination } from "@/components/ui/pagination";
 
 interface KonoranoTableProps {
   konoranos: Konorano[];
@@ -124,7 +124,11 @@ export function KonoranoTable({
 
   return (
     <div className="space-y-4">
-      <KonoranoFilters onSearch={setSearchQuery} onSort={setSortOrder} />
+      <ContentFilters
+        contentType="konorano"
+        onSearch={setSearchQuery}
+        onSort={setSortOrder}
+      />
 
       <div className="rounded-md border">
         <Table>

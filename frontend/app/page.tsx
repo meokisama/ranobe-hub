@@ -9,7 +9,7 @@ export default function HomePage() {
   return (
     <div>
       <SplashScreen />
-      <div className="space-y-6 bg-[#fffbfb]">
+      <div className="bg-[#fffbfb]">
         <CoverCarousel />
         <Promo />
         <EbookGrid />

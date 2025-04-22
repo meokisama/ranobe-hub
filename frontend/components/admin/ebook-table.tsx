@@ -26,8 +26,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { EbookFilters } from "./ebook-filters";
-import { Pagination } from "../ui/pagination";
+import { ContentFilters } from "@/components/common/content-filters";
+import { Pagination } from "@/components/ui/pagination";
 
 interface EbookTableProps {
   ebooks: Ebook[];
@@ -155,7 +155,8 @@ export function EbookTable({
   return (
     <>
       <div ref={filterRef}>
-        <EbookFilters
+        <ContentFilters
+          contentType="ebook"
           onSearch={setSearchQuery}
           onSort={setSortOrder}
           onPublisherFilter={setSelectedPublisher}

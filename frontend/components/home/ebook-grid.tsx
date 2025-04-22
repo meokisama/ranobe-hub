@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { EbookCard } from "./ebook-card";
+import { ContentCard } from "@/components/common/content-card";
 import { api } from "@/lib/api";
 import { Ebook } from "@/lib/types";
-import { EbookFilters } from "./ebook-filters";
-import { Pagination } from "../ui/pagination";
+import { ContentFilters } from "@/components/common/content-filters";
+import { Pagination } from "@/components/ui/pagination";
 
 export function EbookGrid() {
   const [allEbooks, setAllEbooks] = useState<Ebook[]>([]);
@@ -99,8 +99,22 @@ export function EbookGrid() {
 
   return (
     <div className="max-w-screen-xl mx-auto p-4 min-h-screen">
+      <div className="flex flex-col items-center justify-center relative select-none pointer-events-none">
+        <h2 className="font-black font-poppins tracking-[-0.3vw] text-[23vw] xl:text-[14vw] text-white drop-shadow-[0px_5px_10px_rgba(255,139,39,0.1)]">
+          EBOOKS
+        </h2>
+        <div className="absolute flex flex-col">
+          <div className="relative inline-block">
+            <span className="text-orange-500 relative z-100 text-[5vw] md:text-[4vw] xl:text-[2vw] font-['Yu_Mincho'] p-2 px-4">
+              無料で共有されている電子書籍!
+            </span>
+            <span className="absolute z-99 inset-0 bg-orange-100/50 transform -skew-x-19"></span>
+          </div>
+        </div>
+      </div>
       <div ref={filterRef}>
-        <EbookFilters
+        <ContentFilters
+          contentType="ebook"
           onSearch={setSearchQuery}
           onSort={setSortOrder}
           onPublisherFilter={setSelectedPublisher}
@@ -108,7 +122,7 @@ export function EbookGrid() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-y-10">
         {currentEbooks.map((ebook) => (
-          <EbookCard key={ebook._id} ebook={ebook} />
+          <ContentCard key={ebook._id} contentType="ebook" content={ebook} />
         ))}
       </div>
       {totalPages > 1 && (
