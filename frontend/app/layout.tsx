@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     "ranobe vn raw",
     "ranobe vn raw reader",
   ],
-  metadataBase: new URL("https://ranobe.vn"),
+  metadataBase: new URL("https://hub.ranobe.vn"),
   openGraph: {
     title: title,
     description: description,
