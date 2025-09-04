@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "hub.ranobe.vn",
+        hostname: "raw.ranobe.vn",
       },
       {
         protocol: "http",
