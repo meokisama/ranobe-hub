@@ -30,9 +30,9 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const title = "Ranobe Reader | Meoki";
+const title = "Ranobe Hub - Đọc Light Novel gốc tiếng Nhật miễn phí";
 const description =
-  "Trình đọc Light Novel gốc Nhật dưới dạng sách điện tử được chia sẻ từ Meoki.";
+  "Trình đọc Light Novel gốc Nhật miễn phí theo yêu cầu dưới dạng sách điện tử được chia sẻ từ Meoki.";
 
 export const metadata: Metadata = {
   title: title,
@@ -41,8 +41,10 @@ export const metadata: Metadata = {
   publisher: "Meoki",
   keywords: [
     "light novel",
+    "đọc light novel",
     "ln",
     "ranobe",
+    "ranobe reader",
     "blog",
     "tiểu thuyết",
     "light novel blog",
