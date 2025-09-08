@@ -30,7 +30,7 @@ export default function SubscribeForm() {
     try {
       setStatus("loading");
       const response = await fetch(
-        "https://hub.ranobe.vn/api/subscribers/subscribe",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/subscribers/subscribe`,
         {
           method: "POST",
           headers: {

@@ -23,7 +23,7 @@ function UnsubscribeContent() {
       try {
         setStatus("loading");
         const response = await fetch(
-          `https://hub.ranobe.vn/api/subscribers/unsubscribe?email=${email}`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/subscribers/unsubscribe?email=${email}`
         );
         const result = await response.json();
 
