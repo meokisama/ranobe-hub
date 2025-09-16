@@ -30,9 +30,10 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const title = "Ranobe Hub - Đọc Light Novel gốc tiếng Nhật miễn phí";
+const title =
+  "Light Novel Hub - Đọc Light Novel gốc tiếng Nhật miễn phí / Ranobe Hub";
 const description =
-  "Trình đọc Light Novel gốc Nhật miễn phí theo yêu cầu dưới dạng sách điện tử được chia sẻ từ Meoki.";
+  "Chia sẻ truyện raw Light Novel. Đọc miễn phí bản gốc KonoRano và những tạp chí Light Novel ấn tượng.";
 
 export const metadata: Metadata = {
   title: title,
@@ -48,12 +49,9 @@ export const metadata: Metadata = {
     "blog",
     "tiểu thuyết",
     "light novel blog",
-    "ranobe epub reader",
+    "light novel epub",
     "epub raw",
-    "ranobe raw",
-    "ranobe vn",
-    "ranobe vn raw",
-    "ranobe vn raw reader",
+    "light novel raw",
   ],
   metadataBase: new URL("https://hub.ranobe.vn"),
   openGraph: {
