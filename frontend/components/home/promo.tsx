@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { MessageCircleIcon, HomeIcon } from "lucide-react";
+import { House, Send } from "lucide-react";
 export const Promo = () => {
   return (
     <div className="px-4">
@@ -16,17 +16,21 @@ export const Promo = () => {
           </p>
           <div className="flex gap-2 z-10 mt-8 justify-center md:justify-start">
             <Link href="https://facebook.com/TheMeoki" target="_blank">
-              <Button className="cursor-pointer font-semibold text-orange-50 bg-orange-800 hover:bg-orange-900 shadow-lg shadow-orange-800/40">
-                <HomeIcon className="w-4 h-4" />
+              <Button
+                size="lg"
+                className="cursor-pointer font-semibold text-orange-50 bg-orange-700 hover:bg-orange-800 shadow-lg shadow-orange-800/40"
+              >
+                <Send className="w-4 h-4" />
                 Nhắn Tin
               </Button>
             </Link>
             <Link href="https://ranobe.vn" target="_blank">
               <Button
-                variant="outline"
-                className="cursor-pointer font-light shadow-sm"
+                variant="ghost"
+                size="lg"
+                className="cursor-pointer font-light shadow-md shadow-orange-100 border border-orange-200/50 bg-white hover:bg-white hover:shadow-orange-200/50"
               >
-                <MessageCircleIcon className="w-4 h-4" />
+                <House className="w-4 h-4" />
                 Trang Chủ Ranobe
               </Button>
             </Link>

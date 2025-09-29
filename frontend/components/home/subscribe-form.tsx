@@ -137,7 +137,7 @@ export default function SubscribeForm() {
                       {...register("email")}
                     />
                     <button
-                      className="relative cursor-pointer group inline-block flex-shrink-0 w-full sm:w-auto py-3 px-5 text-sm font-semibold text-orange-50 bg-orange-800 shadow-lg shadow-orange-800/40 rounded-md overflow-hidden"
+                      className="relative cursor-pointer group inline-block flex-shrink-0 w-full sm:w-auto py-3 px-5 text-sm font-semibold text-orange-50 bg-orange-700 hover:bg-orange-800 shadow-lg shadow-orange-800/40 rounded-md overflow-hidden"
                       type="submit"
                       disabled={status === "loading"}
                     >
