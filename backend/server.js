@@ -35,7 +35,7 @@ app.use(compression({
 
 // CORS configuration
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3002', 'https://hub.ranobe.vn'],
+    origin: ['http://localhost:3000', 'http://localhost:3002', process.env.FRONTEND_URL],
     credentials: true
 }));
 

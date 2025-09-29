@@ -33,7 +33,7 @@ const poppins = Poppins({
 const title =
   "Light Novel Hub - Đọc Light Novel gốc tiếng Nhật miễn phí / Ranobe Hub";
 const description =
-  "Chia sẻ truyện raw Light Novel. Đọc miễn phí bản gốc KonoRano và những tạp chí Light Novel ấn tượng.";
+  "Chia sẻ truyện raw Light Novel, tiểu thuyết gốc tiếng Nhật. Đọc miễn phí bản gốc KonoRano và những tạp chí Light Novel ấn tượng đã từng được phát hành.";
 
 export const metadata: Metadata = {
   title: title,
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     "epub raw",
     "light novel raw",
   ],
-  metadataBase: new URL("https://hub.ranobe.vn"),
+  metadataBase: new URL("https://lightnovel.vn"),
   openGraph: {
     title: title,
     description: description,

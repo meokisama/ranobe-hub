@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "raw.ranobe.vn",
+        hostname: "hub.lightnovel.vn",
       },
       {
         protocol: "http",
