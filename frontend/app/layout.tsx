@@ -30,10 +30,9 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const title =
-  "Light Novel Hub - Đọc Light Novel gốc tiếng Nhật miễn phí / Ranobe Hub";
+const title = "Light Novel Hub - Đọc Light Novel gốc tiếng Nhật miễn phí.";
 const description =
-  "Chia sẻ truyện raw Light Novel, tiểu thuyết gốc tiếng Nhật. Đọc miễn phí bản gốc KonoRano và những tạp chí Light Novel ấn tượng đã từng được phát hành.";
+  "Chia sẻ truyện raw Light Novel, tiểu thuyết gốc tiếng Nhật. Đọc miễn phí KonoRano và những tạp chí Light Novel ấn tượng đã từng được phát hành.";
 
 export const metadata: Metadata = {
   title: title,
