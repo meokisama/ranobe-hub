@@ -16,7 +16,7 @@ export function KonoranoGrid() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 5;
   const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
