@@ -33,29 +33,10 @@ app.use(
 );
 
 // CORS configuration
-const allowedOrigins = [
-  "https://hub.ranobe.vn",
-  "https://hub.lightnovel.vn",
-  "https://lightnovel.vn",
-  "https://ranobe.vn",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: ["https://hub.ranobe.vn", process.env.FRONTEND_URL],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
-    exposedHeaders: ["X-CSRF-Token"],
   })
 );
 
