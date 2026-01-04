@@ -1,4 +1,5 @@
 const Publisher = require("../models/Publisher");
+const { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } = require("../utils/errorHandler");
 
 // Lấy tất cả nhãn hiệu
 exports.getAllPublishers = async (req, res) => {
@@ -6,8 +7,7 @@ exports.getAllPublishers = async (req, res) => {
     const publishers = await Publisher.find().select("-__v").sort({ name: 1 });
     res.json(publishers);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -17,20 +17,17 @@ exports.createPublisher = async (req, res) => {
     const { name } = req.body;
 
     // Kiểm tra xem nhãn hiệu đã tồn tại chưa
-    let publisher = await Publisher.findOne({ name });
-    if (publisher) {
-      return res.status(400).json({ msg: "nhãn hiệu này đã tồn tại" });
+    const existingPublisher = await Publisher.findOne({ name });
+    if (existingPublisher) {
+      return validationErrorResponse(res, "Nhãn hiệu này đã tồn tại");
     }
 
-    publisher = new Publisher({
-      name,
-    });
-
+    const publisher = new Publisher({ name });
     await publisher.save();
+
     res.json(publisher);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -45,7 +42,7 @@ exports.updatePublisher = async (req, res) => {
       _id: { $ne: req.params.id },
     });
     if (existingPublisher) {
-      return res.status(400).json({ msg: "nhãn hiệu này đã tồn tại" });
+      return validationErrorResponse(res, "Nhãn hiệu này đã tồn tại");
     }
 
     const publisher = await Publisher.findByIdAndUpdate(
@@ -58,13 +55,15 @@ exports.updatePublisher = async (req, res) => {
     );
 
     if (!publisher) {
-      return res.status(404).json({ msg: "Không tìm thấy nhãn hiệu" });
+      return notFoundResponse(res, "nhãn hiệu");
     }
 
     res.json(publisher);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    if (handleObjectIdError(err, res, "nhãn hiệu")) {
+      return;
+    }
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -73,13 +72,15 @@ exports.deletePublisher = async (req, res) => {
   try {
     const publisher = await Publisher.findById(req.params.id);
     if (!publisher) {
-      return res.status(404).json({ msg: "Không tìm thấy nhãn hiệu" });
+      return notFoundResponse(res, "nhãn hiệu");
     }
 
     await Publisher.findByIdAndDelete(req.params.id);
-    res.json({ msg: "nhãn hiệu đã được xóa" });
+    res.json({ msg: "Nhãn hiệu đã được xóa" });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    if (handleObjectIdError(err, res, "nhãn hiệu")) {
+      return;
+    }
+    return serverErrorResponse(res, err);
   }
 };

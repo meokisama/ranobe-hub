@@ -13,20 +13,40 @@ const publisherRoutes = require("./routes/publisherRoutes");
 const subscriberRoutes = require("./routes/subscriberRoutes");
 const connectDB = require("./config/db");
 const { apiLimiter, uploadLimiter } = require("./middleware/security");
+const { initializeUploadDirs } = require("./utils/fileManager");
 
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Initialize upload directories
+(async () => {
+  await initializeUploadDirs();
+})();
+
 // CORS configuration
+const allowedOrigins = [
+  "https://hub.ranobe.vn",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: ["https://hub.ranobe.vn", process.env.FRONTEND_URL],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // Limit request body size
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 app.use(
   compression({
@@ -60,6 +80,8 @@ app.use("/api/ebooks", apiLimiter);
 app.use("/api/ebooks/upload", uploadLimiter);
 app.use("/api/konoranos", apiLimiter);
 app.use("/api/konoranos/upload", uploadLimiter);
+app.use("/api/publishers", apiLimiter);
+app.use("/api/subscribers", apiLimiter);
 
 // Routes
 app.use("/api/ebooks", ebookRoutes);
@@ -107,10 +129,27 @@ app.use((err, req, res, next) => {
       msg: "CSRF token không hợp lệ",
     });
   }
+
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({
+      msg: "CORS policy violation",
+    });
+  }
+
   console.error(err.stack);
   res.status(500).json({ msg: "Lỗi server" });
 });
 
-app.listen(port, () => {
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal received: closing HTTP server");
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
+});
+
+const server = app.listen(port, () => {
   console.log(`Server đang chạy tại http://localhost:${port}`);
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
 });

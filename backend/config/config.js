@@ -1,7 +1,23 @@
+// Validate required environment variables
+const requiredEnvVars = ["JWT_SECRET", "ADMIN_PASSWORD"];
+
+requiredEnvVars.forEach((varName) => {
+  if (!process.env[varName]) {
+    console.error(`ERROR: Missing required environment variable: ${varName}`);
+    console.error("Please check your .env file and ensure all required variables are set.");
+    process.exit(1);
+  }
+});
+
+// Validate JWT_SECRET strength
+if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
+  console.warn("WARNING: JWT_SECRET should be at least 32 characters long for security.");
+}
+
 module.exports = {
-  JWT_SECRET: process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production",
+  JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRES_IN: "24h",
-  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || "$2b$10$X4wURQY0uQaLlfozM1PKlu.lG8JK78L6dDu1HTrA4k/LBGaiuJehW",
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
   RATE_LIMIT_WINDOW: 15 * 60 * 1000, // 15 minutes
   RATE_LIMIT_MAX: 5, // 5 attempts
 };

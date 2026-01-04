@@ -1,17 +1,37 @@
 const Konorano = require("../models/Konorano");
-const path = require("path");
-const fs = require("fs");
 const { clearCache } = require("../middleware/cache");
 const { sendNotification } = require("./subscriberController");
+const { deleteOldFile } = require("../utils/fileManager");
+const {
+  serverErrorResponse,
+  notFoundResponse,
+  validationErrorResponse,
+  handleObjectIdError,
+} = require("../utils/errorHandler");
 
-// Lấy tất cả konorano
+// Lấy tất cả konorano (với pagination)
 exports.getAllKonoranos = async (req, res) => {
   try {
-    const konoranos = await Konorano.find().select("-__v");
-    res.json(konoranos);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const [konoranos, total] = await Promise.all([
+      Konorano.find().select("-__v").skip(skip).limit(limit).sort({ createdAt: -1 }),
+      Konorano.countDocuments(),
+    ]);
+
+    res.json({
+      konoranos,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -20,15 +40,14 @@ exports.getKonoranoById = async (req, res) => {
   try {
     const konorano = await Konorano.findById(req.params.id);
     if (!konorano) {
-      return res.status(404).json({ msg: "Không tìm thấy konorano" });
+      return notFoundResponse(res, "konorano");
     }
     res.json(konorano);
   } catch (err) {
-    console.error(err.message);
-    if (err.kind === "ObjectId") {
-      return res.status(404).json({ msg: "Không tìm thấy konorano" });
+    if (handleObjectIdError(err, res, "konorano")) {
+      return;
     }
-    res.status(500).send("Lỗi server");
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -39,7 +58,7 @@ exports.createKonorano = async (req, res) => {
 
     // Kiểm tra file upload
     if (!req.files || !req.files.cover || !req.files.konorano) {
-      return res.status(400).json({ msg: "Cần upload cả cover và file konorano" });
+      return validationErrorResponse(res, "Cần upload cả cover và file konorano");
     }
 
     const coverFile = req.files.cover[0];
@@ -56,16 +75,16 @@ exports.createKonorano = async (req, res) => {
 
     const konorano = await newKonorano.save();
 
-    // Xóa cache cho danh sách konorano
-    await clearCache("cache:/api/konoranos*");
+    // Xóa cache cụ thể
+    await clearCache("cache:/api/konoranos");
+    await clearCache("cache:/api/konoranos?*");
 
     // Gửi thông báo cho subscribers
     await sendNotification(name);
 
     res.json(konorano);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -73,6 +92,12 @@ exports.createKonorano = async (req, res) => {
 exports.updateKonorano = async (req, res) => {
   try {
     const { name, author, releaseDate, viURL } = req.body;
+
+    // Kiểm tra konorano tồn tại
+    const existingKonorano = await Konorano.findById(req.params.id);
+    if (!existingKonorano) {
+      return notFoundResponse(res, "konorano");
+    }
 
     const konoranoFields = {
       name,
@@ -91,13 +116,9 @@ exports.updateKonorano = async (req, res) => {
       const coverFile = req.files.cover[0];
       konoranoFields.coverImage = coverFile.filename;
 
-      // Xóa file cover cũ
-      const oldKonorano = await Konorano.findById(req.params.id);
-      if (oldKonorano && oldKonorano.coverImage !== "default-cover.jpg") {
-        const oldPath = path.join(__dirname, "../uploads/covers", oldKonorano.coverImage);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
-        }
+      // Xóa file cover cũ (async)
+      if (existingKonorano.coverImage !== "default-cover.jpg") {
+        await deleteOldFile(existingKonorano.coverImage, "covers", "default-cover.jpg");
       }
     }
 
@@ -106,30 +127,27 @@ exports.updateKonorano = async (req, res) => {
       const konoranoFile = req.files.konorano[0];
       konoranoFields.filePath = konoranoFile.filename;
 
-      // Xóa file konorano cũ
-      const oldKonorano = await Konorano.findById(req.params.id);
-      if (oldKonorano) {
-        const oldPath = path.join(__dirname, "../uploads/ebooks", oldKonorano.filePath);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
-        }
-      }
+      // Xóa file konorano cũ (async)
+      await deleteOldFile(existingKonorano.filePath, "ebooks");
     }
 
-    let konorano = await Konorano.findById(req.params.id);
-    if (!konorano) {
-      return res.status(404).json({ msg: "Không tìm thấy konorano" });
-    }
+    const updatedKonorano = await Konorano.findByIdAndUpdate(
+      req.params.id,
+      { $set: konoranoFields },
+      { new: true }
+    );
 
-    konorano = await Konorano.findByIdAndUpdate(req.params.id, { $set: konoranoFields }, { new: true });
+    // Xóa cache cụ thể
+    await clearCache("cache:/api/konoranos");
+    await clearCache("cache:/api/konoranos?*");
+    await clearCache(`cache:/api/konoranos/${req.params.id}`);
 
-    // Xóa cache cho danh sách konorano và konorano cụ thể
-    await clearCache("cache:/api/konoranos*");
-
-    res.json(konorano);
+    res.json(updatedKonorano);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    if (handleObjectIdError(err, res, "konorano")) {
+      return;
+    }
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -138,30 +156,33 @@ exports.deleteKonorano = async (req, res) => {
   try {
     const konorano = await Konorano.findById(req.params.id);
     if (!konorano) {
-      return res.status(404).json({ msg: "Không tìm thấy konorano" });
+      return notFoundResponse(res, "konorano");
     }
 
-    // Xóa các file đi kèm
+    // Xóa các file đi kèm (async)
+    const deletePromises = [];
+
     if (konorano.coverImage !== "default-cover.jpg") {
-      const coverPath = path.join(__dirname, "../uploads/covers", konorano.coverImage);
-      if (fs.existsSync(coverPath)) {
-        fs.unlinkSync(coverPath);
-      }
+      deletePromises.push(deleteOldFile(konorano.coverImage, "covers", "default-cover.jpg"));
     }
 
-    const konoranoPath = path.join(__dirname, "../uploads/ebooks", konorano.filePath);
-    if (fs.existsSync(konoranoPath)) {
-      fs.unlinkSync(konoranoPath);
-    }
+    deletePromises.push(deleteOldFile(konorano.filePath, "ebooks"));
 
-    await Konorano.findByIdAndRemove(req.params.id);
+    // Xóa tất cả files song song
+    await Promise.all(deletePromises);
 
-    // Xóa cache cho danh sách konorano
-    await clearCache("cache:/api/konoranos*");
+    await Konorano.findByIdAndDelete(req.params.id);
+
+    // Xóa cache cụ thể
+    await clearCache("cache:/api/konoranos");
+    await clearCache("cache:/api/konoranos?*");
+    await clearCache(`cache:/api/konoranos/${req.params.id}`);
 
     res.json({ msg: "Konorano đã được xóa" });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    if (handleObjectIdError(err, res, "konorano")) {
+      return;
+    }
+    return serverErrorResponse(res, err);
   }
 };

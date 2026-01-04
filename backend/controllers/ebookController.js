@@ -1,18 +1,38 @@
 const Ebook = require("../models/Ebook");
 const Publisher = require("../models/Publisher");
-const path = require("path");
-const fs = require("fs");
 const { clearCache } = require("../middleware/cache");
 const { sendNotification } = require("./subscriberController");
+const { deleteOldFile } = require("../utils/fileManager");
+const {
+  serverErrorResponse,
+  notFoundResponse,
+  validationErrorResponse,
+  handleObjectIdError,
+} = require("../utils/errorHandler");
 
-// Lấy tất cả ebook
+// Lấy tất cả ebook (với pagination)
 exports.getAllEbooks = async (req, res) => {
   try {
-    const ebooks = await Ebook.find().select("-__v").populate("publisher", "name");
-    res.json(ebooks);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const [ebooks, total] = await Promise.all([
+      Ebook.find().select("-__v").populate("publisher", "name").skip(skip).limit(limit).sort({ createdAt: -1 }),
+      Ebook.countDocuments(),
+    ]);
+
+    res.json({
+      ebooks,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -21,15 +41,14 @@ exports.getEbookById = async (req, res) => {
   try {
     const ebook = await Ebook.findById(req.params.id).populate("publisher", "name");
     if (!ebook) {
-      return res.status(404).json({ msg: "Không tìm thấy ebook" });
+      return notFoundResponse(res, "ebook");
     }
     res.json(ebook);
   } catch (err) {
-    console.error(err.message);
-    if (err.kind === "ObjectId") {
-      return res.status(404).json({ msg: "Không tìm thấy ebook" });
+    if (handleObjectIdError(err, res, "ebook")) {
+      return;
     }
-    res.status(500).send("Lỗi server");
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -40,13 +59,13 @@ exports.createEbook = async (req, res) => {
 
     // Kiểm tra file upload
     if (!req.files || !req.files.cover || !req.files.ebook) {
-      return res.status(400).json({ msg: "Cần upload cả cover và file ebook" });
+      return validationErrorResponse(res, "Cần upload cả cover và file ebook");
     }
 
     // Tìm publisher theo ID
     const publisherObj = await Publisher.findById(publisher);
     if (!publisherObj) {
-      return res.status(404).json({ msg: "Không tìm thấy nhãn hiệu" });
+      return notFoundResponse(res, "nhãn hiệu");
     }
 
     const coverFile = req.files.cover[0];
@@ -67,16 +86,16 @@ exports.createEbook = async (req, res) => {
     // Populate publisher data before returning
     const populatedEbook = await Ebook.findById(ebook._id).populate("publisher", "name");
 
-    // Xóa cache cho danh sách ebook
-    await clearCache("cache:/api/ebooks*");
+    // Xóa cache cụ thể
+    await clearCache("cache:/api/ebooks");
+    await clearCache("cache:/api/ebooks?*");
 
     // Gửi thông báo cho subscribers
     await sendNotification(name);
 
     res.json(populatedEbook);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -85,10 +104,16 @@ exports.updateEbook = async (req, res) => {
   try {
     const { name, author, illustrator, releaseDate, publisher } = req.body;
 
+    // Kiểm tra ebook tồn tại
+    const existingEbook = await Ebook.findById(req.params.id);
+    if (!existingEbook) {
+      return notFoundResponse(res, "ebook");
+    }
+
     // Tìm publisher theo ID
     const publisherObj = await Publisher.findById(publisher);
     if (!publisherObj) {
-      return res.status(404).json({ msg: "Không tìm thấy nhãn hiệu" });
+      return notFoundResponse(res, "nhãn hiệu");
     }
 
     const ebookFields = {
@@ -105,13 +130,9 @@ exports.updateEbook = async (req, res) => {
       const coverFile = req.files.cover[0];
       ebookFields.coverImage = coverFile.filename;
 
-      // Xóa file cover cũ
-      const oldEbook = await Ebook.findById(req.params.id);
-      if (oldEbook && oldEbook.coverImage !== "default-cover.jpg") {
-        const oldPath = path.join(__dirname, "../uploads/covers", oldEbook.coverImage);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
-        }
+      // Xóa file cover cũ (async)
+      if (existingEbook.coverImage !== "default-cover.jpg") {
+        await deleteOldFile(existingEbook.coverImage, "covers", "default-cover.jpg");
       }
     }
 
@@ -120,30 +141,26 @@ exports.updateEbook = async (req, res) => {
       const ebookFile = req.files.ebook[0];
       ebookFields.filePath = ebookFile.filename;
 
-      // Xóa file ebook cũ
-      const oldEbook = await Ebook.findById(req.params.id);
-      if (oldEbook) {
-        const oldPath = path.join(__dirname, "../uploads/ebooks", oldEbook.filePath);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
-        }
-      }
+      // Xóa file ebook cũ (async)
+      await deleteOldFile(existingEbook.filePath, "ebooks");
     }
 
-    let ebook = await Ebook.findById(req.params.id);
-    if (!ebook) {
-      return res.status(404).json({ msg: "Không tìm thấy ebook" });
-    }
+    const updatedEbook = await Ebook.findByIdAndUpdate(req.params.id, { $set: ebookFields }, { new: true }).populate(
+      "publisher",
+      "name"
+    );
 
-    ebook = await Ebook.findByIdAndUpdate(req.params.id, { $set: ebookFields }, { new: true }).populate("publisher", "name");
+    // Xóa cache cụ thể
+    await clearCache("cache:/api/ebooks");
+    await clearCache("cache:/api/ebooks?*");
+    await clearCache(`cache:/api/ebooks/${req.params.id}`);
 
-    // Xóa cache cho danh sách ebook và ebook cụ thể
-    await clearCache("cache:/api/ebooks*");
-
-    res.json(ebook);
+    res.json(updatedEbook);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    if (handleObjectIdError(err, res, "ebook")) {
+      return;
+    }
+    return serverErrorResponse(res, err);
   }
 };
 
@@ -152,30 +169,33 @@ exports.deleteEbook = async (req, res) => {
   try {
     const ebook = await Ebook.findById(req.params.id);
     if (!ebook) {
-      return res.status(404).json({ msg: "Không tìm thấy ebook" });
+      return notFoundResponse(res, "ebook");
     }
 
-    // Xóa các file đi kèm
+    // Xóa các file đi kèm (async)
+    const deletePromises = [];
+
     if (ebook.coverImage !== "default-cover.jpg") {
-      const coverPath = path.join(__dirname, "../uploads/covers", ebook.coverImage);
-      if (fs.existsSync(coverPath)) {
-        fs.unlinkSync(coverPath);
-      }
+      deletePromises.push(deleteOldFile(ebook.coverImage, "covers", "default-cover.jpg"));
     }
 
-    const ebookPath = path.join(__dirname, "../uploads/ebooks", ebook.filePath);
-    if (fs.existsSync(ebookPath)) {
-      fs.unlinkSync(ebookPath);
-    }
+    deletePromises.push(deleteOldFile(ebook.filePath, "ebooks"));
+
+    // Xóa tất cả files song song
+    await Promise.all(deletePromises);
 
     await Ebook.findByIdAndDelete(req.params.id);
 
-    // Xóa cache cho danh sách ebook và ebook cụ thể
-    await clearCache("cache:/api/ebooks*");
+    // Xóa cache cụ thể
+    await clearCache("cache:/api/ebooks");
+    await clearCache("cache:/api/ebooks?*");
+    await clearCache(`cache:/api/ebooks/${req.params.id}`);
 
     res.json({ msg: "Ebook đã được xóa" });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Lỗi server");
+    if (handleObjectIdError(err, res, "ebook")) {
+      return;
+    }
+    return serverErrorResponse(res, err);
   }
 };

@@ -37,4 +37,10 @@ const KonoranoSchema = new mongoose.Schema({
   },
 });
 
+// Indexes để tối ưu queries
+KonoranoSchema.index({ name: 1 });
+KonoranoSchema.index({ author: 1 });
+KonoranoSchema.index({ createdAt: -1 });
+KonoranoSchema.index({ releaseDate: -1 });
+
 module.exports = mongoose.model("Konorano", KonoranoSchema);

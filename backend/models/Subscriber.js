@@ -18,4 +18,8 @@ const subscriberSchema = new mongoose.Schema({
   },
 });
 
+// Indexes để tối ưu queries
+subscriberSchema.index({ email: 1 });
+subscriberSchema.index({ isActive: 1 });
+
 module.exports = mongoose.model("Subscriber", subscriberSchema);

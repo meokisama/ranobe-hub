@@ -41,4 +41,11 @@ const EbookSchema = new mongoose.Schema({
   },
 });
 
+// Indexes để tối ưu queries
+EbookSchema.index({ name: 1 });
+EbookSchema.index({ author: 1 });
+EbookSchema.index({ publisher: 1 });
+EbookSchema.index({ createdAt: -1 });
+EbookSchema.index({ releaseDate: -1 });
+
 module.exports = mongoose.model("Ebook", EbookSchema);

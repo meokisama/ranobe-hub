@@ -16,4 +16,7 @@ const PublisherSchema = new mongoose.Schema({
   },
 });
 
+// Indexes để tối ưu queries
+PublisherSchema.index({ name: 1 });
+
 module.exports = mongoose.model("Publisher", PublisherSchema);
