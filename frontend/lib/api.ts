@@ -2,10 +2,7 @@ import axios from "axios";
 
 // Tạo API instance với axios
 export const api = axios.create({
-  baseURL:
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:3001/api"
-      : process.env.NEXT_PUBLIC_API_URL + "/api",
+  baseURL: process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : process.env.NEXT_PUBLIC_API_URL + "/api",
   withCredentials: true, // Cho phép gửi cookies
 });
 
@@ -57,10 +54,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     // Nếu là lỗi CSRF, thử lấy token mới
-    if (
-      error.response?.status === 403 &&
-      error.response?.data?.msg === "CSRF token không hợp lệ"
-    ) {
+    if (error.response?.status === 403 && error.response?.data?.msg === "CSRF token không hợp lệ") {
       await getCsrfToken();
       // Thử lại request với token mới
       const config = error.config;
@@ -74,10 +68,8 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // Nếu ở client-side, xóa cookie và chuyển về trang login
       if (typeof window !== "undefined") {
-        document.cookie =
-          "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
-        document.cookie =
-          "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+        document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+        document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         // Chuyển hướng nếu không ở trang login
         if (!window.location.pathname.includes("/admin/login")) {
           window.location.href = "/admin/login";

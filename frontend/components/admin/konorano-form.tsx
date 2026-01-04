@@ -4,21 +4,10 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
 import { Konorano } from "@/lib/types";
 import Image from "next/image";
@@ -32,26 +21,15 @@ interface KonoranoFormProps {
 const formSchema = z.object({
   name: z.string().min(1, { message: "Tên sách không được để trống" }),
   author: z.string().optional(),
-  releaseDate: z
-    .string()
-    .min(1, { message: "Ngày phát hành không được để trống" }),
-  viURL: z
-    .string()
-    .min(1, { message: "Link bản dịch tiếng Việt không được để trống" })
-    .url({ message: "Link không hợp lệ" }),
+  releaseDate: z.string().min(1, { message: "Ngày phát hành không được để trống" }),
+  viURL: z.string().min(1, { message: "Link bản dịch tiếng Việt không được để trống" }).url({ message: "Link không hợp lệ" }),
 });
 
-export function KonoranoForm({
-  konorano,
-  onSuccess,
-  onCancel,
-}: KonoranoFormProps) {
+export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProps) {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [konoranoFile, setKonoranoFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(
-    konorano
-      ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${konorano.coverImage}`
-      : null
+    konorano ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${konorano.coverImage}` : null
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,9 +38,7 @@ export function KonoranoForm({
     defaultValues: {
       name: konorano?.name || "",
       author: konorano?.author || "宝島社",
-      releaseDate: konorano?.releaseDate
-        ? new Date(konorano.releaseDate).toISOString().split("T")[0]
-        : "",
+      releaseDate: konorano?.releaseDate ? new Date(konorano.releaseDate).toISOString().split("T")[0] : "",
       viURL: konorano?.viURL || "",
     },
   });
@@ -157,9 +133,7 @@ export function KonoranoForm({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>
-          {konorano ? "Chỉnh sửa" : "Thêm mới"} Konorano
-        </DialogTitle>
+        <DialogTitle>{konorano ? "Chỉnh sửa" : "Thêm mới"} Konorano</DialogTitle>
       </DialogHeader>
 
       <Form {...form}>
@@ -168,16 +142,9 @@ export function KonoranoForm({
             <div className="w-full md:w-1/2 space-y-4">
               <div className="rounded-md h-full border p-2 aspect-[112/159] relative overflow-hidden">
                 {coverPreview ? (
-                  <Image
-                    src={coverPreview}
-                    alt="Cover preview"
-                    fill
-                    className="object-cover"
-                  />
+                  <Image src={coverPreview} alt="Cover preview" fill className="object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted">
-                    Chưa có ảnh bìa
-                  </div>
+                  <div className="w-full h-full flex items-center justify-center bg-muted">Chưa có ảnh bìa</div>
                 )}
               </div>
             </div>
@@ -190,12 +157,7 @@ export function KonoranoForm({
                   <FormItem>
                     <FormLabel>Tên sách</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Nhập tên sách"
-                        {...field}
-                        disabled={isSubmitting}
-                        className="font-['Yu_Mincho']"
-                      />
+                      <Input placeholder="Nhập tên sách" {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -209,16 +171,9 @@ export function KonoranoForm({
                   <FormItem>
                     <FormLabel>Tác giả</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="宝島社"
-                        {...field}
-                        disabled={isSubmitting}
-                        className="font-['Yu_Mincho']"
-                      />
+                      <Input placeholder="宝島社" {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
                     </FormControl>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Để trống sẽ dùng giá trị mặc định &quot;宝島社&quot;
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Để trống sẽ dùng giá trị mặc định &quot;宝島社&quot;</p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -254,43 +209,22 @@ export function KonoranoForm({
 
               <div>
                 <FormLabel htmlFor="cover">Ảnh bìa</FormLabel>
-                <Input
-                  id="cover"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCoverChange}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {konorano
-                    ? "Để trống nếu không muốn thay đổi ảnh bìa"
-                    : "Chọn file ảnh bìa"}
-                </p>
+                <Input id="cover" type="file" accept="image/*" onChange={handleCoverChange} />
+                <p className="text-xs text-muted-foreground mt-1">{konorano ? "Để trống nếu không muốn thay đổi ảnh bìa" : "Chọn file ảnh bìa"}</p>
               </div>
 
               <div>
                 <FormLabel htmlFor="konorano">File sách</FormLabel>
-                <Input
-                  id="konorano"
-                  type="file"
-                  accept=".epub,.pdf"
-                  onChange={handleKonoranoFileChange}
-                />
+                <Input id="konorano" type="file" accept=".epub,.pdf" onChange={handleKonoranoFileChange} />
                 <p className="text-xs text-muted-foreground mt-1">
-                  {konorano
-                    ? "Để trống nếu không muốn thay đổi file sách"
-                    : "Chọn file .epub hoặc .pdf"}
+                  {konorano ? "Để trống nếu không muốn thay đổi file sách" : "Chọn file .epub hoặc .pdf"}
                 </p>
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               Hủy
             </Button>
             <Button type="submit" disabled={isSubmitting}>

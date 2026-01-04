@@ -2,13 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { api } from "@/lib/api";
 
@@ -24,12 +18,7 @@ interface ContentFiltersProps {
   onPublisherFilter?: (publisher: string) => void;
 }
 
-export function ContentFilters({
-  contentType,
-  onSearch,
-  onSort,
-  onPublisherFilter,
-}: ContentFiltersProps) {
+export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilter }: ContentFiltersProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"asc" | "desc">("desc");
   const [selectedPublisher, setSelectedPublisher] = useState<string>("all");
@@ -77,11 +66,7 @@ export function ContentFilters({
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
         <Input
-          placeholder={
-            isEbook
-              ? "Tìm kiếm theo tên sách, tác giả, họa sĩ..."
-              : "Tìm kiếm theo tên sách..."
-          }
+          placeholder={isEbook ? "Tìm kiếm theo tên sách, tác giả, họa sĩ..." : "Tìm kiếm theo tên sách..."}
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
           className="pl-9 h-12 backdrop-blur"

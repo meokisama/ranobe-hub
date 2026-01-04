@@ -178,12 +178,8 @@ const SplashScreen = () => {
             </p>
           </motion.div>
           <div className="text-white drop-shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)] text-center font-jaro">
-            <p className="select-none pointer-events-none leading-none mt-0 text-[20vw] lg:text-[10vw] tracking-tight">
-              RANOBE
-            </p>
-            <p className="select-none pointer-events-none leading-none -mt-[6vw] lg:-mt-[3vw] text-[21vw] lg:text-[10.25vw] tracking-tight">
-              READER
-            </p>
+            <p className="select-none pointer-events-none leading-none mt-0 text-[20vw] lg:text-[10vw] tracking-tight">RANOBE</p>
+            <p className="select-none pointer-events-none leading-none -mt-[6vw] lg:-mt-[3vw] text-[21vw] lg:text-[10.25vw] tracking-tight">READER</p>
           </div>
         </motion.div>
       </div>

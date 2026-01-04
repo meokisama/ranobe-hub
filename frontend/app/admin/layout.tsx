@@ -6,20 +6,14 @@ import { Book, BookOpen, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
   const handleLogout = () => {
     // Xóa cookie khi đăng xuất
-    document.cookie =
-      "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
-    document.cookie =
-      "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+    document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+    document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
     router.push("/admin/login");
   };
 
@@ -40,9 +34,7 @@ export default function AdminLayout({
               <Link
                 href="/admin"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  pathname === "/admin"
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  pathname === "/admin" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -53,9 +45,7 @@ export default function AdminLayout({
               <Link
                 href="/admin/konorano"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  pathname === "/admin/konorano"
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  pathname === "/admin/konorano" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -66,12 +56,7 @@ export default function AdminLayout({
             </nav>
           </div>
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="hidden md:flex"
-            >
+            <Button variant="outline" size="sm" onClick={handleLogout} className="hidden md:flex">
               <LogOut className="h-4 w-4 mr-2" />
               Đăng xuất
             </Button>

@@ -11,9 +11,7 @@ export const Promo = () => {
         </div>
         <div className="flex-none p-4 text-center md:pl-12 md:text-left z-10 relative">
           <h2 className="text-2xl font-bold">Yêu cầu tác phẩm khác?</h2>
-          <p className="text-gray-500 font-light mt-2">
-            Hoặc muốn đọc những bài phân tích chất lượng của chúng tôi?
-          </p>
+          <p className="text-gray-500 font-light mt-2">Hoặc muốn đọc những bài phân tích chất lượng của chúng tôi?</p>
           <div className="flex gap-2 z-10 mt-8 justify-center md:justify-start">
             <Link href="https://facebook.com/TheMeoki" target="_blank">
               <Button
@@ -37,13 +35,7 @@ export const Promo = () => {
           </div>
         </div>
         <div className="flex-auto flex justify-end">
-          <Image
-            src="/uwu.png"
-            alt="sneaker"
-            width={536}
-            height={391}
-            className="h-auto"
-          />
+          <Image src="/uwu.png" alt="sneaker" width={536} height={391} className="h-auto" />
         </div>
       </div>
     </div>

@@ -40,10 +40,8 @@ export default function AdminPage() {
       } catch (err) {
         console.error("Lỗi khi verify token:", err);
         // Xóa cookie khi token không hợp lệ
-        document.cookie =
-          "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
-        document.cookie =
-          "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+        document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+        document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         router.push("/admin/login");
       }
     };
@@ -62,10 +60,8 @@ export default function AdminPage() {
       // Kiểm tra nếu lỗi 401 - Unauthorized
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         // Xóa cookie khi token không hợp lệ
-        document.cookie =
-          "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
-        document.cookie =
-          "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+        document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+        document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         router.push("/admin/login");
       }
     } finally {
@@ -122,22 +118,10 @@ export default function AdminPage() {
         </Button>
       </div>
 
-      <EbookTable
-        ebooks={ebooks}
-        onEdit={handleEditEbook}
-        onDeleteSuccess={handleDeleteSuccess}
-      />
+      <EbookTable ebooks={ebooks} onEdit={handleEditEbook} onDeleteSuccess={handleDeleteSuccess} />
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent>
-          {showForm && (
-            <EbookForm
-              ebook={selectedEbook}
-              onSuccess={handleFormSuccess}
-              onCancel={handleFormClose}
-            />
-          )}
-        </DialogContent>
+        <DialogContent>{showForm && <EbookForm ebook={selectedEbook} onSuccess={handleFormSuccess} onCancel={handleFormClose} />}</DialogContent>
       </Dialog>
     </div>
   );

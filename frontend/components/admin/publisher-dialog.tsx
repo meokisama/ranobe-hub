@@ -5,31 +5,11 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { api } from "@/lib/api";
 
@@ -45,9 +25,7 @@ interface Publisher {
 export function PublisherDialog() {
   const [publishers, setPublishers] = useState<Publisher[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [editingPublisher, setEditingPublisher] = useState<Publisher | null>(
-    null
-  );
+  const [editingPublisher, setEditingPublisher] = useState<Publisher | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -148,11 +126,7 @@ export function PublisherDialog() {
                 <FormItem>
                   <FormLabel>Tên nhãn hiệu</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isSubmitting}
-                      className="font-light"
-                    />
+                    <Input {...field} disabled={isSubmitting} className="font-light" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -174,11 +148,7 @@ export function PublisherDialog() {
                 </Button>
               )}
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting
-                  ? "Đang lưu..."
-                  : editingPublisher
-                  ? "Cập nhật"
-                  : "Thêm mới"}
+                {isSubmitting ? "Đang lưu..." : editingPublisher ? "Cập nhật" : "Thêm mới"}
               </Button>
             </div>
           </form>
@@ -198,19 +168,10 @@ export function PublisherDialog() {
                   <TableCell className="font-light">{publisher.name}</TableCell>
                   <TableCell className="text-end">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        onClick={() => handleEdit(publisher)}
-                      >
+                      <Button size="icon" variant="outline" onClick={() => handleEdit(publisher)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="text-red-500"
-                        onClick={() => handleDelete(publisher)}
-                      >
+                      <Button size="icon" variant="outline" className="text-red-500" onClick={() => handleDelete(publisher)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

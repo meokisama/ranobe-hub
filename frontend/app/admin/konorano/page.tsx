@@ -14,9 +14,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 export default function KonoranoAdminPage() {
   const router = useRouter();
   const [konoranos, setKonoranos] = useState<Konorano[]>([]);
-  const [selectedKonorano, setSelectedKonorano] = useState<Konorano | null>(
-    null
-  );
+  const [selectedKonorano, setSelectedKonorano] = useState<Konorano | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
@@ -35,10 +33,8 @@ export default function KonoranoAdminPage() {
       // Kiểm tra nếu lỗi 401 - Unauthorized
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         // Xóa cookie khi token không hợp lệ
-        document.cookie =
-          "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
-        document.cookie =
-          "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+        document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+        document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         router.push("/admin/login");
       }
     } finally {
@@ -83,21 +79,11 @@ export default function KonoranoAdminPage() {
         </Button>
       </div>
 
-      <KonoranoTable
-        konoranos={konoranos}
-        onEdit={handleEditKonorano}
-        onDeleteSuccess={handleDeleteSuccess}
-      />
+      <KonoranoTable konoranos={konoranos} onEdit={handleEditKonorano} onDeleteSuccess={handleDeleteSuccess} />
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent>
-          {showForm && (
-            <KonoranoForm
-              konorano={selectedKonorano}
-              onSuccess={handleFormSuccess}
-              onCancel={handleFormClose}
-            />
-          )}
+          {showForm && <KonoranoForm konorano={selectedKonorano} onSuccess={handleFormSuccess} onCancel={handleFormClose} />}
         </DialogContent>
       </Dialog>
     </div>

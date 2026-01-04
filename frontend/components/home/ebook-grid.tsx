@@ -48,9 +48,7 @@ export function EbookGrid() {
         ebook.illustrator.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
 
-    const matchesPublisher = selectedPublisher
-      ? ebook.publisher._id === selectedPublisher
-      : true;
+    const matchesPublisher = selectedPublisher ? ebook.publisher._id === selectedPublisher : true;
 
     return matchesSearch && matchesPublisher;
   });
@@ -72,8 +70,7 @@ export function EbookGrid() {
     setCurrentPage(page);
     // Smooth scroll to filter section
     if (filterRef.current) {
-      const filterTop =
-        filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
+      const filterTop = filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
       window.scrollTo({
         top: filterTop,
         behavior: "smooth",
@@ -90,11 +87,7 @@ export function EbookGrid() {
   }
 
   if (allEbooks.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        Chưa có ebook nào trong thư viện
-      </div>
-    );
+    return <div className="text-center py-12 text-muted-foreground">Chưa có ebook nào trong thư viện</div>;
   }
 
   return (
@@ -113,12 +106,7 @@ export function EbookGrid() {
         </div>
       </div>
       <div ref={filterRef}>
-        <ContentFilters
-          contentType="ebook"
-          onSearch={setSearchQuery}
-          onSort={setSortOrder}
-          onPublisherFilter={setSelectedPublisher}
-        />
+        <ContentFilters contentType="ebook" onSearch={setSearchQuery} onSort={setSortOrder} onPublisherFilter={setSelectedPublisher} />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-y-10">
         {currentEbooks.map((ebook) => (
@@ -127,11 +115,7 @@ export function EbookGrid() {
       </div>
       {totalPages > 1 && (
         <div className="mt-8">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
         </div>
       )}
     </div>

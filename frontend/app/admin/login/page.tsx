@@ -1,13 +1,7 @@
 "use client";
 
 import { LoginForm } from "@/components/admin/login-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -33,9 +27,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>Đăng nhập Admin</CardTitle>
-          <CardDescription>
-            Nhập mật khẩu để truy cập trang quản trị
-          </CardDescription>
+          <CardDescription>Nhập mật khẩu để truy cập trang quản trị</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm />

@@ -43,9 +43,7 @@ export function KonoranoGrid() {
 
   // Filter konoranos
   const filteredKonoranos = allKonoranos.filter((konorano) => {
-    const matchesSearch = searchQuery
-      ? konorano.name.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
+    const matchesSearch = searchQuery ? konorano.name.toLowerCase().includes(searchQuery.toLowerCase()) : true;
 
     return matchesSearch;
   });
@@ -67,8 +65,7 @@ export function KonoranoGrid() {
     setCurrentPage(page);
     // Smooth scroll to filter section
     if (filterRef.current) {
-      const filterTop =
-        filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
+      const filterTop = filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
       window.scrollTo({
         top: filterTop,
         behavior: "smooth",
@@ -85,11 +82,7 @@ export function KonoranoGrid() {
   }
 
   if (allKonoranos.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        Chưa có konorano nào trong thư viện
-      </div>
-    );
+    return <div className="text-center py-12 text-muted-foreground">Chưa có konorano nào trong thư viện</div>;
   }
 
   return (
@@ -122,20 +115,12 @@ export function KonoranoGrid() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-y-10">
         {currentKonoranos.map((konorano) => (
-          <ContentCard
-            key={konorano._id}
-            contentType="konorano"
-            content={konorano}
-          />
+          <ContentCard key={konorano._id} contentType="konorano" content={konorano} />
         ))}
       </div>
       {totalPages > 1 && (
         <div className="mt-8">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
         </div>
       )}
     </div>

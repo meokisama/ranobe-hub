@@ -141,41 +141,25 @@ export function MagazineGrid() {
       <div className="flex flex-col justify-center items-center gap-8 md:gap-12">
         <div className="font-light border border-orange-300 rounded-lg md:rounded-xl p-4 space-y-3 text-orange-900/90 max-w-4xl backdrop-blur shadow-lg md:shadow-xl shadow-orange-300/30">
           <p>
-            Thị trường tạp chí Light Novel đã suy thoái nhanh chóng kể từ những
-            năm 2010,{" "}
-            <span className="font-bold text-orange-600">「The Sneaker」</span>{" "}
-            (nhà Sneaker Bunko, Kadokawa Shoten) ngừng phát hành vào năm 2011,{" "}
-            <span className="font-bold text-orange-600">
-              「Dengeki Bunko Magazine」
-            </span>{" "}
-            (nhà Dengeki, Media Works nay thuộc Kadokawa) cũng bị ngừng xuất bản
-            từ năm 2020.
+            Thị trường tạp chí Light Novel đã suy thoái nhanh chóng kể từ những năm 2010,{" "}
+            <span className="font-bold text-orange-600">「The Sneaker」</span> (nhà Sneaker Bunko, Kadokawa Shoten) ngừng phát hành vào năm 2011,{" "}
+            <span className="font-bold text-orange-600">「Dengeki Bunko Magazine」</span> (nhà Dengeki, Media Works nay thuộc Kadokawa) cũng bị ngừng
+            xuất bản từ năm 2020.
           </p>
           <p>
-            Và{" "}
-            <span className="font-bold text-orange-600">
-              「Dragon Magazine」
-            </span>{" "}
-            (nhà Fantasia Bunko, Fujimi Shobo thuộc Kadokawa), tạp chí Light
-            Novel duy nhất còn lẻ loi sót lại, cũng đã tuyên bố ngừng xuất bản
-            sau số phát hành cuối cùng của họ vào tháng 05/2025 vừa rồi, ngay
-            sau khi vừa kỉ niệm 35 năm xong.
+            Và <span className="font-bold text-orange-600">「Dragon Magazine」</span> (nhà Fantasia Bunko, Fujimi Shobo thuộc Kadokawa), tạp chí Light
+            Novel duy nhất còn lẻ loi sót lại, cũng đã tuyên bố ngừng xuất bản sau số phát hành cuối cùng của họ vào tháng 05/2025 vừa rồi, ngay sau
+            khi vừa kỉ niệm 35 năm xong.
           </p>
           <p>
-            Để kỉ niệm sự kiện này, chuyên mục chia sẻ tạp chí cũng xin được
-            ngừng lại tại đây.{" "}
+            Để kỉ niệm sự kiện này, chuyên mục chia sẻ tạp chí cũng xin được ngừng lại tại đây.{" "}
             <span className="line-through">
-              Khụ, chứ không phải do mỗi cuốn tạp chí đều nặng xấp xỉ 100MB,
-              tương đương 10 cuốn light novel, server của mình hết lưu nổi nên
-              xóa đâu.
+              Khụ, chứ không phải do mỗi cuốn tạp chí đều nặng xấp xỉ 100MB, tương đương 10 cuốn light novel, server của mình hết lưu nổi nên xóa đâu.
             </span>
           </p>
         </div>
         <Link href="https://ranobe.vn" target="_blank">
-          <Button
-            size="lg"
-            className="cursor-pointer bg-orange-700 hover:bg-orange-800 py-6 text-white shadow-lg md:shadow-xl shadow-orange-300/30"
-          >
+          <Button size="lg" className="cursor-pointer bg-orange-700 hover:bg-orange-800 py-6 text-white shadow-lg md:shadow-xl shadow-orange-300/30">
             Thay vào đó, đọc blog
             <ArrowRight className="size-5" />
           </Button>

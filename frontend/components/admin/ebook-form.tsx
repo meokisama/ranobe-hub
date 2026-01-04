@@ -4,32 +4,15 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
 import { Ebook } from "@/lib/types";
 import Image from "next/image";
 import { PublisherDialog } from "./publisher-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EbookFormProps {
   ebook: Ebook | null;
@@ -46,9 +29,7 @@ const formSchema = z.object({
   name: z.string().min(1, { message: "Tên sách không được để trống" }),
   author: z.string().min(1, { message: "Tên tác giả không được để trống" }),
   illustrator: z.string().optional(),
-  releaseDate: z
-    .string()
-    .min(1, { message: "Ngày phát hành không được để trống" }),
+  releaseDate: z.string().min(1, { message: "Ngày phát hành không được để trống" }),
   publisher: z.string().min(1, { message: "Nhãn hiệu không được để trống" }),
 });
 
@@ -57,9 +38,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
   const [ebookFile, setEbookFile] = useState<File | null>(null);
   const [publishers, setPublishers] = useState<Publisher[]>([]);
   const [coverPreview, setCoverPreview] = useState<string | null>(
-    ebook
-      ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${ebook.coverImage}`
-      : null
+    ebook ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${ebook.coverImage}` : null
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,11 +47,8 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
     defaultValues: {
       name: ebook?.name || "",
       author: ebook?.author || "",
-      illustrator:
-        ebook?.illustrator === "Unknown" ? "" : ebook?.illustrator || "",
-      releaseDate: ebook?.releaseDate
-        ? new Date(ebook.releaseDate).toISOString().split("T")[0]
-        : "",
+      illustrator: ebook?.illustrator === "Unknown" ? "" : ebook?.illustrator || "",
+      releaseDate: ebook?.releaseDate ? new Date(ebook.releaseDate).toISOString().split("T")[0] : "",
       publisher: ebook?.publisher._id || "",
     },
   });
@@ -187,16 +163,9 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
             <div className="w-full md:w-1/2 space-y-4">
               <div className="rounded-md h-full border p-2 aspect-[112/159] relative overflow-hidden">
                 {coverPreview ? (
-                  <Image
-                    src={coverPreview}
-                    alt="Cover preview"
-                    fill
-                    className="object-cover"
-                  />
+                  <Image src={coverPreview} alt="Cover preview" fill className="object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted">
-                    Chưa có ảnh bìa
-                  </div>
+                  <div className="w-full h-full flex items-center justify-center bg-muted">Chưa có ảnh bìa</div>
                 )}
               </div>
             </div>
@@ -209,11 +178,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                   <FormItem>
                     <FormLabel>Tên sách</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        disabled={isSubmitting}
-                        className="font-['Yu_Mincho']"
-                      />
+                      <Input {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -227,11 +192,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                   <FormItem>
                     <FormLabel>Tác giả</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        disabled={isSubmitting}
-                        className="font-['Yu_Mincho']"
-                      />
+                      <Input {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -245,11 +206,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                   <FormItem>
                     <FormLabel>Họa sĩ (không bắt buộc)</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        disabled={isSubmitting}
-                        className="font-['Yu_Mincho']"
-                      />
+                      <Input {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -278,20 +235,13 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                     <FormLabel>Nhãn hiệu</FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={isSubmitting}
-                        >
+                        <Select value={field.value} onValueChange={field.onChange} disabled={isSubmitting}>
                           <SelectTrigger>
                             <SelectValue placeholder="Chọn nhãn hiệu" />
                           </SelectTrigger>
                           <SelectContent>
                             {publishers.map((publisher) => (
-                              <SelectItem
-                                key={publisher._id}
-                                value={publisher._id}
-                              >
+                              <SelectItem key={publisher._id} value={publisher._id}>
                                 {publisher.name}
                               </SelectItem>
                             ))}
@@ -306,51 +256,22 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
               />
 
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  {coverPreview ? "Thay đổi ảnh bìa" : "Tải lên ảnh bìa"}
-                </label>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCoverChange}
-                  disabled={isSubmitting}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Định dạng: JPG, PNG, GIF
-                </p>
+                <label className="block text-sm font-medium mb-1">{coverPreview ? "Thay đổi ảnh bìa" : "Tải lên ảnh bìa"}</label>
+                <Input type="file" accept="image/*" onChange={handleCoverChange} disabled={isSubmitting} />
+                <p className="text-xs text-muted-foreground mt-1">Định dạng: JPG, PNG, GIF</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  {ebook
-                    ? "Thay đổi file ebook (không bắt buộc)"
-                    : "Tải lên file ebook"}
-                </label>
-                <Input
-                  type="file"
-                  accept=".epub,.pdf"
-                  onChange={handleEbookChange}
-                  disabled={isSubmitting}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Định dạng: EPUB, PDF
-                </p>
-                {ebook && (
-                  <p className="text-xs font-medium mt-2">
-                    File hiện tại: {ebook.filePath}
-                  </p>
-                )}
+                <label className="block text-sm font-medium mb-1">{ebook ? "Thay đổi file ebook (không bắt buộc)" : "Tải lên file ebook"}</label>
+                <Input type="file" accept=".epub,.pdf" onChange={handleEbookChange} disabled={isSubmitting} />
+                <p className="text-xs text-muted-foreground mt-1">Định dạng: EPUB, PDF</p>
+                {ebook && <p className="text-xs font-medium mt-2">File hiện tại: {ebook.filePath}</p>}
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               Hủy
             </Button>
             <Button type="submit" disabled={isSubmitting}>

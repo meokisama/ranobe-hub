@@ -17,6 +17,14 @@ const { apiLimiter, uploadLimiter } = require("./middleware/security");
 const app = express();
 const port = process.env.PORT || 3001;
 
+// CORS configuration
+app.use(
+  cors({
+    origin: ["https://hub.ranobe.vn", process.env.FRONTEND_URL],
+    credentials: true,
+  })
+);
+
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
@@ -29,14 +37,6 @@ app.use(
       }
       return compression.filter(req, res);
     },
-  })
-);
-
-// CORS configuration
-app.use(
-  cors({
-    origin: ["https://hub.ranobe.vn", process.env.FRONTEND_URL],
-    credentials: true,
   })
 );
 
@@ -70,10 +70,7 @@ app.use("/api/subscribers", subscriberRoutes);
 
 // Serve reader
 app.use("/reader", express.static(path.join(__dirname, "reader")));
-app.use(
-  "/uploads/covers",
-  express.static(path.join(__dirname, "uploads", "covers"))
-);
+app.use("/uploads/covers", express.static(path.join(__dirname, "uploads", "covers")));
 
 app.use("/uploads/ebooks", (req, res, next) => {
   const referer = req.get("referer");
@@ -83,16 +80,8 @@ app.use("/uploads/ebooks", (req, res, next) => {
   try {
     const refererUrl = new URL(referer);
     const host = req.get("host");
-    if (
-      refererUrl.host === host &&
-      (refererUrl.pathname.startsWith("/reader") ||
-        refererUrl.pathname.startsWith("/admin"))
-    ) {
-      return express.static(path.join(__dirname, "uploads", "ebooks"))(
-        req,
-        res,
-        next
-      );
+    if (refererUrl.host === host && (refererUrl.pathname.startsWith("/reader") || refererUrl.pathname.startsWith("/admin"))) {
+      return express.static(path.join(__dirname, "uploads", "ebooks"))(req, res, next);
     }
   } catch (error) {
     console.error("Invalid referer URL:", error);

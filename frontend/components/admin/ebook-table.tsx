@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye } from "lucide-react";
 import { Ebook } from "@/lib/types";
@@ -35,11 +28,7 @@ interface EbookTableProps {
   onDeleteSuccess: () => void;
 }
 
-export function EbookTable({
-  ebooks: initialEbooks,
-  onEdit,
-  onDeleteSuccess,
-}: EbookTableProps) {
+export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess }: EbookTableProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [ebookToDelete, setEbookToDelete] = useState<Ebook | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -80,9 +69,7 @@ export function EbookTable({
         ebook.illustrator.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
 
-    const matchesPublisher = selectedPublisher
-      ? ebook.publisher._id === selectedPublisher
-      : true;
+    const matchesPublisher = selectedPublisher ? ebook.publisher._id === selectedPublisher : true;
 
     return matchesSearch && matchesPublisher;
   });
@@ -111,9 +98,7 @@ export function EbookTable({
       });
       onDeleteSuccess();
       // Update local state after deletion
-      setAllEbooks(
-        allEbooks.filter((ebook) => ebook._id !== ebookToDelete._id)
-      );
+      setAllEbooks(allEbooks.filter((ebook) => ebook._id !== ebookToDelete._id));
     } catch (error) {
       console.error("Lỗi khi xóa ebook:", error);
       toast.error("Lỗi", {
@@ -135,8 +120,7 @@ export function EbookTable({
     setCurrentPage(page);
     // Smooth scroll to filter section
     if (filterRef.current) {
-      const filterTop =
-        filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
+      const filterTop = filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
       window.scrollTo({
         top: filterTop,
         behavior: "smooth",
@@ -145,22 +129,13 @@ export function EbookTable({
   };
 
   if (allEbooks.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        Chưa có ebook nào trong thư viện
-      </div>
-    );
+    return <div className="text-center py-12 text-muted-foreground">Chưa có ebook nào trong thư viện</div>;
   }
 
   return (
     <>
       <div ref={filterRef}>
-        <ContentFilters
-          contentType="ebook"
-          onSearch={setSearchQuery}
-          onSort={setSortOrder}
-          onPublisherFilter={setSelectedPublisher}
-        />
+        <ContentFilters contentType="ebook" onSearch={setSearchQuery} onSort={setSortOrder} onPublisherFilter={setSelectedPublisher} />
       </div>
 
       <div className="rounded-md border">
@@ -189,15 +164,9 @@ export function EbookTable({
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-['Yu_Mincho']">
-                  {ebook.name}
-                </TableCell>
-                <TableCell className="font-['Yu_Mincho']">
-                  {ebook.author}
-                </TableCell>
-                <TableCell className="font-['Yu_Mincho']">
-                  {ebook.illustrator}
-                </TableCell>
+                <TableCell className="font-['Yu_Mincho']">{ebook.name}</TableCell>
+                <TableCell className="font-['Yu_Mincho']">{ebook.author}</TableCell>
+                <TableCell className="font-['Yu_Mincho']">{ebook.illustrator}</TableCell>
                 <TableCell className="font-light text-center">
                   {new Date(ebook.releaseDate).toLocaleDateString("vi-VN", {
                     day: "2-digit",
@@ -205,32 +174,18 @@ export function EbookTable({
                     year: "numeric",
                   })}
                 </TableCell>
-                <TableCell className="font-light">
-                  {ebook.publisher.name}
-                </TableCell>
+                <TableCell className="font-light">{ebook.publisher.name}</TableCell>
                 <TableCell className="text-end">
                   <div className="flex justify-end gap-2">
                     <Button size="icon" variant="outline" asChild>
-                      <Link
-                        href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${ebook.filePath}`}
-                        target="_blank"
-                      >
+                      <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${ebook.filePath}`} target="_blank">
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => onEdit(ebook)}
-                    >
+                    <Button size="icon" variant="outline" onClick={() => onEdit(ebook)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="text-red-500"
-                      onClick={() => openDeleteDialog(ebook)}
-                    >
+                    <Button size="icon" variant="outline" className="text-red-500" onClick={() => openDeleteDialog(ebook)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -243,33 +198,21 @@ export function EbookTable({
 
       {totalPages > 1 && (
         <div className="mt-8">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
         </div>
       )}
 
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa ebook &quot;{ebookToDelete?.name}&quot;?
-              Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa ebook &quot;{ebookToDelete?.name}&quot;? Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-red-500 hover:bg-red-600"
-            >
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-red-500 hover:bg-red-600">
               {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye, ExternalLink } from "lucide-react";
 import { Konorano } from "@/lib/types";
@@ -35,19 +28,13 @@ interface KonoranoTableProps {
   onDeleteSuccess: () => void;
 }
 
-export function KonoranoTable({
-  konoranos,
-  onEdit,
-  onDeleteSuccess,
-}: KonoranoTableProps) {
+export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess }: KonoranoTableProps) {
   const [allKonoranos, setAllKonoranos] = useState<Konorano[]>(konoranos);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [konoranoToDelete, setKonoranoToDelete] = useState<Konorano | null>(
-    null
-  );
+  const [konoranoToDelete, setKonoranoToDelete] = useState<Konorano | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const itemsPerPage = 10;
 
@@ -62,9 +49,7 @@ export function KonoranoTable({
 
   // Filter konoranos
   const filteredKonoranos = allKonoranos.filter((konorano) => {
-    const matchesSearch = searchQuery
-      ? konorano.name.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
+    const matchesSearch = searchQuery ? konorano.name.toLowerCase().includes(searchQuery.toLowerCase()) : true;
 
     return matchesSearch;
   });
@@ -124,11 +109,7 @@ export function KonoranoTable({
 
   return (
     <div className="space-y-4">
-      <ContentFilters
-        contentType="konorano"
-        onSearch={setSearchQuery}
-        onSort={setSortOrder}
-      />
+      <ContentFilters contentType="konorano" onSearch={setSearchQuery} onSort={setSortOrder} />
 
       <div className="rounded-md border">
         <Table>
@@ -155,15 +136,9 @@ export function KonoranoTable({
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-['Yu_Mincho']">
-                  {konorano.name}
-                </TableCell>
-                <TableCell className="font-['Yu_Mincho']">
-                  {konorano.author}
-                </TableCell>
-                <TableCell className="text-center">
-                  {formatDate(konorano.releaseDate)}
-                </TableCell>
+                <TableCell className="font-['Yu_Mincho']">{konorano.name}</TableCell>
+                <TableCell className="font-['Yu_Mincho']">{konorano.author}</TableCell>
+                <TableCell className="text-center">{formatDate(konorano.releaseDate)}</TableCell>
                 <TableCell>
                   <Button size="icon" variant="outline" asChild>
                     <Link href={konorano.viURL} target="_blank">
@@ -174,26 +149,14 @@ export function KonoranoTable({
                 <TableCell className="text-end">
                   <div className="flex justify-end gap-2">
                     <Button size="icon" variant="outline" asChild>
-                      <Link
-                        href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${konorano.filePath}`}
-                        target="_blank"
-                      >
+                      <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${konorano.filePath}`} target="_blank">
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => onEdit(konorano)}
-                    >
+                    <Button size="icon" variant="outline" onClick={() => onEdit(konorano)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="text-red-500"
-                      onClick={() => openDeleteDialog(konorano)}
-                    >
+                    <Button size="icon" variant="outline" className="text-red-500" onClick={() => openDeleteDialog(konorano)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -206,11 +169,7 @@ export function KonoranoTable({
 
       {totalPages > 1 && (
         <div className="mt-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
         </div>
       )}
 
@@ -219,17 +178,12 @@ export function KonoranoTable({
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa &quot;{konoranoToDelete?.name}&quot;?
-              Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa &quot;{konoranoToDelete?.name}&quot;? Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-red-500 hover:bg-red-600"
-            >
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-red-500 hover:bg-red-600">
               {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>
