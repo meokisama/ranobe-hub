@@ -51,7 +51,7 @@ const validateEmailQuery = [query("email").trim().notEmpty().withMessage("Email 
 // Validation cho pagination
 const validatePagination = [
   query("page").optional().isInt({ min: 1 }).withMessage("Page phải là số nguyên dương").toInt(),
-  query("limit").optional().isInt({ min: 1, max: 100 }).withMessage("Limit phải từ 1-100").toInt(),
+  query("limit").optional().isInt({ min: 1, max: 1000 }).withMessage("Limit phải từ 1-1000").toInt(),
   handleValidationErrors,
 ];
 
