@@ -22,7 +22,7 @@ export function EbookGrid() {
     const fetchEbooks = async () => {
       try {
         setLoading(true);
-        const res = await api.get("/ebooks");
+        const res = await api.get("/ebooks?limit=1000");
         setAllEbooks(res.data.ebooks);
       } catch (err) {
         console.error("Lỗi khi tải danh sách ebook:", err);

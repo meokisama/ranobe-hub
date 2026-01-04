@@ -26,7 +26,7 @@ export default function KonoranoAdminPage() {
   const fetchKonoranos = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/konoranos");
+      const res = await api.get("/konoranos?limit=1000");
       setKonoranos(res.data.konoranos);
     } catch (err) {
       console.error("Lỗi khi tải danh sách konorano:", err);

@@ -43,7 +43,7 @@ export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess }: E
   useEffect(() => {
     const fetchEbooks = async () => {
       try {
-        const res = await api.get("/ebooks");
+        const res = await api.get("/ebooks?limit=1000");
         setAllEbooks(res.data.ebooks);
       } catch (error) {
         console.error("Lỗi khi tải danh sách ebook:", error);
