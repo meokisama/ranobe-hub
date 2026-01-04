@@ -54,7 +54,7 @@ export default function AdminPage() {
     try {
       setLoading(true);
       const res = await api.get("/ebooks");
-      setEbooks(res.data);
+      setEbooks(res.data.ebooks);
     } catch (err) {
       console.error("Lỗi khi tải danh sách ebook:", err);
       // Kiểm tra nếu lỗi 401 - Unauthorized

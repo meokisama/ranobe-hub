@@ -24,7 +24,7 @@ export function KonoranoGrid() {
       try {
         setLoading(true);
         const res = await api.get("/konoranos");
-        setAllKonoranos(res.data);
+        setAllKonoranos(res.data.konoranos);
       } catch (err) {
         console.error("Lỗi khi tải danh sách konorano:", err);
         setError("Không thể tải danh sách konorano");

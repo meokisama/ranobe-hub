@@ -27,7 +27,7 @@ export default function KonoranoAdminPage() {
     try {
       setLoading(true);
       const res = await api.get("/konoranos");
-      setKonoranos(res.data);
+      setKonoranos(res.data.konoranos);
     } catch (err) {
       console.error("Lỗi khi tải danh sách konorano:", err);
       // Kiểm tra nếu lỗi 401 - Unauthorized
