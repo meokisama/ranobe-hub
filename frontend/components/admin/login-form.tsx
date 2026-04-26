@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { api, getCsrfToken } from "@/lib/api";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 
 const formSchema = z.object({
@@ -28,17 +28,9 @@ export function LoginForm() {
     },
   });
 
-  // Lấy CSRF token khi component mount
-  useEffect(() => {
-    getCsrfToken();
-  }, []);
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsLoading(true);
-      // Đảm bảo có CSRF token trước khi đăng nhập
-      await getCsrfToken();
-
       const res = await api.post("/admin/login", { password: values.password });
 
       // Lưu token và thời gian hết hạn vào cookie

@@ -6,13 +6,6 @@ const config = require("../config/config");
 const { loginLimiter } = require("../middleware/security");
 const adminAuth = require("../middleware/adminAuth");
 
-// @route   GET api/admin/csrf-token
-// @desc    Lấy CSRF token
-// @access  Public
-router.get("/csrf-token", (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
-});
-
 // @route   POST api/admin/login
 // @desc    Đăng nhập admin
 // @access  Public

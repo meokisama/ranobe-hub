@@ -3,8 +3,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const csrf = require("csurf");
-const cookieParser = require("cookie-parser");
 const compression = require("compression");
 const ebookRoutes = require("./routes/ebookRoutes");
 const konoranoRoutes = require("./routes/konoranoRoutes");
@@ -47,7 +45,6 @@ app.use(
 // Middleware
 app.use(express.json({ limit: "10mb" })); // Limit request body size
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(cookieParser());
 app.use(
   compression({
     threshold: 1024, // Chỉ nén các response > 1KB
@@ -59,18 +56,6 @@ app.use(
     },
   })
 );
-
-// CSRF protection
-const csrfProtection = csrf({
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  },
-});
-
-// Áp dụng CSRF protection cho các route admin
-app.use("/api/admin", csrfProtection);
 
 // Connect to MongoDB
 connectDB();
@@ -124,12 +109,6 @@ app.get("/reader/*", (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  if (err.code === "EBADCSRFTOKEN") {
-    return res.status(403).json({
-      msg: "CSRF token không hợp lệ",
-    });
-  }
-
   if (err.message === "Not allowed by CORS") {
     return res.status(403).json({
       msg: "CORS policy violation",
