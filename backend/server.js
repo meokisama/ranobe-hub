@@ -88,6 +88,7 @@ app.use("/uploads/ebooks", (req, res, next) => {
     const refererUrl = new URL(referer);
     const host = req.get("host");
     if (refererUrl.host === host && (refererUrl.pathname.startsWith("/reader") || refererUrl.pathname.startsWith("/admin"))) {
+      if (!path.extname(req.path)) req.url += ".epub";
       return express.static(path.join(__dirname, "uploads", "ebooks"))(req, res, next);
     }
   } catch (error) {

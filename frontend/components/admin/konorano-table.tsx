@@ -149,7 +149,7 @@ export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess }: KonoranoTa
                 <TableCell className="text-end">
                   <div className="flex justify-end gap-2">
                     <Button size="icon" variant="outline" asChild>
-                      <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${konorano.filePath}`} target="_blank">
+                      <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${konorano.filePath.replace(/\.epub$/i, "")}`} target="_blank">
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>

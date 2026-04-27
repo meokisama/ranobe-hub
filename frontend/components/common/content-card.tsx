@@ -14,7 +14,7 @@ export function ContentCard(props: ContentCardProps) {
   const coverImage = content.coverImage;
   const name = content.name;
   const author = content.author;
-  const filePath = content.filePath;
+  const filePath = content.filePath.replace(/\.epub$/i, "");
 
   // Ebook-specific properties
   const illustrator = isEbook ? (content as Ebook).illustrator : null;
