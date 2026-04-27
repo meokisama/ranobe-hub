@@ -107,7 +107,7 @@ Bibi.preset({
   //-- System
   //----------------------------------------------------------------------------------------------------------------------------------------------
 
-  "extract-if-necessary": "*", // File extensions of the book specified in URL, which you want Bibi to try to extract first. (More info is <02> at the bottom of this preset file.)
+  "extract-if-necessary": ["*"], // File extensions of the book specified in URL, which you want Bibi to try to extract first. (More info is <02> at the bottom of this preset file.)
 
   "default-page-progression-direction": "ltr", // "ltr" or "rtl". Most of EPUBs have right property in itself, but....
 

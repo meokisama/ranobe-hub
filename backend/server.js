@@ -79,6 +79,8 @@ app.use("/api/subscribers", subscriberRoutes);
 app.use("/reader", express.static(path.join(__dirname, "reader")));
 app.use("/uploads/covers", express.static(path.join(__dirname, "uploads", "covers")));
 
+const ebookStatic = express.static(path.join(__dirname, "uploads", "ebooks"));
+
 app.use("/uploads/ebooks", (req, res, next) => {
   const referer = req.get("referer");
   if (!referer) {
@@ -88,8 +90,13 @@ app.use("/uploads/ebooks", (req, res, next) => {
     const refererUrl = new URL(referer);
     const host = req.get("host");
     if (refererUrl.host === host && (refererUrl.pathname.startsWith("/reader") || refererUrl.pathname.startsWith("/admin"))) {
-      if (!path.extname(req.path)) req.url += ".epub";
-      return express.static(path.join(__dirname, "uploads", "ebooks"))(req, res, next);
+      if (!path.extname(req.path)) {
+        const queryIdx = req.url.indexOf("?");
+        req.url = queryIdx === -1
+          ? req.url + ".epub"
+          : req.url.slice(0, queryIdx) + ".epub" + req.url.slice(queryIdx);
+      }
+      return ebookStatic(req, res, next);
     }
   } catch (error) {
     console.error("Invalid referer URL:", error);
