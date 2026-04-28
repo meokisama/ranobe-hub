@@ -1,17 +1,12 @@
-const Ebook = require("../models/Ebook");
-const Publisher = require("../models/Publisher");
-const { clearCache } = require("../middleware/cache");
-const { sendNotification } = require("./subscriberController");
-const { deleteOldFile } = require("../utils/fileManager");
-const {
-  serverErrorResponse,
-  notFoundResponse,
-  validationErrorResponse,
-  handleObjectIdError,
-} = require("../utils/errorHandler");
+import Ebook from "../models/Ebook.js";
+import Publisher from "../models/Publisher.js";
+import { clearCache } from "../middleware/cache.js";
+import { sendNotification } from "./subscriberController.js";
+import { deleteOldFile } from "../utils/fileManager.js";
+import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
 // Lấy tất cả ebook (với pagination)
-exports.getAllEbooks = async (req, res) => {
+export const getAllEbooks = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -37,7 +32,7 @@ exports.getAllEbooks = async (req, res) => {
 };
 
 // Lấy ebook theo ID
-exports.getEbookById = async (req, res) => {
+export const getEbookById = async (req, res) => {
   try {
     const ebook = await Ebook.findById(req.params.id).populate("publisher", "name");
     if (!ebook) {
@@ -53,7 +48,7 @@ exports.getEbookById = async (req, res) => {
 };
 
 // Tạo ebook mới
-exports.createEbook = async (req, res) => {
+export const createEbook = async (req, res) => {
   try {
     const { name, author, illustrator, releaseDate, publisher } = req.body;
 
@@ -100,7 +95,7 @@ exports.createEbook = async (req, res) => {
 };
 
 // Cập nhật ebook
-exports.updateEbook = async (req, res) => {
+export const updateEbook = async (req, res) => {
   try {
     const { name, author, illustrator, releaseDate, publisher } = req.body;
 
@@ -145,10 +140,7 @@ exports.updateEbook = async (req, res) => {
       await deleteOldFile(existingEbook.filePath, "ebooks");
     }
 
-    const updatedEbook = await Ebook.findByIdAndUpdate(req.params.id, { $set: ebookFields }, { new: true }).populate(
-      "publisher",
-      "name"
-    );
+    const updatedEbook = await Ebook.findByIdAndUpdate(req.params.id, { $set: ebookFields }, { new: true }).populate("publisher", "name");
 
     // Xóa cache cụ thể
     await clearCache("cache:/api/ebooks");
@@ -165,7 +157,7 @@ exports.updateEbook = async (req, res) => {
 };
 
 // Xóa ebook
-exports.deleteEbook = async (req, res) => {
+export const deleteEbook = async (req, res) => {
   try {
     const ebook = await Ebook.findById(req.params.id);
     if (!ebook) {

@@ -5,7 +5,7 @@
  * @param {string} message - Error message
  * @param {object} details - Optional error details
  */
-function errorResponse(res, status, message, details = null) {
+export function errorResponse(res, status, message, details = null) {
   const response = { msg: message };
   if (details) {
     response.details = details;
@@ -18,7 +18,7 @@ function errorResponse(res, status, message, details = null) {
  * @param {object} res - Express response object
  * @param {string} resourceName - Tên resource (ebook, konorano, etc.)
  */
-function notFoundResponse(res, resourceName = "Resource") {
+export function notFoundResponse(res, resourceName = "Resource") {
   return errorResponse(res, 404, `Không tìm thấy ${resourceName}`);
 }
 
@@ -28,7 +28,7 @@ function notFoundResponse(res, resourceName = "Resource") {
  * @param {object} err - Error object
  * @param {string} customMessage - Custom error message
  */
-function serverErrorResponse(res, err, customMessage = "Lỗi server") {
+export function serverErrorResponse(res, err, customMessage = "Lỗi server") {
   console.error("Server Error:", err.message || err);
   if (err.stack) {
     console.error(err.stack);
@@ -41,7 +41,7 @@ function serverErrorResponse(res, err, customMessage = "Lỗi server") {
  * @param {object} res - Express response object
  * @param {string} message - Validation error message
  */
-function validationErrorResponse(res, message) {
+export function validationErrorResponse(res, message) {
   return errorResponse(res, 400, message);
 }
 
@@ -52,18 +52,10 @@ function validationErrorResponse(res, message) {
  * @param {string} resourceName - Tên resource
  * @returns {boolean} - True nếu là lỗi ObjectId
  */
-function handleObjectIdError(err, res, resourceName = "Resource") {
+export function handleObjectIdError(err, res, resourceName = "Resource") {
   if (err.kind === "ObjectId" || err.name === "CastError") {
     notFoundResponse(res, resourceName);
     return true;
   }
   return false;
 }
-
-module.exports = {
-  errorResponse,
-  notFoundResponse,
-  serverErrorResponse,
-  validationErrorResponse,
-  handleObjectIdError,
-};

@@ -1,14 +1,11 @@
-const express = require("express");
+import express from "express";
+import adminAuth from "../middleware/adminAuth.js";
+import * as konoranoController from "../controllers/konoranoController.js";
+import { cache } from "../middleware/cache.js";
+import { createUploadMiddleware, konoranoUploadConfig } from "../utils/multerConfig.js";
+import { validateKonorano, validateObjectId, validatePagination } from "../middleware/validation.js";
+
 const router = express.Router();
-const adminAuth = require("../middleware/adminAuth");
-const konoranoController = require("../controllers/konoranoController");
-const { cache } = require("../middleware/cache");
-const { createUploadMiddleware, konoranoUploadConfig } = require("../utils/multerConfig");
-const {
-  validateKonorano,
-  validateObjectId,
-  validatePagination,
-} = require("../middleware/validation");
 
 // Tạo upload middleware từ config
 const uploadFields = createUploadMiddleware(konoranoUploadConfig);
@@ -38,4 +35,4 @@ router.put("/:id", [adminAuth, validateObjectId, uploadFields, validateKonorano]
 // @access  Admin
 router.delete("/:id", [adminAuth, validateObjectId], konoranoController.deleteKonorano);
 
-module.exports = router;
+export default router;

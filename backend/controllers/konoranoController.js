@@ -1,16 +1,11 @@
-const Konorano = require("../models/Konorano");
-const { clearCache } = require("../middleware/cache");
-const { sendNotification } = require("./subscriberController");
-const { deleteOldFile } = require("../utils/fileManager");
-const {
-  serverErrorResponse,
-  notFoundResponse,
-  validationErrorResponse,
-  handleObjectIdError,
-} = require("../utils/errorHandler");
+import Konorano from "../models/Konorano.js";
+import { clearCache } from "../middleware/cache.js";
+import { sendNotification } from "./subscriberController.js";
+import { deleteOldFile } from "../utils/fileManager.js";
+import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
 // Lấy tất cả konorano (với pagination)
-exports.getAllKonoranos = async (req, res) => {
+export const getAllKonoranos = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -36,7 +31,7 @@ exports.getAllKonoranos = async (req, res) => {
 };
 
 // Lấy konorano theo ID
-exports.getKonoranoById = async (req, res) => {
+export const getKonoranoById = async (req, res) => {
   try {
     const konorano = await Konorano.findById(req.params.id);
     if (!konorano) {
@@ -52,7 +47,7 @@ exports.getKonoranoById = async (req, res) => {
 };
 
 // Tạo konorano mới
-exports.createKonorano = async (req, res) => {
+export const createKonorano = async (req, res) => {
   try {
     const { name, author, releaseDate, viURL } = req.body;
 
@@ -89,7 +84,7 @@ exports.createKonorano = async (req, res) => {
 };
 
 // Cập nhật konorano
-exports.updateKonorano = async (req, res) => {
+export const updateKonorano = async (req, res) => {
   try {
     const { name, author, releaseDate, viURL } = req.body;
 
@@ -131,11 +126,7 @@ exports.updateKonorano = async (req, res) => {
       await deleteOldFile(existingKonorano.filePath, "ebooks");
     }
 
-    const updatedKonorano = await Konorano.findByIdAndUpdate(
-      req.params.id,
-      { $set: konoranoFields },
-      { new: true }
-    );
+    const updatedKonorano = await Konorano.findByIdAndUpdate(req.params.id, { $set: konoranoFields }, { new: true });
 
     // Xóa cache cụ thể
     await clearCache("cache:/api/konoranos");
@@ -152,7 +143,7 @@ exports.updateKonorano = async (req, res) => {
 };
 
 // Xóa konorano
-exports.deleteKonorano = async (req, res) => {
+export const deleteKonorano = async (req, res) => {
   try {
     const konorano = await Konorano.findById(req.params.id);
     if (!konorano) {

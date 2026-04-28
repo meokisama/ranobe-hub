@@ -1,10 +1,11 @@
-const express = require("express");
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import config from "../config/config.js";
+import { loginLimiter } from "../middleware/security.js";
+import adminAuth from "../middleware/adminAuth.js";
+
 const router = express.Router();
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const config = require("../config/config");
-const { loginLimiter } = require("../middleware/security");
-const adminAuth = require("../middleware/adminAuth");
 
 // @route   POST api/admin/login
 // @desc    Đăng nhập admin
@@ -40,4 +41,4 @@ router.get("/verify", adminAuth, (req, res) => {
   res.json({ msg: "Token hợp lệ" });
 });
 
-module.exports = router;
+export default router;

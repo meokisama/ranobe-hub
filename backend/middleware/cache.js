@@ -1,6 +1,6 @@
-const redisClient = require("../config/redis");
+import redisClient from "../config/redis.js";
 
-const cache = (duration) => {
+export const cache = (duration) => {
   return async (req, res, next) => {
     // Chỉ cache GET requests
     if (req.method !== "GET") {
@@ -33,7 +33,7 @@ const cache = (duration) => {
 };
 
 // Hàm xóa cache
-const clearCache = async (pattern) => {
+export const clearCache = async (pattern) => {
   try {
     const keys = await redisClient.keys(pattern);
     if (keys.length > 0) {
@@ -43,9 +43,4 @@ const clearCache = async (pattern) => {
   } catch (error) {
     console.error("Error clearing cache:", error);
   }
-};
-
-module.exports = {
-  cache,
-  clearCache,
 };

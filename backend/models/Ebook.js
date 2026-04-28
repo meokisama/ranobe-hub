@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const EbookSchema = new mongoose.Schema({
   name: {
@@ -48,4 +48,4 @@ EbookSchema.index({ publisher: 1 });
 EbookSchema.index({ createdAt: -1 });
 EbookSchema.index({ releaseDate: -1 });
 
-module.exports = mongoose.model("Ebook", EbookSchema);
+export default mongoose.model("Ebook", EbookSchema);

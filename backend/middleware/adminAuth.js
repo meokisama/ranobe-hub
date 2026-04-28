@@ -1,7 +1,7 @@
-const jwt = require("jsonwebtoken");
-const config = require("../config/config");
+import jwt from "jsonwebtoken";
+import config from "../config/config.js";
 
-module.exports = function (req, res, next) {
+export default function (req, res, next) {
   const adminToken = req.header("x-admin-token");
 
   if (!adminToken) {
@@ -16,4 +16,4 @@ module.exports = function (req, res, next) {
   } catch (err) {
     res.status(401).json({ msg: "Token không hợp lệ hoặc đã hết hạn" });
   }
-};
+}

@@ -1,6 +1,9 @@
-const multer = require("multer");
-const path = require("path");
-const { v4: uuidv4 } = require("uuid");
+import multer from "multer";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { v4 as uuidv4 } from "uuid";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Tạo multer storage configuration
@@ -55,7 +58,7 @@ function createFileFilter(allowedTypes) {
  * @param {array} config.fields - Array of field configurations for upload.fields()
  * @returns {multer.Multer} - Configured multer instance
  */
-function createUploadMiddleware(config) {
+export function createUploadMiddleware(config) {
   const { fieldMapping, allowedTypes, fields } = config;
 
   const storage = createStorage(fieldMapping);
@@ -72,7 +75,7 @@ function createUploadMiddleware(config) {
 /**
  * Cấu hình upload cho Ebook
  */
-const ebookUploadConfig = {
+export const ebookUploadConfig = {
   fieldMapping: {
     cover: "covers",
     ebook: "ebooks",
@@ -90,7 +93,7 @@ const ebookUploadConfig = {
 /**
  * Cấu hình upload cho Konorano
  */
-const konoranoUploadConfig = {
+export const konoranoUploadConfig = {
   fieldMapping: {
     cover: "covers",
     konorano: "ebooks",
@@ -103,10 +106,4 @@ const konoranoUploadConfig = {
     { name: "cover", maxCount: 1 },
     { name: "konorano", maxCount: 1 },
   ],
-};
-
-module.exports = {
-  createUploadMiddleware,
-  ebookUploadConfig,
-  konoranoUploadConfig,
 };

@@ -1,12 +1,15 @@
-const fs = require("fs").promises;
-const path = require("path");
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Xóa file nếu tồn tại (async version)
  * @param {string} filePath - Đường dẫn tuyệt đối đến file
  * @returns {Promise<boolean>} - True nếu xóa thành công hoặc file không tồn tại, false nếu có lỗi
  */
-async function deleteFileIfExists(filePath) {
+export async function deleteFileIfExists(filePath) {
   try {
     await fs.unlink(filePath);
     console.log(`Deleted file: ${filePath}`);
@@ -28,7 +31,7 @@ async function deleteFileIfExists(filePath) {
  * @param {string} defaultFilename - Tên file mặc định (không xóa nếu trùng)
  * @returns {Promise<boolean>}
  */
-async function deleteOldFile(filename, uploadType = "ebooks", defaultFilename = null) {
+export async function deleteOldFile(filename, uploadType = "ebooks", defaultFilename = null) {
   if (defaultFilename && filename === defaultFilename) {
     return true; // Không xóa file mặc định
   }
@@ -42,7 +45,7 @@ async function deleteOldFile(filename, uploadType = "ebooks", defaultFilename = 
  * @param {string} dirPath - Đường dẫn thư mục
  * @returns {Promise<boolean>}
  */
-async function createDirIfNotExists(dirPath) {
+export async function createDirIfNotExists(dirPath) {
   try {
     await fs.mkdir(dirPath, { recursive: true });
     console.log(`Ensured directory exists: ${dirPath}`);
@@ -57,7 +60,7 @@ async function createDirIfNotExists(dirPath) {
  * Tạo tất cả thư mục upload cần thiết
  * @returns {Promise<void>}
  */
-async function initializeUploadDirs() {
+export async function initializeUploadDirs() {
   const baseDir = path.join(__dirname, "../uploads");
   const dirs = [baseDir, path.join(baseDir, "covers"), path.join(baseDir, "ebooks")];
 
@@ -65,10 +68,3 @@ async function initializeUploadDirs() {
     await createDirIfNotExists(dir);
   }
 }
-
-module.exports = {
-  deleteFileIfExists,
-  deleteOldFile,
-  createDirIfNotExists,
-  initializeUploadDirs,
-};

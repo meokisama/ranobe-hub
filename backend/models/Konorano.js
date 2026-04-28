@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const KonoranoSchema = new mongoose.Schema({
   name: {
@@ -43,4 +43,4 @@ KonoranoSchema.index({ author: 1 });
 KonoranoSchema.index({ createdAt: -1 });
 KonoranoSchema.index({ releaseDate: -1 });
 
-module.exports = mongoose.model("Konorano", KonoranoSchema);
+export default mongoose.model("Konorano", KonoranoSchema);

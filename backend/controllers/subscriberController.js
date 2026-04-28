@@ -1,7 +1,7 @@
-const Subscriber = require("../models/Subscriber");
-const nodemailer = require("nodemailer");
-const { serverErrorResponse, validationErrorResponse, notFoundResponse } = require("../utils/errorHandler");
-const { signUnsubscribeToken, verifyUnsubscribeToken } = require("../utils/unsubscribeToken");
+import nodemailer from "nodemailer";
+import Subscriber from "../models/Subscriber.js";
+import { serverErrorResponse, validationErrorResponse, notFoundResponse } from "../utils/errorHandler.js";
+import { signUnsubscribeToken, verifyUnsubscribeToken } from "../utils/unsubscribeToken.js";
 
 // Cấu hình nodemailer
 const transporter = nodemailer.createTransport({
@@ -73,7 +73,7 @@ const sendConfirmationEmail = async (email, isReactivation = false) => {
 };
 
 // Đăng ký nhận tin
-exports.subscribe = async (req, res) => {
+export const subscribe = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -119,7 +119,7 @@ exports.subscribe = async (req, res) => {
 };
 
 // Hủy đăng ký
-exports.unsubscribe = async (req, res) => {
+export const unsubscribe = async (req, res) => {
   try {
     const { token } = req.query;
 
@@ -154,17 +154,18 @@ exports.unsubscribe = async (req, res) => {
 };
 
 // Gửi thông báo cho tất cả subscribers
-exports.sendNotification = async (bookTitle) => {
+export const sendNotification = async (bookTitle) => {
   try {
     const subscribers = await Subscriber.find({ isActive: true });
 
     // Gửi email song song với Promise.all thay vì tuần tự
     const emailPromises = subscribers.map((subscriber) =>
-      transporter.sendMail({
-        from: `"【Ranobe Hub】Ranobe.vn" <${process.env.EMAIL_USER}>`,
-        to: subscriber.email,
-        subject: "Có sách mới!",
-        html: `
+      transporter
+        .sendMail({
+          from: `"【Ranobe Hub】Ranobe.vn" <${process.env.EMAIL_USER}>`,
+          to: subscriber.email,
+          subject: "Có sách mới!",
+          html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
               <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">Đã đăng tải sách mới!</h1>
               <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -178,9 +179,10 @@ exports.sendNotification = async (bookTitle) => {
               </div>
           </div>
         `,
-      }).catch((err) => {
-        console.error(`Failed to send email to ${subscriber.email}:`, err);
-      })
+        })
+        .catch((err) => {
+          console.error(`Failed to send email to ${subscriber.email}:`, err);
+        }),
     );
 
     await Promise.allSettled(emailPromises);

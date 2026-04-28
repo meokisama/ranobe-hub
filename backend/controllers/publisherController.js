@@ -1,8 +1,8 @@
-const Publisher = require("../models/Publisher");
-const { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } = require("../utils/errorHandler");
+import Publisher from "../models/Publisher.js";
+import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
 // Lấy tất cả nhãn hiệu
-exports.getAllPublishers = async (req, res) => {
+export const getAllPublishers = async (req, res) => {
   try {
     const publishers = await Publisher.find().select("-__v").sort({ name: 1 });
     res.json(publishers);
@@ -12,7 +12,7 @@ exports.getAllPublishers = async (req, res) => {
 };
 
 // Tạo nhãn hiệu mới
-exports.createPublisher = async (req, res) => {
+export const createPublisher = async (req, res) => {
   try {
     const { name } = req.body;
 
@@ -32,7 +32,7 @@ exports.createPublisher = async (req, res) => {
 };
 
 // Cập nhật nhãn hiệu
-exports.updatePublisher = async (req, res) => {
+export const updatePublisher = async (req, res) => {
   try {
     const { name } = req.body;
 
@@ -51,7 +51,7 @@ exports.updatePublisher = async (req, res) => {
         name,
         updatedAt: Date.now(),
       },
-      { new: true }
+      { new: true },
     );
 
     if (!publisher) {
@@ -68,7 +68,7 @@ exports.updatePublisher = async (req, res) => {
 };
 
 // Xóa nhãn hiệu
-exports.deletePublisher = async (req, res) => {
+export const deletePublisher = async (req, res) => {
   try {
     const publisher = await Publisher.findById(req.params.id);
     if (!publisher) {

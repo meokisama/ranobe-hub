@@ -1,17 +1,19 @@
-require("dotenv").config();
+import "dotenv/config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import express from "express";
+import cors from "cors";
+import compression from "compression";
+import ebookRoutes from "./routes/ebookRoutes.js";
+import konoranoRoutes from "./routes/konoranoRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import publisherRoutes from "./routes/publisherRoutes.js";
+import subscriberRoutes from "./routes/subscriberRoutes.js";
+import connectDB from "./config/db.js";
+import { apiLimiter, uploadLimiter } from "./middleware/security.js";
+import { initializeUploadDirs } from "./utils/fileManager.js";
 
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-const compression = require("compression");
-const ebookRoutes = require("./routes/ebookRoutes");
-const konoranoRoutes = require("./routes/konoranoRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const publisherRoutes = require("./routes/publisherRoutes");
-const subscriberRoutes = require("./routes/subscriberRoutes");
-const connectDB = require("./config/db");
-const { apiLimiter, uploadLimiter } = require("./middleware/security");
-const { initializeUploadDirs } = require("./utils/fileManager");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -22,10 +24,7 @@ const port = process.env.PORT || 3001;
 })();
 
 // CORS configuration
-const allowedOrigins = [
-  "https://hub.ranobe.vn",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+const allowedOrigins = ["https://hub.ranobe.vn", process.env.FRONTEND_URL].filter(Boolean);
 
 app.use(
   cors({
@@ -39,7 +38,7 @@ app.use(
       }
     },
     credentials: true,
-  })
+  }),
 );
 
 // Middleware
@@ -54,7 +53,7 @@ app.use(
       }
       return compression.filter(req, res);
     },
-  })
+  }),
 );
 
 // Connect to MongoDB
@@ -92,9 +91,7 @@ app.use("/uploads/ebooks", (req, res, next) => {
     if (refererUrl.host === host && (refererUrl.pathname.startsWith("/reader") || refererUrl.pathname.startsWith("/admin"))) {
       if (!path.extname(req.path)) {
         const queryIdx = req.url.indexOf("?");
-        req.url = queryIdx === -1
-          ? req.url + ".epub"
-          : req.url.slice(0, queryIdx) + ".epub" + req.url.slice(queryIdx);
+        req.url = queryIdx === -1 ? req.url + ".epub" : req.url.slice(0, queryIdx) + ".epub" + req.url.slice(queryIdx);
       }
       return ebookStatic(req, res, next);
     }

@@ -1,14 +1,11 @@
-const express = require("express");
+import express from "express";
+import adminAuth from "../middleware/adminAuth.js";
+import * as ebookController from "../controllers/ebookController.js";
+import { cache } from "../middleware/cache.js";
+import { createUploadMiddleware, ebookUploadConfig } from "../utils/multerConfig.js";
+import { validateEbook, validateObjectId, validatePagination } from "../middleware/validation.js";
+
 const router = express.Router();
-const adminAuth = require("../middleware/adminAuth");
-const ebookController = require("../controllers/ebookController");
-const { cache } = require("../middleware/cache");
-const { createUploadMiddleware, ebookUploadConfig } = require("../utils/multerConfig");
-const {
-  validateEbook,
-  validateObjectId,
-  validatePagination,
-} = require("../middleware/validation");
 
 // Tạo upload middleware từ config
 const uploadFields = createUploadMiddleware(ebookUploadConfig);
@@ -38,4 +35,4 @@ router.put("/:id", [adminAuth, validateObjectId, uploadFields, validateEbook], e
 // @access  Admin
 router.delete("/:id", [adminAuth, validateObjectId], ebookController.deleteEbook);
 
-module.exports = router;
+export default router;

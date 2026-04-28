@@ -1,7 +1,8 @@
-const express = require("express");
+import express from "express";
+import * as subscriberController from "../controllers/subscriberController.js";
+import { validateSubscriber, validateUnsubscribeToken } from "../middleware/validation.js";
+
 const router = express.Router();
-const subscriberController = require("../controllers/subscriberController");
-const { validateSubscriber, validateUnsubscribeToken } = require("../middleware/validation");
 
 // @route   POST api/subscribers/subscribe
 // @desc    Đăng ký nhận tin
@@ -13,4 +14,4 @@ router.post("/subscribe", validateSubscriber, subscriberController.subscribe);
 // @access  Public
 router.get("/unsubscribe", validateUnsubscribeToken, subscriberController.unsubscribe);
 
-module.exports = router;
+export default router;

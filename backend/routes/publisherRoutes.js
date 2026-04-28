@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import adminAuth from "../middleware/adminAuth.js";
+import * as publisherController from "../controllers/publisherController.js";
+import { validatePublisher, validateObjectId } from "../middleware/validation.js";
+
 const router = express.Router();
-const adminAuth = require("../middleware/adminAuth");
-const publisherController = require("../controllers/publisherController");
-const { validatePublisher, validateObjectId } = require("../middleware/validation");
 
 // @route   GET api/publishers
 // @desc    Lấy tất cả nhãn hiệu
@@ -24,4 +25,4 @@ router.put("/:id", [adminAuth, validateObjectId, validatePublisher], publisherCo
 // @access  Admin
 router.delete("/:id", [adminAuth, validateObjectId], publisherController.deletePublisher);
 
-module.exports = router;
+export default router;
