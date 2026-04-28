@@ -1,6 +1,7 @@
 const Subscriber = require("../models/Subscriber");
 const nodemailer = require("nodemailer");
 const { serverErrorResponse, validationErrorResponse, notFoundResponse } = require("../utils/errorHandler");
+const { signUnsubscribeToken, verifyUnsubscribeToken } = require("../utils/unsubscribeToken");
 
 // Cấu hình nodemailer
 const transporter = nodemailer.createTransport({
@@ -41,6 +42,8 @@ const notifyAdmin = async (subscriberEmail) => {
 // Gửi email xác nhận cho subscriber
 const sendConfirmationEmail = async (email, isReactivation = false) => {
   try {
+    const unsubscribeToken = signUnsubscribeToken(email);
+    const unsubscribeUrl = `${process.env.FRONTEND_URL}/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
     await transporter.sendMail({
       from: `"【Ranobe Hub】Ranobe.vn" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -55,7 +58,7 @@ const sendConfirmationEmail = async (email, isReactivation = false) => {
                 <p style="margin: 15px 0; line-height: 1.6;">Bạn sẽ là người đầu tiên được thông báo khi có sách mới được đăng tải. ( ๑ ˃ᴗ˂)و</p>
                 <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
                     <p style="margin: 0;">Nếu bạn muốn hủy đăng ký, vui lòng click vào link sau:</p>
-                    <a href="${process.env.FRONTEND_URL}/unsubscribe?email=${email}"
+                    <a href="${unsubscribeUrl}"
                        style="display: inline-block; margin-top: 10px; padding: 8px 16px; background-color: #e74c3c; color: white; text-decoration: none; border-radius: 4px;">
                         Hủy đăng ký
                     </a>
@@ -95,7 +98,7 @@ exports.subscribe = async (req, res) => {
         notifyAdmin(email);
       });
 
-      return res.status(200).json({ message: "Đăng ký thành công" });
+      return res.status(200).json({ msg: "Đăng ký thành công" });
     }
 
     // Tạo subscriber mới
@@ -108,7 +111,7 @@ exports.subscribe = async (req, res) => {
       notifyAdmin(email);
     });
 
-    res.status(201).json({ message: "Đăng ký thành công" });
+    res.status(201).json({ msg: "Đăng ký thành công" });
   } catch (error) {
     console.error("Subscribe error:", error);
     return serverErrorResponse(res, error, "Có lỗi xảy ra khi đăng ký");
@@ -118,10 +121,17 @@ exports.subscribe = async (req, res) => {
 // Hủy đăng ký
 exports.unsubscribe = async (req, res) => {
   try {
-    const { email } = req.query;
+    const { token } = req.query;
 
-    if (!email) {
-      return validationErrorResponse(res, "Email không hợp lệ");
+    if (!token) {
+      return validationErrorResponse(res, "Token không hợp lệ");
+    }
+
+    let email;
+    try {
+      email = verifyUnsubscribeToken(token);
+    } catch (err) {
+      return validationErrorResponse(res, "Token không hợp lệ hoặc đã hết hạn");
     }
 
     const subscriber = await Subscriber.findOne({ email });
@@ -136,7 +146,7 @@ exports.unsubscribe = async (req, res) => {
     subscriber.isActive = false;
     await subscriber.save();
 
-    res.json({ message: "Hủy đăng ký thành công" });
+    res.json({ msg: "Hủy đăng ký thành công" });
   } catch (error) {
     console.error("Unsubscribe error:", error);
     return serverErrorResponse(res, error, "Có lỗi xảy ra khi hủy đăng ký");

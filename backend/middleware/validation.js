@@ -45,8 +45,11 @@ const validateSubscriber = [
 // Validation cho MongoDB ObjectId params
 const validateObjectId = [param("id").isMongoId().withMessage("ID không hợp lệ"), handleValidationErrors];
 
-// Validation cho email query params
-const validateEmailQuery = [query("email").trim().notEmpty().withMessage("Email không được để trống").isEmail().withMessage("Email không hợp lệ").normalizeEmail(), handleValidationErrors];
+// Validation cho token unsubscribe (JWT signed)
+const validateUnsubscribeToken = [
+  query("token").trim().notEmpty().withMessage("Token không được để trống").isLength({ max: 1024 }).withMessage("Token không hợp lệ"),
+  handleValidationErrors,
+];
 
 // Validation cho pagination
 const validatePagination = [
@@ -61,7 +64,7 @@ module.exports = {
   validatePublisher,
   validateSubscriber,
   validateObjectId,
-  validateEmailQuery,
+  validateUnsubscribeToken,
   validatePagination,
   handleValidationErrors,
 };
