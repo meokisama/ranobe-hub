@@ -38,7 +38,7 @@ export default function SubscribeForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message);
+        throw new Error(result.msg || "Có lỗi xảy ra");
       }
 
       setStatus("success");

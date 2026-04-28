@@ -6,25 +6,27 @@ import { motion } from "framer-motion";
 
 function UnsubscribeContent() {
   const searchParams = useSearchParams();
-  const email = searchParams.get("email");
+  const token = searchParams.get("token");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     const unsubscribe = async () => {
-      if (!email) {
+      if (!token) {
         setStatus("error");
-        setMessage("Email không hợp lệ");
+        setMessage("Token không hợp lệ");
         return;
       }
 
       try {
         setStatus("loading");
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscribers/unsubscribe?email=${email}`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/subscribers/unsubscribe?token=${encodeURIComponent(token)}`
+        );
         const result = await response.json();
 
         if (!response.ok) {
-          throw new Error(result.message || "Có lỗi xảy ra");
+          throw new Error(result.msg || result.message || "Có lỗi xảy ra");
         }
 
         setStatus("success");
@@ -36,7 +38,7 @@ function UnsubscribeContent() {
     };
 
     unsubscribe();
-  }, [email]);
+  }, [token]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 relative">

@@ -9,9 +9,12 @@ export const Promo = () => {
         <div className="absolute inset-0">
           <div className="absolute inset-0 -z-1 h-full w-full bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] [&>div]:absolute [&>div]:left-0 [&>div]:right-0 [&>div]:top-0 [&>div]:-z-10 [&>div]:m-auto [&>div]:h-[310px] [&>div]:w-[310px] [&>div]:rounded-full [&>div]:bg-fuchsia-400 [&>div]:opacity-20 [&>div]:blur-[100px]"></div>
         </div>
-        <div className="flex-none p-4 text-center md:pl-12 md:text-left z-10 relative">
+        <div className="flex-none p-4 text-center md:pl-12 md:text-left z-10 relative md:max-w-1/2">
           <h2 className="text-2xl font-bold">Yêu cầu tác phẩm khác?</h2>
-          <p className="text-gray-500 font-light mt-2">Hoặc muốn đọc những bài phân tích chất lượng của chúng tôi?</p>
+          <p className="text-gray-500 font-light mt-2">
+            Nhấn nút <strong className="font-semibold">Nhắn tin</strong> bên dưới để yêu cầu trực tiếp.
+          </p>
+          <p className="text-gray-500 font-light mt-1">Hoặc đọc những bài phân tích chất lượng của chúng tôi ở nút bên cạnh.</p>
           <div className="flex gap-2 z-10 mt-8 justify-center md:justify-start">
             <Link href="https://facebook.com/TheMeoki" target="_blank">
               <Button
