@@ -1,27 +1,16 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import Subscriber from "../models/Subscriber.js";
 import { serverErrorResponse, validationErrorResponse, notFoundResponse } from "../utils/errorHandler.js";
 import { signUnsubscribeToken, verifyUnsubscribeToken } from "../utils/unsubscribeToken.js";
 
-// Cấu hình nodemailer
-const transporter = nodemailer.createTransport({
-  host: "smtp.office365.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-  tls: {
-    ciphers: "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384", // Modern TLS ciphers
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM = process.env.EMAIL_FROM;
 
 // Gửi email thông báo cho admin
 const notifyAdmin = async (subscriberEmail) => {
   try {
-    await transporter.sendMail({
-      from: `"【Ranobe Hub】Ranobe.vn" <${process.env.EMAIL_USER}>`,
+    const { error } = await resend.emails.send({
+      from: FROM,
       to: process.env.ADMIN_EMAIL,
       subject: "Có người đăng ký mới!",
       html: `
@@ -34,6 +23,7 @@ const notifyAdmin = async (subscriberEmail) => {
         </div>
       `,
     });
+    if (error) throw error;
   } catch (error) {
     console.error("Admin notification error:", error);
   }
@@ -44,8 +34,8 @@ const sendConfirmationEmail = async (email, isReactivation = false) => {
   try {
     const unsubscribeToken = signUnsubscribeToken(email);
     const unsubscribeUrl = `${process.env.FRONTEND_URL}/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
-    await transporter.sendMail({
-      from: `"【Ranobe Hub】Ranobe.vn" <${process.env.EMAIL_USER}>`,
+    const { error } = await resend.emails.send({
+      from: FROM,
       to: email,
       subject: "Đăng ký nhận tin thành công",
       html: `
@@ -67,6 +57,7 @@ const sendConfirmationEmail = async (email, isReactivation = false) => {
         </div>
       `,
     });
+    if (error) throw error;
   } catch (error) {
     console.error("Confirmation email error:", error);
   }
@@ -158,14 +149,7 @@ export const sendNotification = async (bookTitle) => {
   try {
     const subscribers = await Subscriber.find({ isActive: true });
 
-    // Gửi email song song với Promise.all thay vì tuần tự
-    const emailPromises = subscribers.map((subscriber) =>
-      transporter
-        .sendMail({
-          from: `"【Ranobe Hub】Ranobe.vn" <${process.env.EMAIL_USER}>`,
-          to: subscriber.email,
-          subject: "Có sách mới!",
-          html: `
+    const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
               <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">Đã đăng tải sách mới!</h1>
               <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -178,12 +162,19 @@ export const sendNotification = async (bookTitle) => {
                   </div>
               </div>
           </div>
-        `,
-        })
-        .catch((err) => {
-          console.error(`Failed to send email to ${subscriber.email}:`, err);
-        }),
-    );
+        `;
+
+    const emailPromises = subscribers.map(async (subscriber) => {
+      const { error } = await resend.emails.send({
+        from: FROM,
+        to: subscriber.email,
+        subject: "Có sách mới!",
+        html,
+      });
+      if (error) {
+        console.error(`Failed to send email to ${subscriber.email}:`, error);
+      }
+    });
 
     await Promise.allSettled(emailPromises);
   } catch (error) {

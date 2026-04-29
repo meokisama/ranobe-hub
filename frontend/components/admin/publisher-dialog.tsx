@@ -22,11 +22,22 @@ interface Publisher {
   name: string;
 }
 
-export function PublisherDialog() {
+interface PublisherDialogProps {
+  onClose?: () => void;
+}
+
+export function PublisherDialog({ onClose }: PublisherDialogProps) {
   const [publishers, setPublishers] = useState<Publisher[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editingPublisher, setEditingPublisher] = useState<Publisher | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      onClose?.();
+    }
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -105,14 +116,14 @@ export function PublisherDialog() {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline">
           <Plus className="h-4 w-4" />
           Quản lý nhãn hiệu
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>Quản lý nhãn hiệu</DialogTitle>
         </DialogHeader>
@@ -154,7 +165,7 @@ export function PublisherDialog() {
           </form>
         </Form>
 
-        <div className="mt-6">
+        <div className="mt-6 flex-1 min-h-0 overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>

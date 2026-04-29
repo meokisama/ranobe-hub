@@ -248,7 +248,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                           </SelectContent>
                         </Select>
                       </FormControl>
-                      <PublisherDialog />
+                      <PublisherDialog onClose={fetchPublishers} />
                     </div>
                     <FormMessage />
                   </FormItem>
