@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EbookTable } from "@/components/admin/ebook-table";
 import { EbookForm } from "@/components/admin/ebook-form";
+import { StatCard } from "@/components/admin/stat-card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { Library, PlusCircle, CalendarDays, Building2, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Ebook } from "@/lib/types";
 import axios from "axios";
@@ -19,7 +20,6 @@ export default function AdminPage() {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    // Kiểm tra đăng nhập từ cookie
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
@@ -32,14 +32,12 @@ export default function AdminPage() {
       return;
     }
 
-    // Verify token với backend
     const verifyToken = async () => {
       try {
         await api.get("/admin/verify");
         fetchEbooks();
       } catch (err) {
         console.error("Lỗi khi verify token:", err);
-        // Xóa cookie khi token không hợp lệ
         document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         router.push("/admin/login");
@@ -57,9 +55,7 @@ export default function AdminPage() {
       setEbooks(res.data.ebooks);
     } catch (err) {
       console.error("Lỗi khi tải danh sách ebook:", err);
-      // Kiểm tra nếu lỗi 401 - Unauthorized
       if (axios.isAxiosError(err) && err.response?.status === 401) {
-        // Xóa cookie khi token không hợp lệ
         document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         router.push("/admin/login");
@@ -68,6 +64,18 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const addedThisMonth = ebooks.filter((e) => new Date(e.createdAt) >= startOfMonth).length;
+    const publisherCount = new Set(ebooks.map((e) => e.publisher?._id).filter(Boolean)).size;
+    return {
+      total: ebooks.length,
+      addedThisMonth,
+      publisherCount,
+    };
+  }, [ebooks]);
 
   const handleAddNew = () => {
     setSelectedEbook(null);
@@ -96,29 +104,46 @@ export default function AdminPage() {
 
   if (loading && ebooks.length === 0) {
     return (
-      <div className="flex h-screen justify-center items-center">
-        <div
-          className="animate-spin inline-block size-6 border-3 border-current border-t-transparent text-blue-600 rounded-full"
-          role="status"
-          aria-label="loading"
-        >
-          <span className="sr-only">Loading...</span>
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <span className="text-sm">Đang tải dữ liệu...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Quản lý Ebook</h1>
-        <Button onClick={handleAddNew}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Thêm Ebook mới
-        </Button>
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard label="Tổng số ebook" value={stats.total.toLocaleString("vi-VN")} hint="Toàn bộ thư viện" icon={<Library className="h-5 w-5" />} />
+        <StatCard
+          label="Thêm tháng này"
+          value={stats.addedThisMonth.toLocaleString("vi-VN")}
+          hint="Tính từ đầu tháng"
+          icon={<CalendarDays className="h-5 w-5" />}
+          accent="emerald"
+        />
+        <StatCard
+          label="Nhãn hiệu"
+          value={stats.publisherCount.toLocaleString("vi-VN")}
+          hint="Số nhãn đang có ebook"
+          icon={<Building2 className="h-5 w-5" />}
+          accent="amber"
+        />
       </div>
 
-      <EbookTable ebooks={ebooks} onEdit={handleEditEbook} onDeleteSuccess={handleDeleteSuccess} />
+      <EbookTable
+        ebooks={ebooks}
+        onEdit={handleEditEbook}
+        onDeleteSuccess={handleDeleteSuccess}
+        headerAction={
+          <Button onClick={handleAddNew} className="h-12 shadow-sm cursor-pointer">
+            <PlusCircle className="h-4 w-4" />
+            Thêm Ebook
+          </Button>
+        }
+      />
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent>{showForm && <EbookForm ebook={selectedEbook} onSuccess={handleFormSuccess} onCancel={handleFormClose} />}</DialogContent>

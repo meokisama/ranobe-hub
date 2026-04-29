@@ -26,9 +26,10 @@ interface KonoranoTableProps {
   konoranos: Konorano[];
   onEdit: (konorano: Konorano) => void;
   onDeleteSuccess: () => void;
+  headerAction?: React.ReactNode;
 }
 
-export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess }: KonoranoTableProps) {
+export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess, headerAction }: KonoranoTableProps) {
   const [allKonoranos, setAllKonoranos] = useState<Konorano[]>(konoranos);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -109,7 +110,7 @@ export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess }: KonoranoTa
 
   return (
     <div className="space-y-4">
-      <ContentFilters contentType="konorano" onSearch={setSearchQuery} onSort={setSortOrder} />
+      <ContentFilters contentType="konorano" onSearch={setSearchQuery} onSort={setSortOrder} action={headerAction} />
 
       <div className="rounded-md border">
         <Table>

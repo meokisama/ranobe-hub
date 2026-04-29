@@ -16,9 +16,10 @@ interface ContentFiltersProps {
   onSearch: (search: string) => void;
   onSort: (sort: "asc" | "desc") => void;
   onPublisherFilter?: (publisher: string) => void;
+  action?: React.ReactNode;
 }
 
-export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilter }: ContentFiltersProps) {
+export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilter, action }: ContentFiltersProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"asc" | "desc">("desc");
   const [selectedPublisher, setSelectedPublisher] = useState<string>("all");
@@ -98,6 +99,8 @@ export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilte
           <SelectItem value="asc">Cũ nhất</SelectItem>
         </SelectContent>
       </Select>
+
+      {action}
     </div>
   );
 }

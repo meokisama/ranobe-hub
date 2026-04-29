@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { KonoranoTable } from "@/components/admin/konorano-table";
 import { KonoranoForm } from "@/components/admin/konorano-form";
+import { StatCard } from "@/components/admin/stat-card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { BookMarked, PlusCircle, CalendarDays, Trophy, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Konorano } from "@/lib/types";
 import axios from "axios";
@@ -30,9 +31,7 @@ export default function KonoranoAdminPage() {
       setKonoranos(res.data.konoranos);
     } catch (err) {
       console.error("Lỗi khi tải danh sách konorano:", err);
-      // Kiểm tra nếu lỗi 401 - Unauthorized
       if (axios.isAxiosError(err) && err.response?.status === 401) {
-        // Xóa cookie khi token không hợp lệ
         document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         router.push("/admin/login");
@@ -41,6 +40,18 @@ export default function KonoranoAdminPage() {
       setLoading(false);
     }
   };
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const addedThisMonth = konoranos.filter((k) => new Date(k.createdAt) >= startOfMonth).length;
+    const yearCount = new Set(konoranos.map((k) => new Date(k.releaseDate).getFullYear()).filter((y) => !Number.isNaN(y))).size;
+    return {
+      total: konoranos.length,
+      addedThisMonth,
+      yearCount,
+    };
+  }, [konoranos]);
 
   const handleAddNew = () => {
     setSelectedKonorano(null);
@@ -66,20 +77,52 @@ export default function KonoranoAdminPage() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-12">Đang tải...</div>;
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <span className="text-sm">Đang tải dữ liệu...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Quản lý Konorano</h1>
-        <Button onClick={handleAddNew}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Thêm Konorano mới
-        </Button>
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard
+          label="Tổng số sách"
+          value={stats.total.toLocaleString("vi-VN")}
+          hint="Toàn bộ Konorano"
+          icon={<BookMarked className="h-5 w-5" />}
+        />
+        <StatCard
+          label="Thêm tháng này"
+          value={stats.addedThisMonth.toLocaleString("vi-VN")}
+          hint="Tính từ đầu tháng"
+          icon={<CalendarDays className="h-5 w-5" />}
+          accent="emerald"
+        />
+        <StatCard
+          label="Số năm xếp hạng"
+          value={stats.yearCount.toLocaleString("vi-VN")}
+          hint="Phân bổ theo năm phát hành"
+          icon={<Trophy className="h-5 w-5" />}
+          accent="amber"
+        />
       </div>
 
-      <KonoranoTable konoranos={konoranos} onEdit={handleEditKonorano} onDeleteSuccess={handleDeleteSuccess} />
+      <KonoranoTable
+        konoranos={konoranos}
+        onEdit={handleEditKonorano}
+        onDeleteSuccess={handleDeleteSuccess}
+        headerAction={
+          <Button onClick={handleAddNew} className="h-12 shadow-sm cursor-pointer">
+            <PlusCircle className="h-4 w-4" />
+            Thêm Konorano
+          </Button>
+        }
+      />
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent>

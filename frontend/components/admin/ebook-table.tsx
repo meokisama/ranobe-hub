@@ -26,9 +26,10 @@ interface EbookTableProps {
   ebooks: Ebook[];
   onEdit: (ebook: Ebook) => void;
   onDeleteSuccess: () => void;
+  headerAction?: React.ReactNode;
 }
 
-export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess }: EbookTableProps) {
+export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess, headerAction }: EbookTableProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [ebookToDelete, setEbookToDelete] = useState<Ebook | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -135,7 +136,13 @@ export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess }: E
   return (
     <>
       <div ref={filterRef}>
-        <ContentFilters contentType="ebook" onSearch={setSearchQuery} onSort={setSortOrder} onPublisherFilter={setSelectedPublisher} />
+        <ContentFilters
+          contentType="ebook"
+          onSearch={setSearchQuery}
+          onSort={setSortOrder}
+          onPublisherFilter={setSelectedPublisher}
+          action={headerAction}
+        />
       </div>
 
       <div className="rounded-md border">
