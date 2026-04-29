@@ -1,3 +1,4 @@
+import Bottleneck from "bottleneck";
 import { Resend } from "resend";
 import Subscriber from "../models/Subscriber.js";
 import { serverErrorResponse, validationErrorResponse, notFoundResponse } from "../utils/errorHandler.js";
@@ -6,14 +7,42 @@ import { signUnsubscribeToken, verifyUnsubscribeToken } from "../utils/unsubscri
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.EMAIL_FROM;
 
-// Gửi email thông báo cho admin
-const notifyAdmin = async (subscriberEmail) => {
-  try {
-    const { error } = await resend.emails.send({
-      from: FROM,
-      to: process.env.ADMIN_EMAIL,
-      subject: "Có người đăng ký mới!",
-      html: `
+// Resend giới hạn 100 email mỗi batch và 2 request mỗi giây
+const BATCH_SIZE = 100;
+
+// Bottleneck: tối đa 2 request mỗi giây, không bao giờ vượt limit của Resend
+const limiter = new Bottleneck({
+  reservoir: 2,
+  reservoirRefreshAmount: 2,
+  reservoirRefreshInterval: 1000,
+  maxConcurrent: 2,
+});
+
+// Gửi danh sách email theo từng batch tối đa 100 email
+const sendBatched = async (emails) => {
+  if (!emails.length) return;
+  for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+    const chunk = emails.slice(i, i + BATCH_SIZE);
+    try {
+      const { error } = await limiter.schedule(() => resend.batch.send(chunk));
+      if (error) {
+        console.error(
+          `Resend batch error (chunk ${i / BATCH_SIZE + 1}, ${chunk.length} emails):`,
+          error
+        );
+      }
+    } catch (err) {
+      console.error("Resend batch threw:", err);
+    }
+  }
+};
+
+// Tạo payload email thông báo cho admin
+const buildAdminNotifyEmail = (subscriberEmail) => ({
+  from: FROM,
+  to: [process.env.ADMIN_EMAIL],
+  subject: "Có người đăng ký mới!",
+  html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
             <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">Người đăng ký mới!</h1>
             <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -22,23 +51,17 @@ const notifyAdmin = async (subscriberEmail) => {
             </div>
         </div>
       `,
-    });
-    if (error) throw error;
-  } catch (error) {
-    console.error("Admin notification error:", error);
-  }
-};
+});
 
-// Gửi email xác nhận cho subscriber
-const sendConfirmationEmail = async (email, isReactivation = false) => {
-  try {
-    const unsubscribeToken = signUnsubscribeToken(email);
-    const unsubscribeUrl = `${process.env.FRONTEND_URL}/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
-    const { error } = await resend.emails.send({
-      from: FROM,
-      to: email,
-      subject: "Đăng ký nhận tin thành công",
-      html: `
+// Tạo payload email xác nhận cho subscriber
+const buildConfirmationEmail = (email, isReactivation = false) => {
+  const unsubscribeToken = signUnsubscribeToken(email);
+  const unsubscribeUrl = `${process.env.FRONTEND_URL}/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
+  return {
+    from: FROM,
+    to: [email],
+    subject: "Đăng ký nhận tin thành công",
+    html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
             <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">Đăng ký thành công!</h1>
             <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -56,11 +79,7 @@ const sendConfirmationEmail = async (email, isReactivation = false) => {
             </div>
         </div>
       `,
-    });
-    if (error) throw error;
-  } catch (error) {
-    console.error("Confirmation email error:", error);
-  }
+  };
 };
 
 // Đăng ký nhận tin
@@ -83,10 +102,12 @@ export const subscribe = async (req, res) => {
       await existingSubscriber.save();
       isReactivation = true;
 
-      // Gửi emails ở background (fix race condition)
+      // Gộp 2 email vào 1 batch để chỉ tốn 1 request, gửi background
       setImmediate(() => {
-        sendConfirmationEmail(email, isReactivation);
-        notifyAdmin(email);
+        sendBatched([
+          buildConfirmationEmail(email, isReactivation),
+          buildAdminNotifyEmail(email),
+        ]);
       });
 
       return res.status(200).json({ msg: "Đăng ký thành công" });
@@ -96,10 +117,12 @@ export const subscribe = async (req, res) => {
     const subscriber = new Subscriber({ email });
     await subscriber.save();
 
-    // Gửi emails ở background (fix race condition)
+    // Gộp 2 email vào 1 batch để chỉ tốn 1 request, gửi background
     setImmediate(() => {
-      sendConfirmationEmail(email, false);
-      notifyAdmin(email);
+      sendBatched([
+        buildConfirmationEmail(email, false),
+        buildAdminNotifyEmail(email),
+      ]);
     });
 
     res.status(201).json({ msg: "Đăng ký thành công" });
@@ -148,6 +171,7 @@ export const unsubscribe = async (req, res) => {
 export const sendNotification = async (bookTitle) => {
   try {
     const subscribers = await Subscriber.find({ isActive: true });
+    if (!subscribers.length) return;
 
     const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
@@ -164,19 +188,14 @@ export const sendNotification = async (bookTitle) => {
           </div>
         `;
 
-    const emailPromises = subscribers.map(async (subscriber) => {
-      const { error } = await resend.emails.send({
-        from: FROM,
-        to: subscriber.email,
-        subject: "Có sách mới!",
-        html,
-      });
-      if (error) {
-        console.error(`Failed to send email to ${subscriber.email}:`, error);
-      }
-    });
+    const emails = subscribers.map((subscriber) => ({
+      from: FROM,
+      to: [subscriber.email],
+      subject: "Có sách mới!",
+      html,
+    }));
 
-    await Promise.allSettled(emailPromises);
+    await sendBatched(emails);
   } catch (error) {
     console.error("Send notification error:", error);
   }
