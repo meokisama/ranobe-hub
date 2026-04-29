@@ -2,10 +2,10 @@ import Bottleneck from "bottleneck";
 import { Resend } from "resend";
 import Subscriber from "../models/Subscriber.js";
 import { serverErrorResponse, validationErrorResponse, notFoundResponse } from "../utils/errorHandler.js";
-import { signUnsubscribeToken, verifyUnsubscribeToken } from "../utils/unsubscribeToken.js";
+import { verifyUnsubscribeToken } from "../utils/unsubscribeToken.js";
+import { buildAdminNotifyEmail, buildConfirmationEmail, buildNewBookEmail } from "../utils/emailTemplates.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM;
 
 // Resend giới hạn 100 email mỗi batch và 2 request mỗi giây
 const BATCH_SIZE = 100;
@@ -30,51 +30,6 @@ const sendBatched = async (emails) => {
       console.error("Resend batch threw:", err);
     }
   }
-};
-
-// Tạo payload email thông báo cho admin
-const buildAdminNotifyEmail = (subscriberEmail) => ({
-  from: FROM,
-  to: [process.env.ADMIN_EMAIL],
-  subject: "Có người đăng ký mới!",
-  html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
-            <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">Người đăng ký mới!</h1>
-            <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <p style="margin: 10px 0;"><strong>Email:</strong> ${subscriberEmail}</p>
-                <p style="margin: 10px 0;"><strong>Thời gian:</strong> ${new Date().toLocaleString("vi-VN")}</p>
-            </div>
-        </div>
-      `,
-});
-
-// Tạo payload email xác nhận cho subscriber
-const buildConfirmationEmail = (email, isReactivation = false) => {
-  const unsubscribeToken = signUnsubscribeToken(email);
-  const unsubscribeUrl = `${process.env.FRONTEND_URL}/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
-  return {
-    from: FROM,
-    to: [email],
-    subject: "Đăng ký nhận tin thành công",
-    html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
-            <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">Đăng ký thành công!</h1>
-            <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <p style="margin: 15px 0; line-height: 1.6;">Bạn đã ${
-                  isReactivation ? "đăng ký tiếp tục" : "đăng ký"
-                } nhận tin sách mới từ 【Ranobe Hub】Ranobe.vn! 🎉</p>
-                <p style="margin: 15px 0; line-height: 1.6;">Bạn sẽ là người đầu tiên được thông báo khi có sách mới được đăng tải. ( ๑ ˃ᴗ˂)و</p>
-                <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
-                    <p style="margin: 0;">Nếu bạn muốn hủy đăng ký, vui lòng click vào link sau:</p>
-                    <a href="${unsubscribeUrl}"
-                       style="display: inline-block; margin-top: 10px; padding: 8px 16px; background-color: #e74c3c; color: white; text-decoration: none; border-radius: 4px;">
-                        Hủy đăng ký
-                    </a>
-                </div>
-            </div>
-        </div>
-      `,
-  };
 };
 
 // Đăng ký nhận tin
@@ -162,27 +117,7 @@ export const sendNotification = async (bookTitle) => {
     const subscribers = await Subscriber.find({ isActive: true });
     if (!subscribers.length) return;
 
-    const html = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
-              <h1 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">Đã đăng tải sách mới!</h1>
-              <div style="background-color: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                  <p style="margin: 15px 0; line-height: 1.6;"><strong>「${bookTitle}」</strong> đã được đăng tải trên Ranobe Hub.</p>
-                  <div style="margin: 20px 0; text-align: center;">
-                      <a href="${process.env.FRONTEND_URL}"
-                         style="display: inline-block; padding: 12px 24px; background-color: #3498db; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                          Đọc ngay ( ๑ ˃ᴗ˂)و
-                      </a>
-                  </div>
-              </div>
-          </div>
-        `;
-
-    const emails = subscribers.map((subscriber) => ({
-      from: FROM,
-      to: [subscriber.email],
-      subject: "Có sách mới!",
-      html,
-    }));
+    const emails = subscribers.map((subscriber) => buildNewBookEmail(subscriber.email, bookTitle));
 
     await sendBatched(emails);
   } catch (error) {
