@@ -1,4 +1,5 @@
 import Publisher from "../models/Publisher.js";
+import Ebook from "../models/Ebook.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
 // Lấy tất cả nhãn hiệu
@@ -73,6 +74,12 @@ export const deletePublisher = async (req, res) => {
     const publisher = await Publisher.findById(req.params.id);
     if (!publisher) {
       return notFoundResponse(res, "nhãn hiệu");
+    }
+
+    // Chặn xóa nếu còn ebook tham chiếu để tránh orphan
+    const inUse = await Ebook.exists({ publisher: req.params.id });
+    if (inUse) {
+      return validationErrorResponse(res, "Không thể xóa: nhãn hiệu vẫn đang được dùng bởi ebook");
     }
 
     await Publisher.findByIdAndDelete(req.params.id);

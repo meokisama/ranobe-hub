@@ -2,7 +2,7 @@ import Ebook from "../models/Ebook.js";
 import Publisher from "../models/Publisher.js";
 import { clearCache } from "../middleware/cache.js";
 import { sendNotification } from "./subscriberController.js";
-import { deleteOldFile } from "../utils/fileManager.js";
+import { deleteOldFile, deleteFileIfExists } from "../utils/fileManager.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
 // Lấy tất cả ebook (với pagination)
@@ -49,6 +49,11 @@ export const getEbookById = async (req, res) => {
 
 // Tạo ebook mới
 export const createEbook = async (req, res) => {
+  // Multer đã ghi file lên disk trước khi handler chạy → cleanup nếu phía dưới fail
+  const filesToCleanupOnError = [];
+  if (req.files?.cover?.[0]) filesToCleanupOnError.push(req.files.cover[0].path);
+  if (req.files?.ebook?.[0]) filesToCleanupOnError.push(req.files.ebook[0].path);
+
   try {
     const { name, author, illustrator, releaseDate, publisher } = req.body;
 
@@ -78,6 +83,9 @@ export const createEbook = async (req, res) => {
 
     const ebook = await newEbook.save();
 
+    // Save thành công → giữ file lại
+    filesToCleanupOnError.length = 0;
+
     // Populate publisher data before returning
     const populatedEbook = await Ebook.findById(ebook._id).populate("publisher", "name");
 
@@ -85,17 +93,26 @@ export const createEbook = async (req, res) => {
     await clearCache("cache:/api/ebooks");
     await clearCache("cache:/api/ebooks?*");
 
-    // Gửi thông báo cho subscribers
-    await sendNotification(name);
+    // Gửi thông báo cho subscribers (background, không block response)
+    setImmediate(() => sendNotification(name));
 
     res.json(populatedEbook);
   } catch (err) {
     return serverErrorResponse(res, err);
+  } finally {
+    if (filesToCleanupOnError.length > 0) {
+      await Promise.all(filesToCleanupOnError.map(deleteFileIfExists)).catch(() => {});
+    }
   }
 };
 
 // Cập nhật ebook
 export const updateEbook = async (req, res) => {
+  // File MỚI vừa upload — cleanup nếu downstream fail
+  const newFilesToCleanupOnError = [];
+  if (req.files?.cover?.[0]) newFilesToCleanupOnError.push(req.files.cover[0].path);
+  if (req.files?.ebook?.[0]) newFilesToCleanupOnError.push(req.files.ebook[0].path);
+
   try {
     const { name, author, illustrator, releaseDate, publisher } = req.body;
 
@@ -120,14 +137,15 @@ export const updateEbook = async (req, res) => {
       updatedAt: Date.now(),
     };
 
+    // Đánh dấu các file cũ cần xóa (chỉ xóa SAU khi update DB thành công)
+    const oldFilesToDelete = [];
+
     // Kiểm tra nếu có file cover mới
     if (req.files && req.files.cover) {
       const coverFile = req.files.cover[0];
       ebookFields.coverImage = coverFile.filename;
-
-      // Xóa file cover cũ (async)
       if (existingEbook.coverImage !== "default-cover.jpg") {
-        await deleteOldFile(existingEbook.coverImage, "covers", "default-cover.jpg");
+        oldFilesToDelete.push({ filename: existingEbook.coverImage, type: "covers", def: "default-cover.jpg" });
       }
     }
 
@@ -135,12 +153,14 @@ export const updateEbook = async (req, res) => {
     if (req.files && req.files.ebook) {
       const ebookFile = req.files.ebook[0];
       ebookFields.filePath = ebookFile.filename;
-
-      // Xóa file ebook cũ (async)
-      await deleteOldFile(existingEbook.filePath, "ebooks");
+      oldFilesToDelete.push({ filename: existingEbook.filePath, type: "ebooks", def: null });
     }
 
     const updatedEbook = await Ebook.findByIdAndUpdate(req.params.id, { $set: ebookFields }, { new: true }).populate("publisher", "name");
+
+    // Update DB thành công → giữ file mới, xóa file cũ
+    newFilesToCleanupOnError.length = 0;
+    await Promise.all(oldFilesToDelete.map((f) => deleteOldFile(f.filename, f.type, f.def)));
 
     // Xóa cache cụ thể
     await clearCache("cache:/api/ebooks");
@@ -153,6 +173,10 @@ export const updateEbook = async (req, res) => {
       return;
     }
     return serverErrorResponse(res, err);
+  } finally {
+    if (newFilesToCleanupOnError.length > 0) {
+      await Promise.all(newFilesToCleanupOnError.map(deleteFileIfExists)).catch(() => {});
+    }
   }
 };
 

@@ -1,7 +1,7 @@
 import Konorano from "../models/Konorano.js";
 import { clearCache } from "../middleware/cache.js";
 import { sendNotification } from "./subscriberController.js";
-import { deleteOldFile } from "../utils/fileManager.js";
+import { deleteOldFile, deleteFileIfExists } from "../utils/fileManager.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
 // Lấy tất cả konorano (với pagination)
@@ -48,6 +48,11 @@ export const getKonoranoById = async (req, res) => {
 
 // Tạo konorano mới
 export const createKonorano = async (req, res) => {
+  // Multer đã ghi file lên disk trước khi handler chạy → cleanup nếu phía dưới fail
+  const filesToCleanupOnError = [];
+  if (req.files?.cover?.[0]) filesToCleanupOnError.push(req.files.cover[0].path);
+  if (req.files?.konorano?.[0]) filesToCleanupOnError.push(req.files.konorano[0].path);
+
   try {
     const { name, author, releaseDate, viURL } = req.body;
 
@@ -70,21 +75,33 @@ export const createKonorano = async (req, res) => {
 
     const konorano = await newKonorano.save();
 
+    // Save thành công → giữ file lại
+    filesToCleanupOnError.length = 0;
+
     // Xóa cache cụ thể
     await clearCache("cache:/api/konoranos");
     await clearCache("cache:/api/konoranos?*");
 
-    // Gửi thông báo cho subscribers
-    await sendNotification(name);
+    // Gửi thông báo cho subscribers (background, không block response)
+    setImmediate(() => sendNotification(name));
 
     res.json(konorano);
   } catch (err) {
     return serverErrorResponse(res, err);
+  } finally {
+    if (filesToCleanupOnError.length > 0) {
+      await Promise.all(filesToCleanupOnError.map(deleteFileIfExists)).catch(() => {});
+    }
   }
 };
 
 // Cập nhật konorano
 export const updateKonorano = async (req, res) => {
+  // File MỚI vừa upload — cleanup nếu downstream fail
+  const newFilesToCleanupOnError = [];
+  if (req.files?.cover?.[0]) newFilesToCleanupOnError.push(req.files.cover[0].path);
+  if (req.files?.konorano?.[0]) newFilesToCleanupOnError.push(req.files.konorano[0].path);
+
   try {
     const { name, author, releaseDate, viURL } = req.body;
 
@@ -106,14 +123,15 @@ export const updateKonorano = async (req, res) => {
       konoranoFields.author = author;
     }
 
+    // Đánh dấu các file cũ cần xóa (chỉ xóa SAU khi update DB thành công)
+    const oldFilesToDelete = [];
+
     // Kiểm tra nếu có file cover mới
     if (req.files && req.files.cover) {
       const coverFile = req.files.cover[0];
       konoranoFields.coverImage = coverFile.filename;
-
-      // Xóa file cover cũ (async)
       if (existingKonorano.coverImage !== "default-cover.jpg") {
-        await deleteOldFile(existingKonorano.coverImage, "covers", "default-cover.jpg");
+        oldFilesToDelete.push({ filename: existingKonorano.coverImage, type: "covers", def: "default-cover.jpg" });
       }
     }
 
@@ -121,12 +139,14 @@ export const updateKonorano = async (req, res) => {
     if (req.files && req.files.konorano) {
       const konoranoFile = req.files.konorano[0];
       konoranoFields.filePath = konoranoFile.filename;
-
-      // Xóa file konorano cũ (async)
-      await deleteOldFile(existingKonorano.filePath, "ebooks");
+      oldFilesToDelete.push({ filename: existingKonorano.filePath, type: "ebooks", def: null });
     }
 
     const updatedKonorano = await Konorano.findByIdAndUpdate(req.params.id, { $set: konoranoFields }, { new: true });
+
+    // Update DB thành công → giữ file mới, xóa file cũ
+    newFilesToCleanupOnError.length = 0;
+    await Promise.all(oldFilesToDelete.map((f) => deleteOldFile(f.filename, f.type, f.def)));
 
     // Xóa cache cụ thể
     await clearCache("cache:/api/konoranos");
@@ -139,6 +159,10 @@ export const updateKonorano = async (req, res) => {
       return;
     }
     return serverErrorResponse(res, err);
+  } finally {
+    if (newFilesToCleanupOnError.length > 0) {
+      await Promise.all(newFilesToCleanupOnError.map(deleteFileIfExists)).catch(() => {});
+    }
   }
 };
 

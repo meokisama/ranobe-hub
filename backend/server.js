@@ -108,7 +108,7 @@ app.get("/reader", (req, res, next) => {
   next();
 });
 
-app.get("/reader/*", (req, res) => {
+app.get("/reader/*splat", (req, res) => {
   res.sendFile(path.join(__dirname, "reader", "index.html"));
 });
 

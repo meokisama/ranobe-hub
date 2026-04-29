@@ -19,8 +19,10 @@ export const cache = (duration) => {
       // Lưu response gốc
       const originalJson = res.json;
       res.json = function (data) {
-        // Cache data với thời gian duration
-        redisClient.setEx(key, duration, JSON.stringify(data));
+        // Chỉ cache response thành công, không cache lỗi 4xx/5xx
+        if (res.statusCode < 400) {
+          redisClient.setEx(key, duration, JSON.stringify(data)).catch((err) => console.error("Cache write error:", err));
+        }
         return originalJson.call(this, data);
       };
 
@@ -32,13 +34,18 @@ export const cache = (duration) => {
   };
 };
 
-// Hàm xóa cache
+// Hàm xóa cache (dùng SCAN để không block Redis main thread)
 export const clearCache = async (pattern) => {
   try {
-    const keys = await redisClient.keys(pattern);
-    if (keys.length > 0) {
-      await redisClient.del(keys);
-      console.log(`Cleared cache for pattern: ${pattern}`);
+    let total = 0;
+    for await (const batch of redisClient.scanIterator({ MATCH: pattern, COUNT: 100 })) {
+      if (batch.length > 0) {
+        await redisClient.del(batch);
+        total += batch.length;
+      }
+    }
+    if (total > 0) {
+      console.log(`Cleared ${total} cache keys for pattern: ${pattern}`);
     }
   } catch (error) {
     console.error("Error clearing cache:", error);

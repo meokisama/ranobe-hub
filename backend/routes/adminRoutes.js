@@ -12,7 +12,7 @@ const router = express.Router();
 // @access  Public
 router.post("/login", loginLimiter, async (req, res) => {
   try {
-    const { password } = req.body;
+    const { password } = req.body ?? {};
 
     // So sánh mật khẩu đã hash
     const isMatch = await bcrypt.compare(password, config.ADMIN_PASSWORD);
