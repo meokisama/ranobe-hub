@@ -10,12 +10,10 @@ const FROM = process.env.EMAIL_FROM;
 // Resend giới hạn 100 email mỗi batch và 2 request mỗi giây
 const BATCH_SIZE = 100;
 
-// Bottleneck: tối đa 2 request mỗi giây, không bao giờ vượt limit của Resend
+// Bottleneck
 const limiter = new Bottleneck({
-  reservoir: 2,
-  reservoirRefreshAmount: 2,
-  reservoirRefreshInterval: 1000,
-  maxConcurrent: 2,
+  minTime: 800,
+  maxConcurrent: 1,
 });
 
 // Gửi danh sách email theo từng batch tối đa 100 email
@@ -26,10 +24,7 @@ const sendBatched = async (emails) => {
     try {
       const { error } = await limiter.schedule(() => resend.batch.send(chunk));
       if (error) {
-        console.error(
-          `Resend batch error (chunk ${i / BATCH_SIZE + 1}, ${chunk.length} emails):`,
-          error
-        );
+        console.error(`Resend batch error (chunk ${i / BATCH_SIZE + 1}, ${chunk.length} emails):`, error);
       }
     } catch (err) {
       console.error("Resend batch threw:", err);
@@ -104,10 +99,7 @@ export const subscribe = async (req, res) => {
 
       // Gộp 2 email vào 1 batch để chỉ tốn 1 request, gửi background
       setImmediate(() => {
-        sendBatched([
-          buildConfirmationEmail(email, isReactivation),
-          buildAdminNotifyEmail(email),
-        ]);
+        sendBatched([buildConfirmationEmail(email, isReactivation), buildAdminNotifyEmail(email)]);
       });
 
       return res.status(200).json({ msg: "Đăng ký thành công" });
@@ -119,10 +111,7 @@ export const subscribe = async (req, res) => {
 
     // Gộp 2 email vào 1 batch để chỉ tốn 1 request, gửi background
     setImmediate(() => {
-      sendBatched([
-        buildConfirmationEmail(email, false),
-        buildAdminNotifyEmail(email),
-      ]);
+      sendBatched([buildConfirmationEmail(email, false), buildAdminNotifyEmail(email)]);
     });
 
     res.status(201).json({ msg: "Đăng ký thành công" });
