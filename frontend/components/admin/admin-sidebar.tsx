@@ -54,17 +54,22 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
         )}
       >
         {/* Brand */}
-        <div className="flex h-16 items-center justify-between border-b px-6">
-          <Link href="/admin" className="flex items-center gap-2.5" onClick={onClose}>
-            <div className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm">
+        <div className="relative flex h-16 items-center justify-between overflow-hidden border-b px-6">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-rose-50/80 via-pink-50/50 to-violet-50/60 dark:from-rose-950/30 dark:via-pink-950/20 dark:to-violet-950/30"
+          />
+          <Link href="/admin" className="group relative flex items-center gap-2.5" onClick={onClose}>
+            <div className="relative flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-400 via-pink-500 to-violet-500 text-white shadow-md shadow-rose-200/60 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105 dark:shadow-rose-500/20">
               <Sparkles className="h-4 w-4" />
+              <span className="absolute -right-0.5 -top-0.5 size-2 animate-pulse rounded-full bg-amber-300 ring-2 ring-card" />
             </div>
             <div className="flex flex-col leading-tight">
               <span className="text-sm font-semibold tracking-tight">Ranobe Reader</span>
               <span className="text-xs text-muted-foreground">Admin Console</span>
             </div>
           </Link>
-          <Button variant="ghost" size="icon" className="h-8 w-8 lg:hidden" onClick={onClose}>
+          <Button variant="ghost" size="icon" className="relative h-8 w-8 lg:hidden" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -81,12 +86,17 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  "group flex items-start gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
-                  active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                  "group flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
+                  active
+                    ? "bg-gradient-to-r from-primary to-primary/85 text-primary-foreground shadow-md shadow-primary/20"
+                    : "text-muted-foreground hover:bg-rose-50/70 hover:text-foreground dark:hover:bg-rose-950/30",
                 )}
               >
                 <Icon
-                  className={cn("mt-0.5 h-4 w-4 shrink-0", active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")}
+                  className={cn(
+                    "mt-0.5 h-4 w-4 shrink-0 transition-transform group-hover:scale-110",
+                    active ? "text-primary-foreground" : "text-rose-400 group-hover:text-rose-500 dark:text-rose-300/70 dark:group-hover:text-rose-300",
+                  )}
                 />
                 <div className="flex flex-col leading-tight">
                   <span className="font-medium">{item.label}</span>
@@ -99,7 +109,12 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
 
         {/* Footer */}
         <div className="border-t p-4">
-          <Button variant="outline" size="lg" className="w-full justify-center gap-2 flex" onClick={handleLogout}>
+          <Button
+            variant="outline"
+            size="lg"
+            className="flex w-full justify-center gap-2 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:hover:border-rose-900/60 dark:hover:bg-rose-950/30 dark:hover:text-rose-300"
+            onClick={handleLogout}
+          >
             <LogOut className="h-4 w-4" />
             Đăng xuất
           </Button>
