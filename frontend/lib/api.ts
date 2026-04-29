@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Tạo API instance với axios
 export const api = axios.create({
-  baseURL: process.env.NODE_ENV === "development" ? "http://localhost:3001/api" : process.env.NEXT_PUBLIC_API_URL + "/api",
+  baseURL: (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001") + "/api",
 });
 
 // Interceptor để thêm token vào header khi có yêu cầu

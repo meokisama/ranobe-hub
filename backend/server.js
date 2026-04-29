@@ -24,7 +24,7 @@ const port = process.env.PORT || 3001;
 })();
 
 // CORS configuration
-const allowedOrigins = ["https://hub.ranobe.vn", process.env.FRONTEND_URL].filter(Boolean);
+const allowedOrigins = ["https://hub.ranobe.vn", "http://localhost:3002", process.env.FRONTEND_URL].filter(Boolean);
 
 app.use(
   cors({
