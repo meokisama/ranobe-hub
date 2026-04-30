@@ -76,9 +76,18 @@ app.use("/api/subscribers", subscriberRoutes);
 
 // Serve reader
 app.use("/reader", express.static(path.join(__dirname, "reader")));
-app.use("/uploads/covers", express.static(path.join(__dirname, "uploads", "covers")));
+app.use(
+  "/uploads/covers",
+  express.static(path.join(__dirname, "uploads", "covers"), {
+    maxAge: "30d",
+    immutable: true,
+  }),
+);
 
-const ebookStatic = express.static(path.join(__dirname, "uploads", "ebooks"));
+const ebookStatic = express.static(path.join(__dirname, "uploads", "ebooks"), {
+  maxAge: "30d",
+  immutable: true,
+});
 
 app.use("/uploads/ebooks", (req, res, next) => {
   const referer = req.get("referer");
