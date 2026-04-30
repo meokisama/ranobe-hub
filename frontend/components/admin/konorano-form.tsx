@@ -142,7 +142,7 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
             <div className="w-full md:w-1/2 space-y-4">
               <div className="rounded-md h-full border p-2 aspect-[112/159] relative overflow-hidden">
                 {coverPreview ? (
-                  <Image src={coverPreview} alt="Cover preview" fill className="object-cover" />
+                  <Image src={coverPreview} alt="Cover preview" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-muted">Chưa có ảnh bìa</div>
                 )}

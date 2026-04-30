@@ -167,6 +167,7 @@ export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess, hea
                       src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${ebook.coverImage}`}
                       alt={ebook.name}
                       fill
+                      sizes="36px"
                       className="object-cover"
                     />
                   </div>

@@ -88,6 +88,7 @@ export default function SubscribeForm() {
           src="/light-left-top-double.png"
           alt=""
           fill
+          sizes="100vw"
         />
         <div className="relative container px-4 mx-auto inset-shadow-lg mt-20 md:mt-24">
           <div className="max-w-7xl mx-auto">
@@ -144,6 +145,7 @@ export default function SubscribeForm() {
                     src="/circle-star-bg.png"
                     alt=""
                     fill
+                    sizes="500px"
                   />
                   <Image
                     src="/sleeping_chibi.png"

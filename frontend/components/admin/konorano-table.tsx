@@ -133,6 +133,7 @@ export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess, headerAction
                       src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${konorano.coverImage}`}
                       alt={konorano.name}
                       fill
+                      sizes="36px"
                       className="object-cover"
                     />
                   </div>
