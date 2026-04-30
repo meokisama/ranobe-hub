@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye, ExternalLink } from "lucide-react";
+import { Edit, Trash2, Eye } from "lucide-react";
 import { Konorano } from "@/lib/types";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
@@ -120,7 +120,7 @@ export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess, headerAction
               <TableHead>Tên sách</TableHead>
               <TableHead>Tác giả</TableHead>
               <TableHead className="text-center">Ngày phát hành</TableHead>
-              <TableHead>Link bản dịch</TableHead>
+              <TableHead className="w-[350px] max-w-[350px]">Link bản dịch</TableHead>
               <TableHead className="text-end">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
@@ -139,16 +139,14 @@ export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess, headerAction
                 </TableCell>
                 <TableCell className="font-['Yu_Mincho']">{konorano.name}</TableCell>
                 <TableCell className="font-['Yu_Mincho']">{konorano.author}</TableCell>
-                <TableCell className="text-center">{formatDate(konorano.releaseDate)}</TableCell>
-                <TableCell>
-                  <Button size="icon" variant="outline" asChild>
-                    <Link href={konorano.viURL} target="_blank">
-                      <ExternalLink className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                <TableCell className="text-center font-light">{formatDate(konorano.releaseDate)}</TableCell>
+                <TableCell className="max-w-[350px]">
+                  <Link href={konorano.viURL} target="_blank" className="block truncate text-blue-600 hover:underline" title={konorano.viURL}>
+                    {konorano.viURL}
+                  </Link>
                 </TableCell>
                 <TableCell className="text-end">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-1">
                     <Button size="icon" variant="outline" asChild>
                       <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${konorano.filePath.replace(/\.epub$/i, "")}`} target="_blank">
                         <Eye className="h-4 w-4" />

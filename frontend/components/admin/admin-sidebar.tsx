@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Library, BookMarked, LogOut, Sparkles, X } from "lucide-react";
+import { Library, BookMarked, LogOut, BookOpen, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -60,12 +60,11 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
             className="pointer-events-none absolute inset-0 bg-gradient-to-r from-rose-50/80 via-pink-50/50 to-violet-50/60 dark:from-rose-950/30 dark:via-pink-950/20 dark:to-violet-950/30"
           />
           <Link href="/admin" className="group relative flex items-center gap-2.5" onClick={onClose}>
-            <div className="relative flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-400 via-pink-500 to-violet-500 text-white shadow-md shadow-rose-200/60 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105 dark:shadow-rose-500/20">
-              <Sparkles className="h-4 w-4" />
-              <span className="absolute -right-0.5 -top-0.5 size-2 animate-pulse rounded-full bg-amber-300 ring-2 ring-card" />
+            <div className="relative flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-rose-400 via-pink-500 to-violet-500 text-white shadow-md shadow-rose-200/60 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105 dark:shadow-rose-500/20">
+              <BookOpen className="size-5" />
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-semibold tracking-tight">Ranobe Reader</span>
+              <span className="text-sm font-semibold tracking-tight">Ranobe Hub</span>
               <span className="text-xs text-muted-foreground">Admin Console</span>
             </div>
           </Link>
@@ -86,7 +85,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  "group flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
+                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
                   active
                     ? "bg-gradient-to-r from-primary to-primary/85 text-primary-foreground shadow-md shadow-primary/20"
                     : "text-muted-foreground hover:bg-rose-50/70 hover:text-foreground dark:hover:bg-rose-950/30",
@@ -94,8 +93,10 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
               >
                 <Icon
                   className={cn(
-                    "mt-0.5 h-4 w-4 shrink-0 transition-transform group-hover:scale-110",
-                    active ? "text-primary-foreground" : "text-rose-400 group-hover:text-rose-500 dark:text-rose-300/70 dark:group-hover:text-rose-300",
+                    "size-4.5 shrink-0 transition-transform group-hover:scale-110",
+                    active
+                      ? "text-primary-foreground"
+                      : "text-rose-400 group-hover:text-rose-500 dark:text-rose-300/70 dark:group-hover:text-rose-300",
                   )}
                 />
                 <div className="flex flex-col leading-tight">

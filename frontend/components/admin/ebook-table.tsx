@@ -183,7 +183,7 @@ export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess, hea
                 </TableCell>
                 <TableCell className="font-light">{ebook.publisher.name}</TableCell>
                 <TableCell className="text-end">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-1">
                     <Button size="icon" variant="outline" asChild>
                       <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${ebook.filePath.replace(/\.epub$/i, "")}`} target="_blank">
                         <Eye className="h-4 w-4" />
