@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     "epub raw",
     "light novel raw",
   ],
-  metadataBase: new URL("https://lightnovel.vn"),
+  metadataBase: new URL("https://hub.ranobe.vn"),
   openGraph: {
     title: title,
     description: description,

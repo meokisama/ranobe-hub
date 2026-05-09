@@ -2,4 +2,4 @@ User-Agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://lightnovel.vn/sitemap.xml
+Sitemap: https://hub.ranobe.vn/sitemap.xml

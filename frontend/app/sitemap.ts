@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: "https://lightnovel.vn",
+      url: "https://hub.ranobe.vn",
       lastModified: new Date(),
       changeFrequency: "yearly",
       priority: 1,
