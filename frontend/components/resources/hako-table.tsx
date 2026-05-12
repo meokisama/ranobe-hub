@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { Hako } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,6 @@ import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 25;
 
-// Bỏ dấu tiếng Việt + lowercase, dùng để build search index.
-// NFD tách ký tự + dấu, regex Unicode property \p{M} bóc toàn bộ dấu combining.
 const DIACRITICS_RE = /\p{M}+/gu;
 function normalize(s: string) {
   return (s ?? "")
@@ -47,18 +45,18 @@ export function HakoTable() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
 
-  // Debounce search 150ms — đủ mượt với 4500 entries
+  const searchRef = useRef<HTMLInputElement>(null);
+  const tableTopRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const id = setTimeout(() => setQuery(rawQuery), 150);
     return () => clearTimeout(id);
   }, [rawQuery]);
 
-  // Reset về page 1 khi filter/sort/search thay đổi
   useEffect(() => {
     setPage(1);
   }, [query, filter, sortKey, sortDir]);
 
-  // Fetch một lần, build search index ngay sau khi load
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -83,6 +81,33 @@ export function HakoTable() {
       cancelled = true;
     };
   }, []);
+
+  // Keyboard shortcut: "/" để focus search
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isTyping = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      if (e.key === "/" && !isTyping) {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+      } else if (e.key === "Escape" && document.activeElement === searchRef.current) {
+        searchRef.current?.blur();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const stats = useMemo(() => {
+    let withEpub = 0;
+    let withPdf = 0;
+    for (const h of items) {
+      if (h.epub) withEpub++;
+      if (h.pdf) withPdf++;
+    }
+    return { total: items.length, withEpub, withPdf };
+  }, [items]);
 
   const filtered = useMemo(() => {
     const tokens = normalize(query).split(/\s+/).filter(Boolean);
@@ -123,141 +148,263 @@ export function HakoTable() {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortKey(key);
-      setSortDir(key === "lastUpdated" || key === "name" ? "desc" : "asc");
+      setSortDir(key === "lastUpdated" ? "desc" : "asc");
+    }
+  };
+
+  const handlePageChange = (p: number) => {
+    setPage(p);
+    if (tableTopRef.current) {
+      const top = tableTopRef.current.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: "smooth" });
     }
   };
 
   return (
-    <section className="max-w-screen-xl mx-auto p-4 py-10">
-      {/* Heading — match orange theme từ home page */}
-      <div className="flex flex-col items-center justify-center relative select-none pointer-events-none mb-2">
-        <h2 className="font-black font-poppins tracking-[-0.3vw] text-[23vw] xl:text-[14vw] text-white drop-shadow-[0px_5px_10px_rgba(255,139,39,0.1)]">
-          HAKO
-        </h2>
-        <div className="absolute flex flex-col">
-          <div className="relative inline-block">
-            <span className="text-orange-500 relative z-100 text-[5vw] md:text-[4vw] xl:text-[2vw] font-['Yu_Mincho'] p-2 px-4">
-              軽小説の図書館
+    <div className="relative">
+      {/* === HERO (dark editorial band) === */}
+      <section className="relative overflow-hidden bg-[#15110d] text-stone-100">
+        {/* Texture / grain overlay */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.08) 2px 3px), repeating-linear-gradient(90deg, transparent 0 2px, rgba(255,255,255,0.05) 2px 3px)",
+          }}
+        />
+        {/* Glow accents */}
+        <div className="pointer-events-none absolute -left-32 top-1/2 size-[28rem] -translate-y-1/2 rounded-full bg-orange-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 bottom-0 size-[24rem] rounded-full bg-amber-400/10 blur-3xl" />
+
+        <div className="relative mx-auto max-w-screen-xl px-4 py-16 md:px-6 md:py-24">
+          {/* Editorial slug */}
+          <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-stone-400">
+            <span className="block h-px w-10 bg-orange-400/80" />
+            <span>Hako Archive</span>
+            <span className="text-stone-600">/</span>
+            <span className="text-stone-500">Light Novel</span>
+          </div>
+
+          {/* Main title */}
+          <h1 className="mt-6 font-playfair_display text-7xl font-black italic leading-none tracking-tight md:text-[8rem] lg:text-[10rem]">
+            <span className="bg-gradient-to-br from-orange-200 via-amber-100 to-rose-200 bg-clip-text text-transparent">
+              Hako<span className="text-orange-500">.</span>
             </span>
-            <span className="absolute z-99 inset-0 bg-orange-100/50 transform -skew-x-19"></span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="mt-6 max-w-2xl text-base text-stone-300 md:text-lg">
+            Kho lưu trữ dự phòng cho light novel được cộng đồng đăng tải trên CLN Hako, EPUB render bởi{" "}
+            <a
+              href="https://www.facebook.com/mango.tttq"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-orange-200 underline decoration-orange-400/50 decoration-2 underline-offset-4 transition hover:text-orange-100 hover:decoration-orange-300"
+            >
+              Mango-chan
+            </a>
+            , PDF đang cân nhắc convert.
+          </p>
+
+          {/* Stats strip */}
+          <div className="mt-12 grid grid-cols-3 gap-px overflow-hidden rounded-xl bg-stone-700/40 ring-1 ring-stone-700/40 md:max-w-2xl">
+            <StatCell label="Tổng tựa" value={stats.total} loading={loading} />
+            <StatCell label="Có EPUB" value={stats.withEpub} loading={loading} accent />
+            <StatCell label="Có PDF" value={stats.withPdf} loading={loading} />
+          </div>
+        </div>
+
+        {/* Hairline bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-orange-400/40 to-transparent" />
+      </section>
+
+      {/* === TOOLBAR (sticky, frosted) === */}
+      <div className="sticky top-16 z-20 border-b border-stone-200/80 bg-[#fbf5ec]/85 backdrop-blur-md">
+        <div className="mx-auto max-w-screen-xl px-4 py-3 md:px-6">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-stone-400" />
+              <Input
+                ref={searchRef}
+                value={rawQuery}
+                onChange={(e) => setRawQuery(e.target.value)}
+                placeholder="Tìm theo tên, uploader, translator hoặc ID..."
+                className="h-11 rounded-full border-stone-300 bg-white pl-10 pr-20 text-base shadow-[0_1px_0_rgba(0,0,0,0.02)] focus-visible:border-orange-400 focus-visible:ring-orange-200"
+                aria-label="Tìm kiếm"
+              />
+              <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+                {rawQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setRawQuery("")}
+                    className="rounded-full p-1 text-stone-400 transition hover:bg-stone-100 hover:text-stone-700"
+                    aria-label="Xóa tìm kiếm"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : (
+                  <kbd className="hidden rounded border border-stone-300 bg-stone-50 px-1.5 py-0.5 font-mono text-[10px] font-medium text-stone-500 shadow-sm sm:inline-block">
+                    /
+                  </kbd>
+                )}
+              </div>
+            </div>
+
+            <div className="inline-flex h-11 items-center gap-0.5 rounded-full border border-stone-300 bg-white p-1 shadow-[0_1px_0_rgba(0,0,0,0.02)]">
+              {(["all", "epub", "pdf"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setFilter(f)}
+                  className={cn(
+                    "rounded-full px-4 py-1.5 text-sm font-medium transition",
+                    filter === f ? "bg-gradient-to-br from-orange-500 to-rose-500 text-white shadow" : "text-stone-600 hover:bg-stone-100",
+                  )}
+                >
+                  {f === "all" ? "Tất cả" : f === "epub" ? "EPUB" : "PDF"}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Search + filter */}
-      <div className="flex flex-col md:flex-row gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-          <Input
-            value={rawQuery}
-            onChange={(e) => setRawQuery(e.target.value)}
-            placeholder="Tìm theo tên / uploader / translator / ID (không cần dấu)..."
-            className="pl-9 pr-9 h-12 backdrop-blur bg-white/80"
-            aria-label="Tìm kiếm"
-          />
-          {rawQuery && (
-            <button
-              type="button"
-              onClick={() => setRawQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label="Xóa tìm kiếm"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-        <div className="inline-flex rounded-md border bg-white/80 backdrop-blur p-1 h-12">
-          {(["all", "epub", "pdf"] as const).map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilter(f)}
-              className={cn(
-                "px-3 text-sm rounded transition font-medium",
-                filter === f ? "bg-orange-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-orange-50",
+      {/* === BODY === */}
+      <section className="bg-[#fbf5ec] pb-20 pt-6">
+        <div className="mx-auto max-w-screen-xl px-4 md:px-6">
+          {/* Result band */}
+          <div ref={tableTopRef} className="mb-4 flex items-baseline justify-between text-sm text-stone-500">
+            <div>
+              <span className="text-stone-700">
+                <span className="font-mono text-lg font-semibold tracking-tight text-stone-900">{sorted.length.toLocaleString("vi-VN")}</span>
+                <span className="ml-1.5 text-stone-500">kết quả</span>
+              </span>
+              {(query || filter !== "all") && stats.total > 0 && (
+                <span className="ml-2 text-stone-400">/ {stats.total.toLocaleString("vi-VN")} tổng</span>
               )}
-            >
-              {f === "all" ? "Tất cả" : f === "epub" ? "Có EPUB" : "Có PDF"}
-            </button>
-          ))}
-        </div>
-      </div>
+            </div>
+            {totalPages > 1 && (
+              <div className="font-mono text-xs uppercase tracking-widest text-stone-400">
+                Trang {safePage} / {totalPages}
+              </div>
+            )}
+          </div>
 
-      {/* Stats */}
-      <div className="text-sm text-muted-foreground mb-3 flex items-center gap-3">
-        <span>
-          Kết quả: <span className="font-semibold text-foreground">{sorted.length.toLocaleString("vi-VN")}</span>
-          {query || filter !== "all" ? <span className="text-muted-foreground"> / {items.length.toLocaleString("vi-VN")}</span> : null}
-        </span>
-        {totalPages > 1 && (
-          <span className="text-muted-foreground/70">
-            · Trang {safePage}/{totalPages}
-          </span>
-        )}
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center py-16 text-muted-foreground">Đang tải...</div>
-      ) : error ? (
-        <div className="text-center text-red-500 py-16">{error}</div>
-      ) : (
-        <>
-          <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-orange-50/60 hover:bg-orange-50/60">
-                  <TableHead className="w-12 text-muted-foreground">#</TableHead>
-                  <SortableHead onClick={() => handleSort("name")} active={sortKey === "name"} dir={sortDir}>
-                    Tên
-                  </SortableHead>
-                  <SortableHead onClick={() => handleSort("uploader")} active={sortKey === "uploader"} dir={sortDir}>
-                    Uploader
-                  </SortableHead>
-                  <SortableHead onClick={() => handleSort("translator")} active={sortKey === "translator"} dir={sortDir}>
-                    Translator
-                  </SortableHead>
-                  <SortableHead onClick={() => handleSort("lastUpdated")} active={sortKey === "lastUpdated"} dir={sortDir}>
-                    Cập nhật
-                  </SortableHead>
-                  <TableHead className="text-right">Tải</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pageItems.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-16 text-muted-foreground">
-                      Không tìm thấy kết quả nào
-                    </TableCell>
+          {error ? (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-12 text-center text-rose-700">{error}</div>
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-[0_1px_0_rgba(0,0,0,0.02),0_8px_30px_-12px_rgba(120,53,15,0.12)]">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-stone-200 bg-stone-50/80 hover:bg-stone-50/80">
+                    <TableHead className="w-16 py-3 pl-5 text-[11px] font-semibold uppercase tracking-widest text-stone-500 text-center">
+                      ID
+                    </TableHead>
+                    <SortableHead onClick={() => handleSort("name")} active={sortKey === "name"} dir={sortDir}>
+                      Tên
+                    </SortableHead>
+                    <SortableHead
+                      onClick={() => handleSort("uploader")}
+                      active={sortKey === "uploader"}
+                      dir={sortDir}
+                      className="hidden lg:table-cell"
+                    >
+                      Uploader
+                    </SortableHead>
+                    <SortableHead
+                      onClick={() => handleSort("translator")}
+                      active={sortKey === "translator"}
+                      dir={sortDir}
+                      className="hidden lg:table-cell"
+                    >
+                      Translator
+                    </SortableHead>
+                    <SortableHead
+                      onClick={() => handleSort("lastUpdated")}
+                      active={sortKey === "lastUpdated"}
+                      dir={sortDir}
+                      className="hidden md:table-cell"
+                    >
+                      Cập nhật
+                    </SortableHead>
+                    <TableHead className="py-3 pr-5 text-right text-[11px] font-semibold uppercase tracking-widest text-stone-500">Tải</TableHead>
                   </TableRow>
-                ) : (
-                  pageItems.map((h, i) => (
-                    <TableRow key={h._id}>
-                      <TableCell className="text-muted-foreground tabular-nums">{(safePage - 1) * PAGE_SIZE + i + 1}</TableCell>
-                      <TableCell className="max-w-[40ch] whitespace-normal font-medium">{h.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{h.uploader || "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">{h.translator || "—"}</TableCell>
-                      <TableCell className="text-muted-foreground whitespace-nowrap tabular-nums">{formatDate(h.lastUpdated)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="inline-flex gap-1.5">
-                          <DownloadLink href={h.epub} label="EPUB" icon={<BookOpen className="size-3.5" />} />
-                          <DownloadLink href={h.pdf} label="PDF" icon={<FileText className="size-3.5" />} />
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    Array.from({ length: 10 }).map((_, i) => <SkeletonRow key={i} />)
+                  ) : pageItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-20 text-center text-stone-400">
+                        <div className="mx-auto inline-flex flex-col items-center gap-2">
+                          <Search className="size-8 text-stone-300" />
+                          <div className="font-medium text-stone-500">Không tìm thấy kết quả</div>
+                          <div className="text-xs text-stone-400">Thử bỏ bớt từ khoá hoặc đổi filter</div>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {totalPages > 1 && (
-            <div className="mt-6">
-              <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={setPage} />
+                  ) : (
+                    pageItems.map((h) => (
+                      <TableRow key={h._id} className="group relative border-b border-stone-100 transition hover:bg-orange-50/40">
+                        <TableCell className="py-4 pl-5 font-mono text-xs text-stone-400 tabular-nums">
+                          <span className="inline-block w-12 text-center">{h.hakoId ?? "—"}</span>
+                          {/* Accent bar on hover */}
+                          <span className="pointer-events-none absolute inset-y-0 left-0 w-0.5 origin-top scale-y-0 bg-gradient-to-b from-orange-400 to-rose-500 transition-transform duration-200 group-hover:scale-y-100" />
+                        </TableCell>
+                        <TableCell className="max-w-[42ch] whitespace-normal py-4 font-medium leading-snug text-stone-800">
+                          {h.name}
+                          <div className="mt-1 flex gap-3 text-xs text-stone-500 lg:hidden">
+                            {h.uploader && <span>↑ {h.uploader}</span>}
+                            {h.translator && <span>✎ {h.translator}</span>}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden whitespace-nowrap py-4 text-sm text-stone-600 lg:table-cell">
+                          {h.uploader || <span className="text-stone-300">—</span>}
+                        </TableCell>
+                        <TableCell className="hidden whitespace-nowrap py-4 text-sm text-stone-600 lg:table-cell">
+                          {h.translator || <span className="text-stone-300">—</span>}
+                        </TableCell>
+                        <TableCell className="hidden whitespace-nowrap py-4 font-mono text-xs text-stone-500 tabular-nums md:table-cell">
+                          {formatDate(h.lastUpdated)}
+                        </TableCell>
+                        <TableCell className="py-4 pr-5 text-right">
+                          <div className="inline-flex gap-1.5">
+                            <DownloadLink href={h.epub} label="EPUB" icon={<BookOpen className="size-3.5" />} />
+                            <DownloadLink href={h.pdf} label="PDF" icon={<FileText className="size-3.5" />} />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </div>
           )}
-        </>
-      )}
-    </section>
+
+          {totalPages > 1 && !loading && (
+            <div className="mt-8">
+              <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={handlePageChange} />
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function StatCell({ label, value, loading, accent }: { label: string; value: number; loading: boolean; accent?: boolean }) {
+  return (
+    <div className="flex flex-col gap-1 bg-[#15110d] px-5 py-5">
+      <div className="text-[10px] uppercase tracking-[0.25em] text-stone-500">{label}</div>
+      <div
+        className={cn(
+          "font-playfair_display text-3xl font-bold tabular-nums leading-tight md:text-4xl",
+          accent ? "text-orange-300" : "text-stone-100",
+        )}
+      >
+        {loading ? <span className="inline-block h-8 w-20 animate-pulse rounded bg-stone-700/60" /> : value.toLocaleString("vi-VN")}
+      </div>
+    </div>
   );
 }
 
@@ -266,33 +413,57 @@ function SortableHead({
   active,
   dir,
   children,
+  className,
 }: {
   onClick: () => void;
   active: boolean;
   dir: SortDir;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <TableHead>
+    <TableHead className={cn("py-3 text-[11px] font-semibold uppercase tracking-widest", className)}>
       <button
         type="button"
         onClick={onClick}
-        className={cn(
-          "inline-flex items-center gap-1.5 transition cursor-pointer",
-          active ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground",
-        )}
+        className={cn("inline-flex items-center gap-1.5 transition", active ? "text-stone-900" : "text-stone-500 hover:text-stone-800")}
       >
         {children}
-        {active ? dir === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-50" />}
+        {active ? dir === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-40" />}
       </button>
     </TableHead>
+  );
+}
+
+function SkeletonRow() {
+  return (
+    <TableRow className="border-b border-stone-100">
+      <TableCell className="py-4 pl-5">
+        <div className="h-3 w-10 animate-pulse rounded bg-stone-200" />
+      </TableCell>
+      <TableCell className="py-4">
+        <div className="h-3.5 w-3/5 animate-pulse rounded bg-stone-200" />
+      </TableCell>
+      <TableCell className="hidden py-4 lg:table-cell">
+        <div className="h-3 w-20 animate-pulse rounded bg-stone-200" />
+      </TableCell>
+      <TableCell className="hidden py-4 lg:table-cell">
+        <div className="h-3 w-24 animate-pulse rounded bg-stone-200" />
+      </TableCell>
+      <TableCell className="hidden py-4 md:table-cell">
+        <div className="h-3 w-16 animate-pulse rounded bg-stone-200" />
+      </TableCell>
+      <TableCell className="py-4 pr-5 text-right">
+        <div className="ml-auto h-6 w-24 animate-pulse rounded bg-stone-200" />
+      </TableCell>
+    </TableRow>
   );
 }
 
 function DownloadLink({ href, label, icon }: { href: string | null; label: string; icon: React.ReactNode }) {
   if (!href) {
     return (
-      <span className="inline-flex items-center gap-1 rounded border bg-muted/40 px-2 py-1 text-xs text-muted-foreground/50">
+      <span className="inline-flex items-center gap-1 rounded-md border border-stone-200 bg-stone-50 px-2 py-1 text-[11px] font-medium text-stone-300">
         {icon}
         {label}
       </span>
@@ -303,7 +474,7 @@ function DownloadLink({ href, label, icon }: { href: string | null; label: strin
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 rounded border border-orange-200 bg-orange-50 px-2 py-1 text-xs text-orange-700 transition hover:border-orange-300 hover:bg-orange-100"
+      className="inline-flex items-center gap-1 rounded-md border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 px-2 py-1 text-[11px] font-semibold text-orange-700 transition hover:border-orange-400 hover:from-orange-100 hover:to-amber-100 hover:text-orange-800 hover:shadow-sm"
     >
       {icon}
       {label}
@@ -315,5 +486,8 @@ function formatDate(iso: string | null) {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(2);
+  return `${dd}/${mm}/${yy}`;
 }
