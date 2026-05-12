@@ -66,6 +66,6 @@ export const validateUnsubscribeToken = [
 // Validation cho pagination
 export const validatePagination = [
   query("page").optional().isInt({ min: 1 }).withMessage("Page phải là số nguyên dương").toInt(),
-  query("limit").optional().isInt({ min: 1, max: 1000 }).withMessage("Limit phải từ 1-1000").toInt(),
+  query("limit").optional().isInt({ min: 1, max: 10000 }).withMessage("Limit phải từ 1-10000").toInt(),
   handleValidationErrors,
 ];

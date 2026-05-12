@@ -27,3 +27,16 @@ export interface Konorano {
   releaseDate: string;
   viURL: string; // Link to Vietnamese translation
 }
+
+export interface Hako {
+  _id: string;
+  hakoId: string | null;
+  name: string;
+  uploader: string;
+  translator: string;
+  lastUpdated: string | null; // ISO string
+  epub: string | null;
+  pdf: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
