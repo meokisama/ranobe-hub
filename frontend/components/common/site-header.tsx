@@ -29,12 +29,12 @@ export function SiteHeader() {
           <Image
             src="/header-icon.png"
             alt="Ranobe Hub"
-            width={672}
-            height={606}
+            width={45}
+            height={40}
             priority
             className="h-10 w-auto transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110"
           />
-          <Image src="/header-text.png" alt="ranobe hub" width={906} height={233} priority className="h-10 w-auto" />
+          <Image src="/header-text.png" alt="ranobe hub" width={156} height={40} priority className="h-10 w-auto" />
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
