@@ -30,6 +30,18 @@ export const validateKonorano = [
   handleValidationErrors,
 ];
 
+// Validation rules cho Hako
+export const validateHako = [
+  body("name").trim().notEmpty().withMessage("Tên sách không được để trống").isLength({ max: 500 }).withMessage("Tên sách quá dài"),
+  body("hakoId").optional({ checkFalsy: true }).trim().isLength({ max: 50 }).withMessage("hakoId quá dài"),
+  body("uploader").optional({ nullable: true }).trim().isLength({ max: 200 }).withMessage("Uploader quá dài"),
+  body("translator").optional({ nullable: true }).trim().isLength({ max: 300 }).withMessage("Translator quá dài"),
+  body("lastUpdated").optional({ nullable: true, checkFalsy: true }).isISO8601().toDate().withMessage("lastUpdated không hợp lệ (cần ISO8601)"),
+  body("epub").optional({ nullable: true, checkFalsy: true }).isURL().withMessage("URL epub không hợp lệ"),
+  body("pdf").optional({ nullable: true, checkFalsy: true }).isURL().withMessage("URL pdf không hợp lệ"),
+  handleValidationErrors,
+];
+
 // Validation rules cho Publisher
 export const validatePublisher = [
   body("name").trim().notEmpty().withMessage("Tên nhãn hiệu không được để trống").isLength({ max: 100 }).withMessage("Tên nhãn hiệu quá dài"),

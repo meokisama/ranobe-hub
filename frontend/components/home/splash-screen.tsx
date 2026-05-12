@@ -42,26 +42,14 @@ const SplashScreen = () => {
     setImagesLoaded(true);
   };
 
-  return shouldUnmount ? null : (
-    <motion.div
-      className="flex flex-col lg:flex-row fixed inset-0 z-100 w-screen h-screen bg-background"
-      initial={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}
-      animate={{
-        clipPath: [
-          "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
-          "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
-          "polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)",
-        ],
-      }}
-      transition={{
-        duration: TOTAL_DURATION / 1000,
-        times: [0, 0.99, 1],
-        ease: "easeInOut",
-      }}
-      style={{
-        willChange: "transform, clip-path",
-      }}
-    >
+  const splitTransition = {
+    duration: TOTAL_DURATION / 1000,
+    times: [0, 0.86, 1],
+    ease: [0.76, 0, 0.24, 1] as [number, number, number, number],
+  };
+
+  const splashContent = (
+    <>
       <div className="w-full h-1/2 lg:h-full lg:w-1/2 relative overflow-hidden">
         <motion.div
           initial={{ clipPath: "circle(0% at 50% 50%)" }}
@@ -193,7 +181,30 @@ const SplashScreen = () => {
           </div>
         </motion.div>
       </div>
-    </motion.div>
+    </>
+  );
+
+  return shouldUnmount ? null : (
+    <>
+      <motion.div
+        className="flex flex-col lg:flex-row fixed inset-0 z-100 w-screen h-screen bg-background"
+        style={{ clipPath: "inset(0 50% 0 0)", willChange: "transform" }}
+        initial={{ x: 0 }}
+        animate={{ x: [0, 0, "-50%"] }}
+        transition={splitTransition}
+      >
+        {splashContent}
+      </motion.div>
+      <motion.div
+        className="flex flex-col lg:flex-row fixed inset-0 z-100 w-screen h-screen bg-background"
+        style={{ clipPath: "inset(0 0 0 50%)", willChange: "transform" }}
+        initial={{ x: 0 }}
+        animate={{ x: [0, 0, "50%"] }}
+        transition={splitTransition}
+      >
+        {splashContent}
+      </motion.div>
+    </>
   );
 };
 

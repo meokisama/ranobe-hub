@@ -6,6 +6,7 @@ import cors from "cors";
 import compression from "compression";
 import ebookRoutes from "./routes/ebookRoutes.js";
 import konoranoRoutes from "./routes/konoranoRoutes.js";
+import hakoRoutes from "./routes/hakoRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import publisherRoutes from "./routes/publisherRoutes.js";
 import subscriberRoutes from "./routes/subscriberRoutes.js";
@@ -64,12 +65,14 @@ app.use("/api/ebooks", apiLimiter);
 app.use("/api/ebooks/upload", uploadLimiter);
 app.use("/api/konoranos", apiLimiter);
 app.use("/api/konoranos/upload", uploadLimiter);
+app.use("/api/hakos", apiLimiter);
 app.use("/api/publishers", apiLimiter);
 app.use("/api/subscribers", apiLimiter);
 
 // Routes
 app.use("/api/ebooks", ebookRoutes);
 app.use("/api/konoranos", konoranoRoutes);
+app.use("/api/hakos", hakoRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/publishers", publisherRoutes);
 app.use("/api/subscribers", subscriberRoutes);
