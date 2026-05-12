@@ -34,7 +34,7 @@ const SplashScreen = () => {
 
   return shouldUnmount ? null : (
     <motion.div
-      className="flex flex-col lg:flex-row fixed z-100 w-screen h-screen bg-background"
+      className="flex flex-col lg:flex-row fixed inset-0 z-100 w-screen h-screen bg-background"
       initial={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}
       animate={{
         clipPath: [

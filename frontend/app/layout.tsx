@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lexend, Poppins, Playfair_Display } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { SiteHeader } from "@/components/common/site-header";
 import localFont from "next/font/local";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
@@ -74,6 +75,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${lexend.variable} ${jaro.variable} ${playfair_display.variable} ${poppins.variable} antialiased`}>
+        <SiteHeader />
         {children}
         <Toaster richColors />
       </body>
