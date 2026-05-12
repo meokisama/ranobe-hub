@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Library, BookMarked, LogOut, BookOpen, X } from "lucide-react";
+import { Library, BookMarked, LogOut, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -59,14 +60,16 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-gradient-to-r from-rose-50/80 via-pink-50/50 to-violet-50/60 dark:from-rose-950/30 dark:via-pink-950/20 dark:to-violet-950/30"
           />
-          <Link href="/admin" className="group relative flex items-center gap-2.5" onClick={onClose}>
-            <div className="relative flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-rose-400 via-pink-500 to-violet-500 text-white shadow-md shadow-rose-200/60 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105 dark:shadow-rose-500/20">
-              <BookOpen className="size-5" />
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-sm font-semibold tracking-tight">Ranobe Hub</span>
-              <span className="text-xs text-muted-foreground">Admin Console</span>
-            </div>
+          <Link href="/admin" className="group relative flex items-center gap-2" onClick={onClose}>
+            <Image
+              src="/header-icon.png"
+              alt="Ranobe Hub"
+              width={672}
+              height={606}
+              priority
+              className="h-9 w-auto transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105"
+            />
+            <Image src="/header-text.png" alt="ranobe hub" width={906} height={233} priority className="h-9 w-auto" />
           </Link>
           <Button variant="ghost" size="icon" className="relative h-8 w-8 lg:hidden" onClick={onClose}>
             <X className="h-4 w-4" />
