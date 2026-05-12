@@ -17,15 +17,25 @@ const SplashScreen = () => {
   const CIRCLE_REVEAL_DURATION = 2000;
 
   useEffect(() => {
+    if (sessionStorage.getItem("splash-home-seen")) {
+      setShouldUnmount(true);
+      return;
+    }
+
     document.body.style.position = "fixed";
     document.body.style.width = "100vw";
     const timeoutId = setTimeout(() => {
+      sessionStorage.setItem("splash-home-seen", "1");
       document.body.style.position = "";
       document.body.style.width = "";
       setShouldUnmount(true);
     }, TOTAL_DURATION + 1000);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      document.body.style.position = "";
+      document.body.style.width = "";
+    };
   }, []);
 
   const handleImageLoad = () => {
@@ -168,7 +178,7 @@ const SplashScreen = () => {
               delay: CIRCLE_REVEAL_DELAY / 1000,
               ease: "easeInOut",
             }}
-            className="absolute inset-0text-primary z-10 text-center font-jaro drop-shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]"
+            className="absolute inset-0 text-primary z-10 text-center font-jaro drop-shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]"
           >
             <p className="select-none pointer-events-none leading-none mt-0 text-[20vw] lg:text-[10vw] tracking-tight bg-[linear-gradient(45deg,_#f9ab4a_20%,_#fff35b_100%)] drop-shadow-[0px_3px_8px_rgba(0,0,0,_0.5)] [text-outline:1px_solid_black] bg-clip-text text-transparent">
               RANOBE

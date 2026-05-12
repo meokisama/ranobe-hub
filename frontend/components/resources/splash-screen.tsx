@@ -4,9 +4,6 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 
-const TITLE = "TÀI NGUYÊN";
-const SUBTITLE = "Thư viện lưu trữ Light Novel";
-
 const TOTAL_DURATION = 5200;
 
 const ResourcesSplashScreen = () => {
@@ -14,8 +11,14 @@ const ResourcesSplashScreen = () => {
   const [shouldUnmount, setShouldUnmount] = useState(false);
 
   useEffect(() => {
+    if (sessionStorage.getItem("splash-resources-seen")) {
+      setShouldUnmount(true);
+      return;
+    }
+
     document.body.style.overflow = "hidden";
     const timeoutId = setTimeout(() => {
+      sessionStorage.setItem("splash-resources-seen", "1");
       document.body.style.overflow = "";
       setShouldUnmount(true);
     }, TOTAL_DURATION + 200);
@@ -27,8 +30,6 @@ const ResourcesSplashScreen = () => {
   }, []);
 
   if (shouldUnmount) return null;
-
-  const letters = Array.from(TITLE);
 
   return (
     <motion.div
@@ -161,36 +162,6 @@ const ResourcesSplashScreen = () => {
             transition={{ duration: 0.7, delay: 1.3, ease: "easeOut" }}
           />
         </div>
-
-        {/* Title — per-letter stagger with blur clear */}
-        <h1 className="mt-6 flex select-none pointer-events-none flex-wrap justify-center font-jaro text-5xl tracking-tight sm:text-7xl md:text-8xl">
-          {letters.map((char, i) => (
-            <motion.span
-              key={`${char}-${i}`}
-              className="inline-block bg-gradient-to-br from-orange-500 via-amber-500 to-rose-500 bg-clip-text text-transparent drop-shadow-[0_4px_12px_rgba(249,115,22,0.25)]"
-              initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{
-                duration: 0.6,
-                delay: 1.55 + i * 0.06,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              style={{ willChange: "transform, opacity, filter" }}
-            >
-              {char === " " ? " " : char}
-            </motion.span>
-          ))}
-        </h1>
-
-        {/* Subtitle */}
-        <motion.p
-          className="mt-4 max-w-md text-sm text-gray-600 sm:text-base"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 2.4, ease: "easeOut" }}
-        >
-          {SUBTITLE}
-        </motion.p>
 
         {/* Loading shimmer bar */}
         <motion.div
