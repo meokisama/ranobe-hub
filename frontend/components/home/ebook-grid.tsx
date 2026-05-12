@@ -91,7 +91,7 @@ export function EbookGrid() {
   }
 
   return (
-    <div className="max-w-screen-xl mx-auto p-4 min-h-screen">
+    <div className="max-w-screen-xl mx-auto p-4 min-h-screen isolate">
       <div className="flex flex-col items-center justify-center relative select-none pointer-events-none">
         <h2 className="font-black font-poppins tracking-[-0.3vw] text-[23vw] xl:text-[14vw] text-white drop-shadow-[0px_5px_10px_rgba(255,139,39,0.1)]">
           EBOOKS

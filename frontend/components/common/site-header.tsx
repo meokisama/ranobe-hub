@@ -16,15 +16,23 @@ export function SiteHeader() {
   if (pathname.startsWith("/admin")) return null;
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-orange-100/70 bg-background/70 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 md:px-6">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <div className="relative flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400 via-amber-500 to-rose-500 text-white shadow-md shadow-orange-200/60 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105">
-            <BookOpen className="size-5" />
+    <header className="sticky top-0 z-30 w-full bg-background/70 backdrop-blur-md">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-20 top-1/2 size-40 -translate-y-1/2 rounded-full bg-orange-300/20 blur-3xl" />
+        <div className="absolute -right-20 top-1/2 size-40 -translate-y-1/2 rounded-full bg-rose-300/20 blur-3xl" />
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-orange-300/70 to-transparent" />
+
+      <div className="relative mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 md:px-6">
+        <Link href="/" className="group flex items-center gap-3">
+          <div className="relative flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400 via-amber-500 to-rose-500 text-white shadow-md shadow-orange-300/60 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110">
+            <BookOpen className="size-5 drop-shadow-sm" />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold tracking-tight">Ranobe Reader</span>
-            <span className="text-xs text-muted-foreground">Light Novel Hub</span>
+            <span className="bg-[linear-gradient(45deg,_#f9ab4a_10%,_#f97316_55%,_#e11d48_100%)] bg-clip-text font-jaro text-xl tracking-tight text-transparent">
+              HUB.RANOBE.VN
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">Light Novel Hub</span>
           </div>
         </Link>
 
@@ -37,12 +45,20 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "group flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all",
-                  active ? "bg-orange-700 text-orange-50 shadow-md shadow-orange-800/30" : "text-gray-600 hover:bg-orange-50 hover:text-orange-700",
+                  "group relative flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-300",
+                  active
+                    ? "bg-gradient-to-br from-orange-500 via-amber-500 to-rose-500 text-white shadow-md shadow-orange-300/50"
+                    : "text-gray-600 hover:text-orange-700",
                 )}
               >
-                <Icon className="size-4 shrink-0" />
+                {!active && (
+                  <span className="pointer-events-none absolute inset-x-3.5 bottom-1 h-0.5 origin-center scale-x-0 rounded-full bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 transition-transform duration-300 group-hover:scale-x-100" />
+                )}
+                <Icon className={cn("size-4 shrink-0 transition-transform duration-300", !active && "group-hover:-rotate-6 group-hover:scale-110")} />
                 <span className="hidden sm:inline">{item.label}</span>
+                {active && (
+                  <span className="ml-0.5 hidden size-1.5 rounded-full bg-white/90 shadow-[0_0_6px_rgba(255,255,255,0.8)] sm:inline-block" />
+                )}
               </Link>
             );
           })}
