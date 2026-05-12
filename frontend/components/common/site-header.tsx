@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, House, Library } from "lucide-react";
+import { House, Library } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -24,16 +25,16 @@ export function SiteHeader() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-orange-300/70 to-transparent" />
 
       <div className="relative mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 md:px-6">
-        <Link href="/" className="group flex items-center gap-3">
-          <div className="relative flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400 via-amber-500 to-rose-500 text-white shadow-md shadow-orange-300/60 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110">
-            <BookOpen className="size-5 drop-shadow-sm" />
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="bg-[linear-gradient(45deg,_#f9ab4a_10%,_#f97316_55%,_#e11d48_100%)] bg-clip-text font-jaro text-xl tracking-tight text-transparent">
-              HUB.RANOBE.VN
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">Light Novel Hub</span>
-          </div>
+        <Link href="/" className="group flex items-center gap-2">
+          <Image
+            src="/header-icon.png"
+            alt="Ranobe Hub"
+            width={672}
+            height={606}
+            priority
+            className="h-10 w-auto transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110"
+          />
+          <Image src="/header-text.png" alt="ranobe hub" width={906} height={233} priority className="h-10 w-auto" />
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
