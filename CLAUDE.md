@@ -16,6 +16,7 @@ npm install
 npm run dev          # nodemon server.js
 npm start            # NODE_ENV=production node server.js
 node scripts/hash-password.js "<new-password>"   # bcrypt-hash an admin password for the .env
+node scripts/import-hako.js [path/to/hako.json] [--replace]   # upsert Hako rows from JSON (idempotent by hakoId)
 ```
 
 Frontend (`frontend/`, runs on port 3002 in dev):
@@ -39,13 +40,14 @@ Frontend uses `NEXT_PUBLIC_API_URL` (production only — dev hardcodes `http://l
 
 ### Backend domain shape
 
-Four resources, each with the same triple of `routes/ → controllers/ → models/`:
+Five resources, each with the same triple of `routes/ → controllers/ → models/`:
 - **Ebook** — light novels with `cover` (image) + `ebook` (epub/pdf) files; belongs to a `Publisher`
 - **Konorano** — yearly ranking books; same shape but with a `viURL` (Vietnamese translation link) instead of `publisher`
+- **Hako** — external Light Novel resource index (Hako site). No file uploads — `epub` / `pdf` are external URLs validated by `isURL()`. Carries a `hakoId` (sparse-unique, the upstream Hako ID from `scripts/hako.json`), plus `uploader`, `translator`, `lastUpdated`. Bulk-loaded via `scripts/import-hako.js`, which upserts by `hakoId`.
 - **Publisher** — referenced by Ebooks
 - **Subscriber** — email list with active/inactive flag
 
-Routes follow the same pattern: `[validatePagination, cache(N)]` on list, `[validateObjectId, cache(N)]` on detail, `[adminAuth, uploadFields, validateEbook]` on write. Models declare explicit indexes on common query fields (`name`, `author`, `publisher`, `createdAt`, `releaseDate`).
+Routes follow the same pattern: `[validatePagination, cache(N)]` on list, `[validateObjectId, cache(N)]` on detail, `[adminAuth, uploadFields, validateEbook]` on write. Hako write routes skip the upload middleware (no multipart bodies). Hako also exposes an extra `GET /api/hakos/by-hako-id/:hakoId` lookup keyed on the upstream id. Models declare explicit indexes on common query fields (`name`, `author`, `publisher`, `createdAt`, `releaseDate`, and for Hako: `uploader`, `translator`, `lastUpdated`).
 
 ### Auth model
 
@@ -81,7 +83,9 @@ Email and notification work is dispatched via `setImmediate(...)` so the HTTP re
 
 ### Frontend layout
 
-Next.js App Router. `app/page.tsx` is the public homepage (composed of grids: `ebook-grid`, `konorano-grid`, `magazine-grid`, plus carousel/promo/subscribe-form). `app/admin/` is the gated admin panel — `proxy.ts` redirects unauthenticated visits to `/admin/login`. `app/unsubscribe/` is the email-link landing page. UI primitives in `components/ui/` are shadcn-style Radix wrappers.
+Next.js App Router. `app/page.tsx` is the public homepage (composed of grids: `ebook-grid`, `konorano-grid`, `magazine-grid`, plus carousel/promo/subscribe-form). `app/resources/page.tsx` is the public `/resources` page — fetches the Hako list client-side via `components/resources/hako-table.tsx` (sortable/filterable table with diacritics-folded search) behind a `components/resources/splash-screen.tsx` intro. `app/admin/` is the gated admin panel — `proxy.ts` redirects unauthenticated visits to `/admin/login`. `app/unsubscribe/` is the email-link landing page. UI primitives in `components/ui/` are shadcn-style Radix wrappers.
+
+`app/sitemap.ts` enumerates public routes for search engines — add new public top-level routes there.
 
 ### Error responses
 
