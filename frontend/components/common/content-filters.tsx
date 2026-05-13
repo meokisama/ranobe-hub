@@ -12,7 +12,7 @@ interface Publisher {
 }
 
 interface ContentFiltersProps {
-  contentType: "ebook" | "konorano";
+  contentType: "ebook" | "konorano" | "hako";
   onSearch: (search: string) => void;
   onSort: (sort: "asc" | "desc") => void;
   onPublisherFilter?: (publisher: string) => void;
@@ -26,6 +26,12 @@ export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilte
   const [publishers, setPublishers] = useState<Publisher[]>([]);
 
   const isEbook = contentType === "ebook";
+  const placeholder =
+    contentType === "ebook"
+      ? "Tìm kiếm theo tên sách, tác giả, họa sĩ..."
+      : contentType === "hako"
+      ? "Tìm theo tên, uploader, translator hoặc ID..."
+      : "Tìm kiếm theo tên sách...";
 
   const fetchPublishers = async () => {
     if (!isEbook) return; // Only fetch publishers for ebooks
@@ -67,7 +73,7 @@ export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilte
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
         <Input
-          placeholder={isEbook ? "Tìm kiếm theo tên sách, tác giả, họa sĩ..." : "Tìm kiếm theo tên sách..."}
+          placeholder={placeholder}
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
           className="pl-9 h-12 backdrop-blur"

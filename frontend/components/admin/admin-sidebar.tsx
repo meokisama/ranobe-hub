@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Library, BookMarked, LogOut, X } from "lucide-react";
+import { Library, BookMarked, Archive, LogOut, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,12 @@ const navItems = [
     label: "Konorano",
     description: "Bảng xếp hạng thường niên",
     icon: BookMarked,
+  },
+  {
+    href: "/admin/hako",
+    label: "Hako",
+    description: "Kho lưu trữ light novel",
+    icon: Archive,
   },
 ];
 

@@ -6,7 +6,7 @@ import { Hako } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowDown, ArrowUp, ArrowUpDown, BookOpen, FileText, Search, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, BookOpen, Download, Languages, Search, UserPen, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 25;
@@ -228,7 +228,7 @@ export function HakoTable() {
                 ref={searchRef}
                 value={rawQuery}
                 onChange={(e) => setRawQuery(e.target.value)}
-                placeholder="Tìm theo tên, uploader, translator hoặc ID..."
+                placeholder="Tìm theo tên truyện, người dịch hoặc nhóm dịch..."
                 className="h-11 rounded-full border-stone-300 bg-white pl-10 pr-20 text-base shadow-[0_1px_0_rgba(0,0,0,0.02)] focus-visible:border-orange-400 focus-visible:ring-orange-200"
                 aria-label="Tìm kiếm"
               />
@@ -297,37 +297,28 @@ export function HakoTable() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-stone-200 bg-stone-50/80 hover:bg-stone-50/80">
-                    <TableHead className="w-16 py-3 pl-5 text-[11px] font-semibold uppercase tracking-widest text-stone-500 text-center">
-                      ID
-                    </TableHead>
-                    <SortableHead onClick={() => handleSort("name")} active={sortKey === "name"} dir={sortDir}>
+                    <SortableHead onClick={() => handleSort("name")} active={sortKey === "name"} dir={sortDir} className="pl-5">
                       Tên
                     </SortableHead>
                     <SortableHead
                       onClick={() => handleSort("uploader")}
                       active={sortKey === "uploader"}
                       dir={sortDir}
-                      className="hidden lg:table-cell"
+                      className="hidden w-[160px] lg:table-cell"
                     >
-                      Uploader
+                      Dịch Giả
                     </SortableHead>
                     <SortableHead
                       onClick={() => handleSort("translator")}
                       active={sortKey === "translator"}
                       dir={sortDir}
-                      className="hidden lg:table-cell"
+                      className="hidden w-[180px] lg:table-cell"
                     >
-                      Translator
+                      Nhóm Dịch
                     </SortableHead>
-                    <SortableHead
-                      onClick={() => handleSort("lastUpdated")}
-                      active={sortKey === "lastUpdated"}
-                      dir={sortDir}
-                      className="hidden md:table-cell"
-                    >
-                      Cập nhật
-                    </SortableHead>
-                    <TableHead className="py-3 pr-5 text-right text-[11px] font-semibold uppercase tracking-widest text-stone-500">Tải</TableHead>
+                    <TableHead className="w-[260px] py-3 pr-5 text-right text-[11px] font-semibold uppercase tracking-widest text-stone-500">
+                      {/* Hành động */}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -335,7 +326,7 @@ export function HakoTable() {
                     Array.from({ length: 10 }).map((_, i) => <SkeletonRow key={i} />)
                   ) : pageItems.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="py-20 text-center text-stone-400">
+                      <TableCell colSpan={4} className="py-20 text-center text-stone-400">
                         <div className="mx-auto inline-flex flex-col items-center gap-2">
                           <Search className="size-8 text-stone-300" />
                           <div className="font-medium text-stone-500">Không tìm thấy kết quả</div>
@@ -346,31 +337,42 @@ export function HakoTable() {
                   ) : (
                     pageItems.map((h) => (
                       <TableRow key={h._id} className="group relative border-b border-stone-100 transition hover:bg-orange-50/40">
-                        <TableCell className="py-4 pl-5 font-mono text-xs text-stone-400 tabular-nums">
-                          <span className="inline-block w-12 text-center">{h.hakoId ?? "—"}</span>
+                        <TableCell className="relative min-w-[280px] max-w-[460px] whitespace-normal break-words py-4 pl-5 font-medium leading-snug text-stone-800">
                           {/* Accent bar on hover */}
                           <span className="pointer-events-none absolute inset-y-0 left-0 w-0.5 origin-top scale-y-0 bg-gradient-to-b from-orange-400 to-rose-500 transition-transform duration-200 group-hover:scale-y-100" />
-                        </TableCell>
-                        <TableCell className="max-w-[42ch] whitespace-normal py-4 font-medium leading-snug text-stone-800">
                           {h.name}
-                          <div className="mt-1 flex gap-3 text-xs text-stone-500 lg:hidden">
-                            {h.uploader && <span>↑ {h.uploader}</span>}
-                            {h.translator && <span>✎ {h.translator}</span>}
+                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500 lg:hidden">
+                            {h.uploader && (
+                              <span className="inline-flex items-center gap-1">
+                                <UserPen className="size-3 text-stone-400" />
+                                {h.uploader}
+                              </span>
+                            )}
+                            {/* {h.translator && (
+                              <span className="inline-flex items-center gap-1">
+                                <Languages className="size-3 text-stone-400" />
+                                {h.translator}
+                              </span>
+                            )} */}
                           </div>
                         </TableCell>
-                        <TableCell className="hidden whitespace-nowrap py-4 text-sm text-stone-600 lg:table-cell">
+                        <TableCell
+                          className="hidden w-[160px] max-w-[160px] truncate py-4 text-sm text-stone-600 lg:table-cell"
+                          title={h.uploader || undefined}
+                        >
                           {h.uploader || <span className="text-stone-300">—</span>}
                         </TableCell>
-                        <TableCell className="hidden whitespace-nowrap py-4 text-sm text-stone-600 lg:table-cell">
+                        <TableCell
+                          className="hidden w-[180px] max-w-[180px] truncate py-4 text-sm text-stone-600 lg:table-cell"
+                          title={h.translator || undefined}
+                        >
                           {h.translator || <span className="text-stone-300">—</span>}
                         </TableCell>
-                        <TableCell className="hidden whitespace-nowrap py-4 font-mono text-xs text-stone-500 tabular-nums md:table-cell">
-                          {formatDate(h.lastUpdated)}
-                        </TableCell>
-                        <TableCell className="py-4 pr-5 text-right">
-                          <div className="inline-flex gap-1.5">
-                            <DownloadLink href={h.epub} label="EPUB" icon={<BookOpen className="size-3.5" />} />
-                            <DownloadLink href={h.pdf} label="PDF" icon={<FileText className="size-3.5" />} />
+                        <TableCell className="w-[260px] py-4 pr-5 text-right">
+                          <div className="inline-flex flex-wrap items-center justify-end gap-1.5">
+                            <ReadLink hakoId={h.hakoId} hasEpub={!!h.epub} />
+                            <DownloadLink href={h.epub} label="EPUB" icon={<Download className="size-3.5" />} />
+                            <DownloadLink href={h.pdf} label="PDF" icon={<Download className="size-3.5" />} />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -439,9 +441,6 @@ function SkeletonRow() {
   return (
     <TableRow className="border-b border-stone-100">
       <TableCell className="py-4 pl-5">
-        <div className="h-3 w-10 animate-pulse rounded bg-stone-200" />
-      </TableCell>
-      <TableCell className="py-4">
         <div className="h-3.5 w-3/5 animate-pulse rounded bg-stone-200" />
       </TableCell>
       <TableCell className="hidden py-4 lg:table-cell">
@@ -450,13 +449,33 @@ function SkeletonRow() {
       <TableCell className="hidden py-4 lg:table-cell">
         <div className="h-3 w-24 animate-pulse rounded bg-stone-200" />
       </TableCell>
-      <TableCell className="hidden py-4 md:table-cell">
-        <div className="h-3 w-16 animate-pulse rounded bg-stone-200" />
-      </TableCell>
       <TableCell className="py-4 pr-5 text-right">
-        <div className="ml-auto h-6 w-24 animate-pulse rounded bg-stone-200" />
+        <div className="ml-auto h-6 w-40 animate-pulse rounded bg-stone-200" />
       </TableCell>
     </TableRow>
+  );
+}
+
+function ReadLink({ hakoId, hasEpub }: { hakoId: string | null; hasEpub: boolean }) {
+  if (!hakoId || !hasEpub) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-stone-200 bg-stone-50 px-2.5 py-1 text-[11px] font-semibold text-stone-300">
+        <BookOpen className="size-3.5" />
+        Đọc
+      </span>
+    );
+  }
+  const href = `https://epub.ranobe.vn/?book=https://r2.ranobe.vn/hako/epub/${hakoId}.epub`;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 rounded-md border border-orange-500 bg-gradient-to-br from-orange-500 to-rose-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm transition hover:from-orange-600 hover:to-rose-600 hover:shadow"
+    >
+      <BookOpen className="size-3.5" />
+      Đọc
+    </a>
   );
 }
 
@@ -480,14 +499,4 @@ function DownloadLink({ href, label, icon }: { href: string | null; label: strin
       {label}
     </a>
   );
-}
-
-function formatDate(iso: string | null) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yy = String(d.getFullYear()).slice(2);
-  return `${dd}/${mm}/${yy}`;
 }

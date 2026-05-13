@@ -1,19 +1,26 @@
-// Cập nhật toàn bộ field `epub` của collection Hako sang dạng
-// https://r2.ranobe.vn/hako/epub/{hakoId}.epub
+// Đặt lại field `epub` của Hako về dạng https://r2.ranobe.vn/hako/epub/{hakoId}.epub
+// Idempotent — bỏ qua record không có hakoId.
 //
 // Usage (từ thư mục backend/):
 //   node scripts/update-hako-epub-urls.js              # cập nhật thật
-//   node scripts/update-hako-epub-urls.js --dry-run    # chỉ in ra số lượng sẽ thay đổi
+//   node scripts/update-hako-epub-urls.js --dry-run    # preview, không ghi DB
 
-import "dotenv/config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
 import connectDB from "../config/db.js";
 import Hako from "../models/Hako.js";
 
-const BASE_URL = "https://r2.ranobe.vn/hako/epub/";
+// Load backend/.env bất kể script chạy từ CWD nào (config/db.js đọc env tại call-time).
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, "..", ".env") });
 
-const args = process.argv.slice(2);
-const dryRun = args.includes("--dry-run");
+const EPUB_BASE = "https://r2.ranobe.vn/hako/epub/";
+const buildUrl = (hakoId) => `${EPUB_BASE}${hakoId}.epub`;
+const BATCH = 500;
+
+const dryRun = process.argv.slice(2).includes("--dry-run");
 
 async function main() {
   await connectDB();
@@ -23,31 +30,44 @@ async function main() {
   }
 
   try {
-    const filter = { hakoId: { $exists: true, $ne: null, $ne: "" } };
-    const total = await Hako.countDocuments(filter);
-    console.log(`Tìm thấy ${total} hako có hakoId.`);
+    const filter = { hakoId: { $exists: true, $nin: [null, ""] } };
+    const docs = await Hako.find(filter).select("hakoId epub").lean();
+    console.log(`Tìm thấy ${docs.length} hako có hakoId.`);
+
+    if (docs.length === 0) {
+      console.log("Không có gì để cập nhật.");
+      return;
+    }
 
     if (dryRun) {
-      const sample = await Hako.find(filter).limit(5).select("hakoId epub").lean();
-      console.log("--dry-run: 5 ví dụ sẽ được cập nhật:");
-      for (const h of sample) {
-        console.log(`  ${h.hakoId}: ${h.epub ?? "(null)"} -> ${BASE_URL}${h.hakoId}.epub`);
+      console.log("Dry-run — 5 ví dụ sẽ được ghi:");
+      for (const h of docs.slice(0, 5)) {
+        console.log(`  ${h.hakoId}: ${h.epub ?? "(null)"} -> ${buildUrl(h.hakoId)}`);
       }
       return;
     }
 
-    const res = await Hako.updateMany(filter, [
-      {
-        $set: {
-          epub: { $concat: [BASE_URL, "$hakoId", ".epub"] },
-          updatedAt: new Date(),
-        },
+    // Build ops với $set thường (không pipeline) để tránh quyền aggregate.
+    const now = new Date();
+    const ops = docs.map((h) => ({
+      updateOne: {
+        filter: { _id: h._id },
+        update: { $set: { epub: buildUrl(h.hakoId), updatedAt: now } },
       },
-    ]);
+    }));
+
+    let matched = 0;
+    let modified = 0;
+    for (let i = 0; i < ops.length; i += BATCH) {
+      const slice = ops.slice(i, i + BATCH);
+      const res = await Hako.bulkWrite(slice, { ordered: false });
+      matched += res.matchedCount ?? 0;
+      modified += res.modifiedCount ?? 0;
+      console.log(`Batch ${i / BATCH + 1}: match=${res.matchedCount}, modify=${res.modifiedCount}`);
+    }
 
     console.log("== Done ==");
-    console.log(`Matched: ${res.matchedCount}`);
-    console.log(`Modified: ${res.modifiedCount}`);
+    console.log(`Matched: ${matched}, Modified: ${modified}`);
   } catch (err) {
     console.error("Cập nhật failed:", err);
     process.exitCode = 1;
