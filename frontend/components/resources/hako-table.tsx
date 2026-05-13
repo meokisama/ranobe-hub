@@ -180,9 +180,9 @@ export function HakoTable() {
           {/* Editorial slug */}
           <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-stone-400">
             <span className="block h-px w-10 bg-orange-400/80" />
-            <span>Hako Archive</span>
+            <span>Light Novel Archive</span>
             <span className="text-stone-600">/</span>
-            <span className="text-stone-500">Light Novel</span>
+            <span className="text-stone-500">Collection 1</span>
           </div>
 
           {/* Main title */}
