@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye } from "lucide-react";
@@ -21,6 +21,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { ContentFilters } from "@/components/common/content-filters";
 import { Pagination } from "@/components/ui/pagination";
+import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
+
+const KONORANO_SEARCH_KEYS: ReadonlyArray<FuzzyKey<Konorano>> = [
+  { name: "name", weight: 3 },
+  { name: "author", weight: 1 },
+];
 
 interface KonoranoTableProps {
   konoranos: Konorano[];
@@ -48,19 +54,18 @@ export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess, headerAction
     setCurrentPage(1);
   }, [searchQuery, sortOrder]);
 
-  // Filter konoranos
-  const filteredKonoranos = allKonoranos.filter((konorano) => {
-    const matchesSearch = searchQuery ? konorano.name.toLowerCase().includes(searchQuery.toLowerCase()) : true;
+  const filteredKonoranos = useFuzzySearch(allKonoranos, searchQuery, KONORANO_SEARCH_KEYS);
 
-    return matchesSearch;
-  });
-
-  // Sort konoranos
-  const sortedKonoranos = [...filteredKonoranos].sort((a, b) => {
-    const dateA = new Date(a.releaseDate).getTime();
-    const dateB = new Date(b.releaseDate).getTime();
-    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-  });
+  const sortedKonoranos = useMemo(() => {
+    if (searchQuery.trim()) return filteredKonoranos;
+    const arr = filteredKonoranos.slice();
+    arr.sort((a, b) => {
+      const dateA = new Date(a.releaseDate).getTime();
+      const dateB = new Date(b.releaseDate).getTime();
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+    return arr;
+  }, [filteredKonoranos, searchQuery, sortOrder]);
 
   // Calculate pagination
   const totalPages = Math.ceil(sortedKonoranos.length / itemsPerPage);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye } from "lucide-react";
@@ -21,6 +21,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { ContentFilters } from "@/components/common/content-filters";
 import { Pagination } from "@/components/ui/pagination";
+import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
+
+const EBOOK_SEARCH_KEYS: ReadonlyArray<FuzzyKey<Ebook>> = [
+  { name: "name", weight: 3 },
+  { name: "author", weight: 1 },
+  { name: "illustrator", weight: 1 },
+];
 
 interface EbookTableProps {
   ebooks: Ebook[];
@@ -62,25 +69,23 @@ export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess, hea
     setCurrentPage(1);
   }, [searchQuery, sortOrder, selectedPublisher]);
 
-  // Filter and sort ebooks
-  const filteredEbooks = allEbooks.filter((ebook) => {
-    const matchesSearch = searchQuery
-      ? ebook.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ebook.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ebook.illustrator.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
+  const publisherFiltered = useMemo(
+    () => (selectedPublisher ? allEbooks.filter((e) => e.publisher._id === selectedPublisher) : allEbooks),
+    [allEbooks, selectedPublisher],
+  );
 
-    const matchesPublisher = selectedPublisher ? ebook.publisher._id === selectedPublisher : true;
+  const searchedEbooks = useFuzzySearch(publisherFiltered, searchQuery, EBOOK_SEARCH_KEYS);
 
-    return matchesSearch && matchesPublisher;
-  });
-
-  // Sort ebooks
-  const sortedEbooks = [...filteredEbooks].sort((a, b) => {
-    const dateA = new Date(a.releaseDate).getTime();
-    const dateB = new Date(b.releaseDate).getTime();
-    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-  });
+  const sortedEbooks = useMemo(() => {
+    if (searchQuery.trim()) return searchedEbooks;
+    const arr = searchedEbooks.slice();
+    arr.sort((a, b) => {
+      const dateA = new Date(a.releaseDate).getTime();
+      const dateB = new Date(b.releaseDate).getTime();
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+    return arr;
+  }, [searchedEbooks, searchQuery, sortOrder]);
 
   // Calculate pagination
   const totalPages = Math.ceil(sortedEbooks.length / itemsPerPage);

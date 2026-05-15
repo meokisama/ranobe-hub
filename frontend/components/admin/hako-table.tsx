@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { ContentFilters } from "@/components/common/content-filters";
 import { Pagination } from "@/components/ui/pagination";
+import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
 
 interface HakoTableProps {
   hakos: Hako[];
@@ -28,18 +29,12 @@ interface HakoTableProps {
   headerAction?: React.ReactNode;
 }
 
-const DIACRITICS_RE = /\p{M}+/gu;
-function normalize(s: string) {
-  return (s ?? "")
-    .toString()
-    .normalize("NFD")
-    .replace(DIACRITICS_RE, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
+const HAKO_SEARCH_KEYS: ReadonlyArray<FuzzyKey<Hako>> = [
+  { name: "name", weight: 3 },
+  { name: "uploader", weight: 1 },
+  { name: "translator", weight: 1 },
+  { name: "hakoId", weight: 2, get: (h) => h.hakoId ?? "" },
+];
 
 export function HakoTable({ hakos, onEdit, onDeleteSuccess, headerAction }: HakoTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,19 +49,10 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess, headerAction }: Hako
     setCurrentPage(1);
   }, [searchQuery, sortOrder]);
 
-  const filtered = useMemo(() => {
-    const tokens = normalize(searchQuery).split(/\s+/).filter(Boolean);
-    if (tokens.length === 0) return hakos;
-    return hakos.filter((h) => {
-      const hay = normalize(`${h.name} ${h.uploader} ${h.translator} ${h.hakoId ?? ""}`);
-      for (const t of tokens) {
-        if (!hay.includes(t)) return false;
-      }
-      return true;
-    });
-  }, [hakos, searchQuery]);
+  const filtered = useFuzzySearch(hakos, searchQuery, HAKO_SEARCH_KEYS);
 
   const sorted = useMemo(() => {
+    if (searchQuery.trim()) return filtered;
     const arr = filtered.slice();
     const dir = sortOrder === "asc" ? 1 : -1;
     arr.sort((a, b) => {
@@ -75,7 +61,7 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess, headerAction }: Hako
       return (aTs - bTs) * dir;
     });
     return arr;
-  }, [filtered, sortOrder]);
+  }, [filtered, sortOrder, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;

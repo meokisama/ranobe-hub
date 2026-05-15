@@ -8,28 +8,22 @@ import { Pagination } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowDown, ArrowUp, ArrowUpDown, BookOpen, Download, Languages, Search, UserPen, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
 
 const PAGE_SIZE = 25;
 
-const DIACRITICS_RE = /\p{M}+/gu;
-function normalize(s: string) {
-  return (s ?? "")
-    .toString()
-    .normalize("NFD")
-    .replace(DIACRITICS_RE, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
+const HAKO_SEARCH_KEYS: ReadonlyArray<FuzzyKey<IndexedHako>> = [
+  { name: "name", weight: 3 },
+  { name: "uploader", weight: 1 },
+  { name: "translator", weight: 1 },
+  { name: "hakoId", weight: 2, get: (h) => h.hakoId ?? "" },
+];
 
 type SortKey = "name" | "uploader" | "translator" | "lastUpdated";
 type SortDir = "asc" | "desc";
 type Filter = "all" | "epub" | "pdf";
 
 interface IndexedHako extends Hako {
-  _search: string;
   _lastUpdatedTs: number;
 }
 
@@ -66,7 +60,6 @@ export function HakoTable() {
         const raw: Hako[] = res.data?.hakos ?? [];
         const indexed = raw.map<IndexedHako>((h) => ({
           ...h,
-          _search: normalize(`${h.name} ${h.uploader} ${h.translator} ${h.hakoId ?? ""}`),
           _lastUpdatedTs: h.lastUpdated ? new Date(h.lastUpdated).getTime() : Number.NEGATIVE_INFINITY,
         }));
         if (!cancelled) setItems(indexed);
@@ -109,24 +102,21 @@ export function HakoTable() {
     return { total: items.length, withEpub, withPdf };
   }, [items]);
 
-  const filtered = useMemo(() => {
-    const tokens = normalize(query).split(/\s+/).filter(Boolean);
-    if (tokens.length === 0 && filter === "all") return items;
-    return items.filter((h) => {
-      if (filter === "epub" && !h.epub) return false;
-      if (filter === "pdf" && !h.pdf) return false;
-      if (tokens.length === 0) return true;
-      const hay = h._search;
-      for (const t of tokens) {
-        if (!hay.includes(t)) return false;
-      }
-      return true;
-    });
-  }, [items, query, filter]);
+  const fileFiltered = useMemo(() => {
+    if (filter === "all") return items;
+    return items.filter((h) => (filter === "epub" ? !!h.epub : !!h.pdf));
+  }, [items, filter]);
+
+  const filtered = useFuzzySearch(fileFiltered, query, HAKO_SEARCH_KEYS);
 
   const sorted = useMemo(() => {
+    // Preserve fuzzy relevance ranking when the user hasn't picked a non-default sort.
+    const hasQuery = query.trim().length > 0;
     const arr = filtered.slice();
     const dir = sortDir === "asc" ? 1 : -1;
+    if (hasQuery && sortKey === "lastUpdated" && sortDir === "desc") {
+      return arr;
+    }
     if (sortKey === "lastUpdated") {
       arr.sort((a, b) => (a._lastUpdatedTs - b._lastUpdatedTs) * dir);
     } else {
@@ -137,7 +127,7 @@ export function HakoTable() {
       });
     }
     return arr;
-  }, [filtered, sortKey, sortDir]);
+  }, [filtered, sortKey, sortDir, query]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
