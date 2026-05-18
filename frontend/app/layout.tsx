@@ -31,9 +31,8 @@ const poppins = Poppins({
   display: "swap",
 });
 
-const title = "Light Novel Hub - Đọc Light Novel tiếng Nhật miễn phí";
-const description =
-  "Chia sẻ truyện raw Light Novel, tiểu thuyết gốc tiếng Nhật. Đọc miễn phí KonoRano và những tạp chí Light Novel ấn tượng đã từng được phát hành.";
+const title = "Light Novel Hub - Thư viện Light Novel miễn phí";
+const description = "Đọc Light Novel miễn phí. Chia sẻ bộ sưu tập KonoRano và tổng hợp tài nguyên Light Novel miễn phí.";
 
 export const metadata: Metadata = {
   title: title,
@@ -43,6 +42,7 @@ export const metadata: Metadata = {
   keywords: [
     "light novel",
     "đọc light novel",
+    "thư viện light novel",
     "ln",
     "ranobe",
     "ranobe reader",

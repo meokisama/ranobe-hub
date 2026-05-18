@@ -158,12 +158,20 @@ export function MagazineGrid() {
             </span>
           </p>
         </div>
-        <Link href="https://ranobe.vn" target="_blank">
-          <Button size="lg" className="cursor-pointer bg-orange-700 hover:bg-orange-800 py-6 text-white shadow-lg md:shadow-xl shadow-orange-300/30">
-            Thay vào đó, đọc blog
-            <ArrowRight className="size-5" />
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <Link href="https://ranobe.vn" target="_blank">
+            <Button size="lg" className="cursor-pointer bg-orange-700 hover:bg-orange-800 py-6 text-white shadow-lg md:shadow-xl shadow-orange-300/30">
+              Thay vào đó, đọc blog
+              <ArrowRight className="size-5" />
+            </Button>
+          </Link>
+          <Link href="/resources">
+            <Button size="lg" className="cursor-pointer bg-orange-700 hover:bg-orange-800 py-6 text-white shadow-lg md:shadow-xl shadow-orange-300/30">
+              Hoặc, tới bộ sưu tập Hako
+              <ArrowRight className="size-5" />
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ResourcesSplashScreen from "@/components/resources/splash-screen";
 import { HakoTable } from "@/components/resources/hako-table";
 
-const title = "Tài Nguyên - Đọc Light Novel miễn phí / Light Novel Hub";
+const title = "Tài Nguyên - Đọc Light Novel miễn phí";
 const description = "Tổng hợp tài nguyên Light Novel miễn phí.";
 
 export const metadata: Metadata = {
