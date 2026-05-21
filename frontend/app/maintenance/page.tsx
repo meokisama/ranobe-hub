@@ -19,9 +19,9 @@ const petals = [
   { left: "65%", top: "85%", size: 22, delay: 0.3, duration: 6.5 },
 ];
 
-export default function NotFound() {
+export default function MaintenancePage() {
   return (
-    <main className="fixed inset-0 z-40 flex w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#fff5ec] via-[#ffe9e0] to-[#ffd9e4] px-6 py-16">
+    <main className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#fff5ec] via-[#ffe9e0] to-[#ffd9e4] px-6 py-16">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-32 top-10 size-96 rounded-full bg-rose-200/50 blur-3xl" />
         <div className="absolute -right-32 bottom-10 size-96 rounded-full bg-rose-200/40 blur-3xl" />
@@ -54,7 +54,7 @@ export default function NotFound() {
         <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="relative mb-2">
           <Image
             src="/buta.png"
-            alt="lost"
+            alt="onsen"
             width={480}
             height={320}
             priority
@@ -68,7 +68,7 @@ export default function NotFound() {
           transition={{ delay: 0.3, type: "spring", stiffness: 180, damping: 14 }}
           className={`${yusei.className} flex items-end text-6xl leading-normal tracking-tight sm:text-7xl md:text-8xl`}
         >
-          {"baa~ka~".split("").map((ch, i) => (
+          {"nyaaa~".split("").map((ch, i) => (
             <motion.span
               key={i}
               className="inline-block text-transparent bg-gradient-to-br from-rose-400 via-pink-400 to-orange-400 bg-clip-text drop-shadow-[0_2px_8px_rgba(244,114,182,0.25)]"

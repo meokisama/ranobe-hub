@@ -14,7 +14,7 @@ const navItems = [
 export function SiteHeader() {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/maintenance")) return null;
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background/70 backdrop-blur-md">

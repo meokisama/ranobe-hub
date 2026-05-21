@@ -75,7 +75,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${lexend.variable} ${jaro.variable} ${playfair_display.variable} ${poppins.variable} antialiased`}>
-        <SiteHeader />
+        {process.env.MAINTENANCE_MODE !== "true" && <SiteHeader />}
         {children}
         <Toaster richColors />
       </body>

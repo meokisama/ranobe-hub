@@ -2,8 +2,17 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Chế độ bảo trì: rewrite mọi route (kể cả /admin) về /maintenance.
+  if (process.env.MAINTENANCE_MODE === "true" && !pathname.startsWith("/maintenance")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/maintenance";
+    return NextResponse.rewrite(url, { status: 503 });
+  }
+
   // Kiểm tra nếu đang truy cập route /admin
-  if (request.nextUrl.pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/admin")) {
     // Bỏ qua route /admin/login
     if (request.nextUrl.pathname === "/admin/login") {
       // Nếu đã có token hợp lệ, chuyển hướng về /admin
@@ -32,9 +41,7 @@ export function proxy(request: NextRequest) {
     const expiresDate = new Date(tokenExpires);
     if (expiresDate < new Date()) {
       // Xóa cookie khi token hết hạn
-      const response = NextResponse.redirect(
-        new URL("/admin/login", request.url)
-      );
+      const response = NextResponse.redirect(new URL("/admin/login", request.url));
       response.cookies.delete("adminToken");
       response.cookies.delete("adminTokenExpires");
       return response;
@@ -54,7 +61,8 @@ export function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Chỉ áp dụng middleware cho các route bắt đầu bằng /admin
+// Áp dụng middleware cho mọi route (trừ static assets), để vừa gate /admin
+// vừa có thể bật chế độ bảo trì cho cả site công khai.
 export const config = {
-  matcher: "/admin/:path*",
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.[\\w]+$).*)"],
 };
