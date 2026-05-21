@@ -68,7 +68,7 @@ export default function MaintenancePage() {
           transition={{ delay: 0.3, type: "spring", stiffness: 180, damping: 14 }}
           className={`${yusei.className} flex items-end text-6xl leading-normal tracking-tight sm:text-7xl md:text-8xl`}
         >
-          {"nyaaa~".split("").map((ch, i) => (
+          {"baa~ka~".split("").map((ch, i) => (
             <motion.span
               key={i}
               className="inline-block text-transparent bg-gradient-to-br from-rose-400 via-pink-400 to-orange-400 bg-clip-text drop-shadow-[0_2px_8px_rgba(244,114,182,0.25)]"
