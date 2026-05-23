@@ -8,13 +8,13 @@ const SplashScreen = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Animation timing constants
-  const TOTAL_DURATION = 10000;
-  const FADE_IN_DELAY = 2000;
-  const TEXT_FADE_DELAY = 3500;
-  const CIRCLE_REVEAL_DELAY = 6000;
-  const FADE_IN_DURATION = 1500;
-  const TEXT_FADE_DURATION = 1500;
-  const CIRCLE_REVEAL_DURATION = 2000;
+  const TOTAL_DURATION = 5500;
+  const FADE_IN_DELAY = 500;
+  const TEXT_FADE_DELAY = 1500;
+  const CIRCLE_REVEAL_DELAY = 3000;
+  const FADE_IN_DURATION = 1000;
+  const TEXT_FADE_DURATION = 1000;
+  const CIRCLE_REVEAL_DURATION = 1500;
 
   useEffect(() => {
     if (sessionStorage.getItem("splash-home-seen")) {
@@ -29,7 +29,7 @@ const SplashScreen = () => {
       document.body.style.position = "";
       document.body.style.width = "";
       setShouldUnmount(true);
-    }, TOTAL_DURATION + 1000);
+    }, TOTAL_DURATION + 500);
 
     return () => {
       clearTimeout(timeoutId);
@@ -90,7 +90,6 @@ const SplashScreen = () => {
             width={913}
             height={1302}
             className="w-full h-full object-cover object-[center_25%] lg:object-top select-none pointer-events-none"
-            priority
             onLoad={handleImageLoad}
             quality={75}
             placeholder="blur"
@@ -115,7 +114,6 @@ const SplashScreen = () => {
             width={913}
             height={1302}
             className="w-full h-full object-cover object-top select-none pointer-events-none"
-            priority
             onLoad={handleImageLoad}
             quality={75}
             placeholder="blur"
@@ -138,7 +136,6 @@ const SplashScreen = () => {
             width={913}
             height={1302}
             className="w-full h-full object-cover object-top select-none pointer-events-none"
-            priority
             onLoad={handleImageLoad}
             quality={75}
             placeholder="blur"

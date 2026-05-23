@@ -4,7 +4,8 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 
-const TOTAL_DURATION = 5200;
+const TOTAL_DURATION = 4000;
+const START_DELAY = 0.5;
 
 const ResourcesSplashScreen = () => {
   const reduceMotion = useReducedMotion();
@@ -21,7 +22,7 @@ const ResourcesSplashScreen = () => {
       sessionStorage.setItem("splash-resources-seen", "1");
       document.body.style.overflow = "";
       setShouldUnmount(true);
-    }, TOTAL_DURATION + 200);
+    }, TOTAL_DURATION + START_DELAY * 1000 + 200);
 
     return () => {
       document.body.style.overflow = "";
@@ -40,8 +41,9 @@ const ResourcesSplashScreen = () => {
       }}
       transition={{
         duration: TOTAL_DURATION / 1000,
-        times: [0, 0.86, 1],
+        times: [0, 0.98, 1],
         ease: [0.76, 0, 0.24, 1],
+        delay: START_DELAY,
       }}
       style={{ willChange: "clip-path" }}
     >
@@ -51,21 +53,21 @@ const ResourcesSplashScreen = () => {
         className="pointer-events-none absolute -left-32 top-1/4 size-[28rem] rounded-full bg-orange-300/40 blur-3xl"
         initial={{ opacity: 0, scale: 0.6, x: -80 }}
         animate={{ opacity: 1, scale: 1, x: 0 }}
-        transition={{ duration: 1.4, ease: "easeOut" }}
+        transition={{ duration: 1.4, delay: START_DELAY, ease: "easeOut" }}
       />
       <motion.div
         aria-hidden
         className="pointer-events-none absolute -right-32 bottom-1/4 size-[32rem] rounded-full bg-rose-300/40 blur-3xl"
         initial={{ opacity: 0, scale: 0.6, x: 80 }}
         animate={{ opacity: 1, scale: 1, x: 0 }}
-        transition={{ duration: 1.4, delay: 0.1, ease: "easeOut" }}
+        transition={{ duration: 1.4, delay: START_DELAY + 0.1, ease: "easeOut" }}
       />
       <motion.div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-1/2 size-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-200/30 blur-3xl"
         initial={{ opacity: 0, scale: 0.4 }}
         animate={{ opacity: 1, scale: 1.1 }}
-        transition={{ duration: 1.6, delay: 0.2, ease: "easeOut" }}
+        transition={{ duration: 1.6, delay: START_DELAY + 0.2, ease: "easeOut" }}
       />
 
       {/* Floating particles */}
@@ -84,7 +86,7 @@ const ResourcesSplashScreen = () => {
               animate={{ y: "-120vh", opacity: [0, 1, 1, 0] }}
               transition={{
                 duration,
-                delay: 0.6 + delay,
+                delay: START_DELAY + 0.6 + delay,
                 ease: "easeOut",
                 times: [0, 0.15, 0.85, 1],
               }}
@@ -102,8 +104,8 @@ const ResourcesSplashScreen = () => {
             type: "spring",
             stiffness: 140,
             damping: 14,
-            mass: 0.9,
-            delay: 0.15,
+            mass: 1.5,
+            delay: START_DELAY + 0.15,
           }}
           className="relative"
         >
@@ -112,14 +114,13 @@ const ResourcesSplashScreen = () => {
             className="absolute inset-0 -z-10 rounded-full bg-gradient-to-br from-orange-400/40 via-amber-300/40 to-rose-400/40 blur-2xl"
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: [0.6, 1.4, 1.1], opacity: [0, 0.9, 0.6] }}
-            transition={{ duration: 1.6, delay: 0.4, ease: "easeOut" }}
+            transition={{ duration: 1.6, delay: START_DELAY + 0.4, ease: "easeOut" }}
           />
           <Image
             src="/header-icon.png"
             alt="Ranobe Hub"
             width={120}
             height={120}
-            priority
             className="size-24 select-none pointer-events-none drop-shadow-[0_8px_24px_rgba(249,115,22,0.35)] sm:size-28"
           />
         </motion.div>
@@ -129,7 +130,7 @@ const ResourcesSplashScreen = () => {
           className="mt-6 overflow-hidden"
           initial={{ clipPath: "inset(0 100% 0 0)" }}
           animate={{ clipPath: "inset(0 0% 0 0)" }}
-          transition={{ duration: 1, delay: 0.9, ease: [0.76, 0, 0.24, 1] }}
+          transition={{ duration: 1, delay: START_DELAY + 0.9, ease: [0.76, 0, 0.24, 1] }}
         >
           <Image
             src="/header-text.png"
@@ -147,41 +148,21 @@ const ResourcesSplashScreen = () => {
             className="block h-px bg-gradient-to-r from-transparent via-orange-400/80 to-orange-500/80"
             initial={{ width: 0 }}
             animate={{ width: 80 }}
-            transition={{ duration: 0.7, delay: 1.3, ease: "easeOut" }}
+            transition={{ duration: 0.7, delay: START_DELAY + 1.3, ease: "easeOut" }}
           />
           <motion.span
             className="block size-1.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4, delay: 1.55, ease: "backOut" }}
+            transition={{ duration: 0.4, delay: START_DELAY + 1.55, ease: "backOut" }}
           />
           <motion.span
             className="block h-px bg-gradient-to-l from-transparent via-rose-400/80 to-rose-500/80"
             initial={{ width: 0 }}
             animate={{ width: 80 }}
-            transition={{ duration: 0.7, delay: 1.3, ease: "easeOut" }}
+            transition={{ duration: 0.7, delay: START_DELAY + 1.3, ease: "easeOut" }}
           />
         </div>
-
-        {/* Loading shimmer bar */}
-        <motion.div
-          className="relative mt-8 h-0.5 w-48 overflow-hidden rounded-full bg-orange-100"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 2.6 }}
-        >
-          <motion.span
-            className="absolute inset-y-0 left-0 w-1/3 rounded-full bg-gradient-to-r from-orange-400 via-amber-400 to-rose-400 shadow-[0_0_10px_rgba(249,115,22,0.6)]"
-            initial={{ x: "-100%" }}
-            animate={{ x: "300%" }}
-            transition={{
-              duration: 1.2,
-              delay: 2.6,
-              ease: "easeInOut",
-              repeat: Infinity,
-            }}
-          />
-        </motion.div>
       </div>
 
       {/* Top/bottom hairlines that slide in from edges */}
@@ -190,7 +171,7 @@ const ResourcesSplashScreen = () => {
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-300/70 to-transparent"
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
-        transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
+        transition={{ duration: 1, delay: START_DELAY + 0.4, ease: "easeOut" }}
         style={{ transformOrigin: "center" }}
       />
       <motion.span
@@ -198,7 +179,7 @@ const ResourcesSplashScreen = () => {
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-rose-300/70 to-transparent"
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
-        transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
+        transition={{ duration: 1, delay: START_DELAY + 0.4, ease: "easeOut" }}
         style={{ transformOrigin: "center" }}
       />
     </motion.div>
