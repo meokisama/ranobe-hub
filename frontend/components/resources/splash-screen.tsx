@@ -7,22 +7,25 @@ import { useEffect, useState } from "react";
 const TOTAL_DURATION = 4000;
 const START_DELAY = 0.5;
 
+export const RESOURCES_SPLASH_DURATION_MS = TOTAL_DURATION + START_DELAY * 1000 + 200;
+export const RESOURCES_SPLASH_STORAGE_KEY = "splash-resources-seen";
+
 const ResourcesSplashScreen = () => {
   const reduceMotion = useReducedMotion();
   const [shouldUnmount, setShouldUnmount] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("splash-resources-seen")) {
+    if (sessionStorage.getItem(RESOURCES_SPLASH_STORAGE_KEY)) {
       setShouldUnmount(true);
       return;
     }
 
     document.body.style.overflow = "hidden";
     const timeoutId = setTimeout(() => {
-      sessionStorage.setItem("splash-resources-seen", "1");
+      sessionStorage.setItem(RESOURCES_SPLASH_STORAGE_KEY, "1");
       document.body.style.overflow = "";
       setShouldUnmount(true);
-    }, TOTAL_DURATION + START_DELAY * 1000 + 200);
+    }, RESOURCES_SPLASH_DURATION_MS);
 
     return () => {
       document.body.style.overflow = "";

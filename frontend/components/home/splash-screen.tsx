@@ -3,21 +3,23 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
+const TOTAL_DURATION = 5500;
+const FADE_IN_DELAY = 500;
+const TEXT_FADE_DELAY = 1500;
+const CIRCLE_REVEAL_DELAY = 3000;
+const FADE_IN_DURATION = 1000;
+const TEXT_FADE_DURATION = 1000;
+const CIRCLE_REVEAL_DURATION = 1500;
+
+export const HOME_SPLASH_DURATION_MS = TOTAL_DURATION + 500;
+export const HOME_SPLASH_STORAGE_KEY = "splash-home-seen";
+
 const SplashScreen = () => {
   const [shouldUnmount, setShouldUnmount] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // Animation timing constants
-  const TOTAL_DURATION = 5500;
-  const FADE_IN_DELAY = 500;
-  const TEXT_FADE_DELAY = 1500;
-  const CIRCLE_REVEAL_DELAY = 3000;
-  const FADE_IN_DURATION = 1000;
-  const TEXT_FADE_DURATION = 1000;
-  const CIRCLE_REVEAL_DURATION = 1500;
-
   useEffect(() => {
-    if (sessionStorage.getItem("splash-home-seen")) {
+    if (sessionStorage.getItem(HOME_SPLASH_STORAGE_KEY)) {
       setShouldUnmount(true);
       return;
     }
@@ -25,11 +27,11 @@ const SplashScreen = () => {
     document.body.style.position = "fixed";
     document.body.style.width = "100vw";
     const timeoutId = setTimeout(() => {
-      sessionStorage.setItem("splash-home-seen", "1");
+      sessionStorage.setItem(HOME_SPLASH_STORAGE_KEY, "1");
       document.body.style.position = "";
       document.body.style.width = "";
       setShouldUnmount(true);
-    }, TOTAL_DURATION + 500);
+    }, HOME_SPLASH_DURATION_MS);
 
     return () => {
       clearTimeout(timeoutId);
