@@ -87,6 +87,15 @@ export default function MaintenancePage() {
             </motion.span>
           ))}
         </motion.h1>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4, duration: 0.6, ease: "easeOut" }}
+          className="mt-8 rounded-2xl border border-rose-200/70 bg-white/60 px-4 py-3 shadow-[0_8px_24px_-12px_rgba(244,114,182,0.35)] backdrop-blur-md sm:px-5 sm:py-4"
+        >
+          <p className="text-center text-sm leading-relaxed text-rose-900/80 sm:text-[15px]">Tạm dừng do chạm giới hạn Vercel</p>
+        </motion.div>
       </motion.div>
     </main>
   );

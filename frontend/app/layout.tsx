@@ -72,10 +72,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const maintenance = process.env.MAINTENANCE_MODE === "true";
   return (
     <html lang="en">
       <body className={`${lexend.variable} ${jaro.variable} ${playfair_display.variable} ${poppins.variable} antialiased`}>
-        <SiteHeader />
+        {!maintenance && <SiteHeader />}
         {children}
         <Toaster richColors />
       </body>
