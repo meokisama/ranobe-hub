@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
 const TOTAL_DURATION = 4000;
 const START_DELAY = 0.5;
 
-export const RESOURCES_SPLASH_DURATION_MS = TOTAL_DURATION + START_DELAY * 1000 + 200;
-export const RESOURCES_SPLASH_STORAGE_KEY = "splash-resources-seen";
+const RESOURCES_SPLASH_DURATION_MS = TOTAL_DURATION + START_DELAY * 1000 + 200;
+const RESOURCES_SPLASH_STORAGE_KEY = "splash-resources-seen";
 
 const ResourcesSplashScreen = () => {
   const reduceMotion = useReducedMotion();

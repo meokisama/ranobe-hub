@@ -45,6 +45,7 @@ export function ContentCard(props: ContentCardProps) {
             height={430}
             className="w-full h-full object-cover scale-[101.5%]"
             loading="lazy"
+            fetchPriority="low"
             placeholder="blur"
             blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P7jfwAJNQNlJq2hkgAAAABJRU5ErkJggg=="
           />

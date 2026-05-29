@@ -1,100 +1,34 @@
-"use client";
+import { Ebook, Publisher } from "@/lib/types";
+import { EbookGridInteractive } from "./ebook-grid-interactive";
 
-import { useEffect, useMemo, useState, useRef } from "react";
-import { ContentCard } from "@/components/common/content-card";
-import { api } from "@/lib/api";
-import { Ebook } from "@/lib/types";
-import { ContentFilters } from "@/components/common/content-filters";
-import { Pagination } from "@/components/ui/pagination";
-import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-const EBOOK_SEARCH_KEYS: ReadonlyArray<FuzzyKey<Ebook>> = [
-  { name: "name", weight: 3 },
-  { name: "author", weight: 1 },
-  { name: "illustrator", weight: 1 },
-];
-
-export function EbookGrid() {
-  const [allEbooks, setAllEbooks] = useState<Ebook[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [selectedPublisher, setSelectedPublisher] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
-  const filterRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const fetchEbooks = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get("/ebooks?limit=1000");
-        setAllEbooks(res.data.ebooks);
-      } catch (err) {
-        console.error("Lỗi khi tải danh sách ebook:", err);
-        setError("Không thể tải danh sách ebook");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEbooks();
-  }, []);
-
-  // Reset current page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortOrder, selectedPublisher]);
-
-  const publisherFiltered = useMemo(
-    () => (selectedPublisher ? allEbooks.filter((e) => e.publisher._id === selectedPublisher) : allEbooks),
-    [allEbooks, selectedPublisher],
-  );
-
-  const searchedEbooks = useFuzzySearch(publisherFiltered, searchQuery, EBOOK_SEARCH_KEYS);
-
-  // Sort ebooks (only when no active search; fuzzy results are ranked by relevance)
-  const sortedEbooks = useMemo(() => {
-    if (searchQuery.trim()) return searchedEbooks;
-    const arr = searchedEbooks.slice();
-    arr.sort((a, b) => {
-      const dateA = new Date(a.releaseDate).getTime();
-      const dateB = new Date(b.releaseDate).getTime();
-      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-    });
-    return arr;
-  }, [searchedEbooks, searchQuery, sortOrder]);
-
-  // Calculate pagination
-  const totalPages = Math.ceil(sortedEbooks.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentEbooks = sortedEbooks.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Smooth scroll to filter section
-    if (filterRef.current) {
-      const filterTop = filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
-      window.scrollTo({
-        top: filterTop,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  if (loading) {
-    return <div className="flex justify-center py-12">Đang tải...</div>;
+async function getEbooks(): Promise<Ebook[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/ebooks?limit=1000`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.ebooks ?? [];
+  } catch (err) {
+    console.error("Lỗi khi tải danh sách ebook:", err);
+    return [];
   }
+}
 
-  if (error) {
-    return <div className="text-center text-red-500 py-12">{error}</div>;
+async function getPublishers(): Promise<Publisher[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/publishers`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error("Lỗi khi tải danh sách nhãn hiệu:", err);
+    return [];
   }
+}
 
-  if (allEbooks.length === 0) {
-    return <div className="text-center py-12 text-muted-foreground">Chưa có ebook nào trong thư viện</div>;
-  }
+export async function EbookGrid() {
+  const [ebooks, publishers] = await Promise.all([getEbooks(), getPublishers()]);
 
   return (
     <div className="max-w-screen-xl mx-auto p-4 min-h-screen isolate">
@@ -111,19 +45,7 @@ export function EbookGrid() {
           </div>
         </div>
       </div>
-      <div ref={filterRef}>
-        <ContentFilters contentType="ebook" onSearch={setSearchQuery} onSort={setSortOrder} onPublisherFilter={setSelectedPublisher} />
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-y-10">
-        {currentEbooks.map((ebook) => (
-          <ContentCard key={ebook._id} contentType="ebook" content={ebook} />
-        ))}
-      </div>
-      {totalPages > 1 && (
-        <div className="mt-8">
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
-        </div>
-      )}
+      <EbookGridInteractive initialEbooks={ebooks} initialPublishers={publishers} />
     </div>
   );
 }

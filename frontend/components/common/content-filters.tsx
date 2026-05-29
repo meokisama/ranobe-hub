@@ -17,13 +17,14 @@ interface ContentFiltersProps {
   onSort: (sort: "asc" | "desc") => void;
   onPublisherFilter?: (publisher: string) => void;
   action?: React.ReactNode;
+  initialPublishers?: Publisher[];
 }
 
-export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilter, action }: ContentFiltersProps) {
+export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilter, action, initialPublishers }: ContentFiltersProps) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"asc" | "desc">("desc");
   const [selectedPublisher, setSelectedPublisher] = useState<string>("all");
-  const [publishers, setPublishers] = useState<Publisher[]>([]);
+  const [publishers, setPublishers] = useState<Publisher[]>(initialPublishers ?? []);
 
   const isEbook = contentType === "ebook";
   const placeholder =
@@ -33,23 +34,21 @@ export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilte
       ? "Tìm theo tên, uploader, translator hoặc ID..."
       : "Tìm kiếm theo tên sách...";
 
-  const fetchPublishers = async () => {
-    if (!isEbook) return; // Only fetch publishers for ebooks
-
-    try {
-      const response = await api.get("/publishers");
-      setPublishers(response.data);
-    } catch (error) {
-      console.error("Lỗi khi lấy danh sách nhãn hiệu:", error);
-    }
-  };
-
   useEffect(() => {
-    if (isEbook) {
-      fetchPublishers();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEbook]);
+    if (!isEbook || initialPublishers) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await api.get("/publishers");
+        if (!cancelled) setPublishers(response.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách nhãn hiệu:", error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isEbook, initialPublishers]);
 
   const handleSearch = (value: string) => {
     setSearch(value);

@@ -1,23 +1,28 @@
+import { Suspense } from "react";
 import { CoverCarousel } from "@/components/home/covers-carousel";
 import { EbookGrid } from "@/components/home/ebook-grid";
 import { KonoranoGrid } from "@/components/home/konorano-grid";
 import { MagazineGrid } from "@/components/home/magazine-grid";
 import { Promo } from "@/components/home/promo";
-import SplashScreen, { HOME_SPLASH_DURATION_MS, HOME_SPLASH_STORAGE_KEY } from "@/components/home/splash-screen";
+import SplashScreen from "@/components/home/splash-screen";
 import SubscriberForm from "@/components/home/subscribe-form";
-import { SplashGate } from "@/components/common/splash-gate";
 
 export default function HomePage() {
   return (
-    <SplashGate splash={<SplashScreen />} storageKey={HOME_SPLASH_STORAGE_KEY} durationMs={HOME_SPLASH_DURATION_MS}>
+    <>
+      <SplashScreen />
       <div className="bg-[#fffbfb]">
         <CoverCarousel />
         <Promo />
-        <EbookGrid />
-        <KonoranoGrid />
+        <Suspense fallback={null}>
+          <EbookGrid />
+        </Suspense>
+        <Suspense fallback={null}>
+          <KonoranoGrid />
+        </Suspense>
         <MagazineGrid />
         <SubscriberForm />
       </div>
-    </SplashGate>
+    </>
   );
 }

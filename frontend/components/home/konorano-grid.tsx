@@ -1,89 +1,21 @@
-"use client";
-
-import { useEffect, useState, useRef } from "react";
-import { ContentCard } from "@/components/common/content-card";
-import { api } from "@/lib/api";
 import { Konorano } from "@/lib/types";
-// import { ContentFilters } from "@/components/shared/content-filters";
-import { Pagination } from "@/components/ui/pagination";
+import { KonoranoGridInteractive } from "./konorano-grid-interactive";
 
-export function KonoranoGrid() {
-  const [allKonoranos, setAllKonoranos] = useState<Konorano[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchQuery, setSearchQuery] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-  const filterRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const fetchKonoranos = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get("/konoranos?limit=1000");
-        setAllKonoranos(res.data.konoranos);
-      } catch (err) {
-        console.error("Lỗi khi tải danh sách konorano:", err);
-        setError("Không thể tải danh sách konorano");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchKonoranos();
-  }, []);
-
-  // Reset current page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortOrder]);
-
-  // Filter konoranos
-  const filteredKonoranos = allKonoranos.filter((konorano) => {
-    const matchesSearch = searchQuery ? konorano.name.toLowerCase().includes(searchQuery.toLowerCase()) : true;
-
-    return matchesSearch;
-  });
-
-  // Sort konoranos
-  const sortedKonoranos = [...filteredKonoranos].sort((a, b) => {
-    const dateA = new Date(a.releaseDate).getTime();
-    const dateB = new Date(b.releaseDate).getTime();
-    return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-  });
-
-  // Calculate pagination
-  const totalPages = Math.ceil(sortedKonoranos.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentKonoranos = sortedKonoranos.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Smooth scroll to filter section
-    if (filterRef.current) {
-      const filterTop = filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
-      window.scrollTo({
-        top: filterTop,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  if (loading) {
-    return <div className="flex justify-center py-12">Đang tải...</div>;
+async function getKonoranos(): Promise<Konorano[]> {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+  try {
+    const res = await fetch(`${base}/api/konoranos?limit=1000`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.konoranos ?? [];
+  } catch (err) {
+    console.error("Lỗi khi tải danh sách konorano:", err);
+    return [];
   }
+}
 
-  if (error) {
-    return <div className="text-center text-red-500 py-12">{error}</div>;
-  }
-
-  if (allKonoranos.length === 0) {
-    return <div className="text-center py-12 text-muted-foreground">Chưa có konorano nào trong thư viện</div>;
-  }
+export async function KonoranoGrid() {
+  const konoranos = await getKonoranos();
 
   return (
     <div className="max-w-screen-xl mx-auto p-4 pb-12 isolate">
@@ -106,23 +38,7 @@ export function KonoranoGrid() {
           </div>
         </div>
       </div>
-      <div ref={filterRef}>
-        {/* <ContentFilters
-          contentType="konorano"
-          onSearch={setSearchQuery}
-          onSort={setSortOrder}
-        /> */}
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-y-10">
-        {currentKonoranos.map((konorano) => (
-          <ContentCard key={konorano._id} contentType="konorano" content={konorano} />
-        ))}
-      </div>
-      {totalPages > 1 && (
-        <div className="mt-8">
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
-        </div>
-      )}
+      <KonoranoGridInteractive initialKonoranos={konoranos} />
     </div>
   );
 }
