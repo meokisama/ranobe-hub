@@ -72,7 +72,6 @@ const SplashScreen = () => {
             priority
             onLoad={handleImageLoad}
             quality={75}
-            placeholder="blur"
           />
         </motion.div>
         <motion.div
@@ -93,7 +92,6 @@ const SplashScreen = () => {
             className="w-full h-full object-cover object-[center_25%] lg:object-top select-none pointer-events-none"
             onLoad={handleImageLoad}
             quality={75}
-            placeholder="blur"
           />
         </motion.div>
       </div>
@@ -116,7 +114,6 @@ const SplashScreen = () => {
             className="w-full h-full object-cover object-top select-none pointer-events-none"
             onLoad={handleImageLoad}
             quality={75}
-            placeholder="blur"
           />
         </motion.div>
         <motion.div
@@ -137,7 +134,6 @@ const SplashScreen = () => {
             className="w-full h-full object-cover object-top select-none pointer-events-none"
             onLoad={handleImageLoad}
             quality={75}
-            placeholder="blur"
           />
         </motion.div>
       </div>
