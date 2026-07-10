@@ -4,7 +4,7 @@ import { KonoranoGridInteractive } from "./konorano-grid-interactive";
 async function getKonoranos(): Promise<Konorano[]> {
   const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   try {
-    const res = await fetch(`${base}/api/konoranos?limit=1000`, { next: { revalidate: 60 } });
+    const res = await fetch(`${base}/api/konoranos?limit=1000`, { next: { revalidate: 21600 } });
     if (!res.ok) return [];
     const data = await res.json();
     return data.konoranos ?? [];
