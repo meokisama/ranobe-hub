@@ -5,7 +5,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 async function getEbooks(): Promise<Ebook[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/ebooks?limit=1000`, { next: { revalidate: 21600 } });
+    const res = await fetch(`${API_BASE}/api/ebooks?limit=1000`, { next: { revalidate: 21600, tags: ["ebooks"] } });
     if (!res.ok) return [];
     const data = await res.json();
     return data.ebooks ?? [];
@@ -17,7 +17,7 @@ async function getEbooks(): Promise<Ebook[]> {
 
 async function getPublishers(): Promise<Publisher[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/publishers`, { next: { revalidate: 21600 } });
+    const res = await fetch(`${API_BASE}/api/publishers`, { next: { revalidate: 21600, tags: ["publishers"] } });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];

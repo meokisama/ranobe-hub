@@ -1,5 +1,6 @@
 import Hako from "../models/Hako.js";
 import { clearCache } from "../middleware/cache.js";
+import { revalidateFrontend } from "../utils/revalidate.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
 const HAKO_CACHE_LIST = "cache:/api/hakos";
@@ -11,6 +12,8 @@ const invalidateHakoCache = async (id) => {
   if (id) {
     await clearCache(`cache:/api/hakos/${id}`);
   }
+  // Revalidate trang /resources trên frontend (background, không block response)
+  setImmediate(() => revalidateFrontend("hakos"));
 };
 
 // Lấy tất cả hako (với pagination + search)

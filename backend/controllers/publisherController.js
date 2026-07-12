@@ -1,5 +1,6 @@
 import Publisher from "../models/Publisher.js";
 import Ebook from "../models/Ebook.js";
+import { revalidateFrontend } from "../utils/revalidate.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
 // Lấy tất cả nhãn hiệu
@@ -25,6 +26,8 @@ export const createPublisher = async (req, res) => {
 
     const publisher = new Publisher({ name });
     await publisher.save();
+
+    setImmediate(() => revalidateFrontend("publishers"));
 
     res.json(publisher);
   } catch (err) {
@@ -59,6 +62,8 @@ export const updatePublisher = async (req, res) => {
       return notFoundResponse(res, "nhãn hiệu");
     }
 
+    setImmediate(() => revalidateFrontend("publishers"));
+
     res.json(publisher);
   } catch (err) {
     if (handleObjectIdError(err, res, "nhãn hiệu")) {
@@ -83,6 +88,9 @@ export const deletePublisher = async (req, res) => {
     }
 
     await Publisher.findByIdAndDelete(req.params.id);
+
+    setImmediate(() => revalidateFrontend("publishers"));
+
     res.json({ msg: "Nhãn hiệu đã được xóa" });
   } catch (err) {
     if (handleObjectIdError(err, res, "nhãn hiệu")) {

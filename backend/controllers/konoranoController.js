@@ -1,6 +1,7 @@
 import Konorano from "../models/Konorano.js";
 import { clearCache } from "../middleware/cache.js";
 import { sendNotification } from "./subscriberController.js";
+import { revalidateFrontend } from "../utils/revalidate.js";
 import { deleteOldFile, deleteFileIfExists } from "../utils/fileManager.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
@@ -82,8 +83,9 @@ export const createKonorano = async (req, res) => {
     await clearCache("cache:/api/konoranos");
     await clearCache("cache:/api/konoranos?*");
 
-    // Gửi thông báo cho subscribers (background, không block response)
+    // Gửi thông báo cho subscribers + revalidate frontend (background, không block response)
     setImmediate(() => sendNotification(name));
+    setImmediate(() => revalidateFrontend("konoranos"));
 
     res.json(konorano);
   } catch (err) {
@@ -153,6 +155,8 @@ export const updateKonorano = async (req, res) => {
     await clearCache("cache:/api/konoranos?*");
     await clearCache(`cache:/api/konoranos/${req.params.id}`);
 
+    setImmediate(() => revalidateFrontend("konoranos"));
+
     res.json(updatedKonorano);
   } catch (err) {
     if (handleObjectIdError(err, res, "konorano")) {
@@ -192,6 +196,8 @@ export const deleteKonorano = async (req, res) => {
     await clearCache("cache:/api/konoranos");
     await clearCache("cache:/api/konoranos?*");
     await clearCache(`cache:/api/konoranos/${req.params.id}`);
+
+    setImmediate(() => revalidateFrontend("konoranos"));
 
     res.json({ msg: "Konorano đã được xóa" });
   } catch (err) {

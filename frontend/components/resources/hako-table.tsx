@@ -11,7 +11,7 @@ interface Stats {
 async function getHakos(): Promise<Hako[]> {
   const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   try {
-    const res = await fetch(`${base}/api/hakos?limit=5000`, { next: { revalidate: 21600 } });
+    const res = await fetch(`${base}/api/hakos?limit=5000`, { next: { revalidate: 21600, tags: ["hakos"] } });
     if (!res.ok) return [];
     const data = await res.json();
     return data.hakos ?? [];

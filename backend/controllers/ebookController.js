@@ -2,6 +2,7 @@ import Ebook from "../models/Ebook.js";
 import Publisher from "../models/Publisher.js";
 import { clearCache } from "../middleware/cache.js";
 import { sendNotification } from "./subscriberController.js";
+import { revalidateFrontend } from "../utils/revalidate.js";
 import { deleteOldFile, deleteFileIfExists } from "../utils/fileManager.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
@@ -93,8 +94,9 @@ export const createEbook = async (req, res) => {
     await clearCache("cache:/api/ebooks");
     await clearCache("cache:/api/ebooks?*");
 
-    // Gửi thông báo cho subscribers (background, không block response)
+    // Gửi thông báo cho subscribers + revalidate frontend (background, không block response)
     setImmediate(() => sendNotification(name));
+    setImmediate(() => revalidateFrontend("ebooks"));
 
     res.json(populatedEbook);
   } catch (err) {
@@ -167,6 +169,8 @@ export const updateEbook = async (req, res) => {
     await clearCache("cache:/api/ebooks?*");
     await clearCache(`cache:/api/ebooks/${req.params.id}`);
 
+    setImmediate(() => revalidateFrontend("ebooks"));
+
     res.json(updatedEbook);
   } catch (err) {
     if (handleObjectIdError(err, res, "ebook")) {
@@ -206,6 +210,8 @@ export const deleteEbook = async (req, res) => {
     await clearCache("cache:/api/ebooks");
     await clearCache("cache:/api/ebooks?*");
     await clearCache(`cache:/api/ebooks/${req.params.id}`);
+
+    setImmediate(() => revalidateFrontend("ebooks"));
 
     res.json({ msg: "Ebook đã được xóa" });
   } catch (err) {
