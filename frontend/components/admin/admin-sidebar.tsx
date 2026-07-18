@@ -64,7 +64,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
         <div className="relative flex h-16 items-center justify-between overflow-hidden border-b px-6">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-rose-50/80 via-pink-50/50 to-violet-50/60 dark:from-rose-950/30 dark:via-pink-950/20 dark:to-violet-950/30"
+            className="pointer-events-none absolute inset-0 bg-linear-to-r from-rose-50/80 via-pink-50/50 to-violet-50/60 dark:from-rose-950/30 dark:via-pink-950/20 dark:to-violet-950/30"
           />
           <Link href="/admin" className="group relative flex items-center gap-2" onClick={onClose}>
             <Image
@@ -96,7 +96,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                 className={cn(
                   "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
                   active
-                    ? "bg-gradient-to-r from-primary to-primary/85 text-primary-foreground shadow-md shadow-primary/20"
+                    ? "bg-linear-to-r from-primary to-primary/85 text-primary-foreground shadow-md shadow-primary/20"
                     : "text-muted-foreground hover:bg-rose-50/70 hover:text-foreground dark:hover:bg-rose-950/30",
                 )}
               >

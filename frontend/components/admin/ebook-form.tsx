@@ -13,6 +13,7 @@ import { Ebook } from "@/lib/types";
 import Image from "next/image";
 import { PublisherDialog } from "./publisher-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { extractEpubForForm } from "@/lib/epub-metadata";
 
 interface EbookFormProps {
   ebook: Ebook | null;
@@ -38,9 +39,10 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
   const [ebookFile, setEbookFile] = useState<File | null>(null);
   const [publishers, setPublishers] = useState<Publisher[]>([]);
   const [coverPreview, setCoverPreview] = useState<string | null>(
-    ebook ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${ebook.coverImage}` : null
+    ebook ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${ebook.coverImage}` : null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -83,9 +85,36 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
     }
   };
 
-  const handleEbookChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setEbookFile(e.target.files[0]);
+  const handleEbookChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setEbookFile(file);
+
+    // Auto-fill title/author/cover from the EPUB so the admin doesn't retype them.
+    // Runs entirely in the browser; PDFs and unreadable EPUBs just fall through to
+    // manual entry.
+    if (!file.name.toLowerCase().endsWith(".epub")) return;
+    try {
+      setIsParsing(true);
+      const prefill = await extractEpubForForm(file);
+      // Only fill empty fields so we never clobber what the admin already typed.
+      if (prefill.title && !form.getValues("name")) form.setValue("name", prefill.title, { shouldValidate: true });
+      if (prefill.author && !form.getValues("author")) form.setValue("author", prefill.author, { shouldValidate: true });
+      if (prefill.releaseDate && !form.getValues("releaseDate")) form.setValue("releaseDate", prefill.releaseDate, { shouldValidate: true });
+      if (prefill.coverFile && !coverFile) {
+        setCoverFile(prefill.coverFile);
+        setCoverPreview(URL.createObjectURL(prefill.coverFile));
+      }
+      if (prefill.title || prefill.author || prefill.coverFile) {
+        toast.success("Đã tự động điền thông tin từ EPUB", {
+          description: "Kiểm tra lại và chỉnh sửa nếu cần.",
+        });
+      }
+    } catch (error) {
+      console.error("Không đọc được metadata EPUB:", error);
+      // Silent: the admin can still fill everything manually.
+    } finally {
+      setIsParsing(false);
     }
   };
 
@@ -161,7 +190,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/2 space-y-4">
-              <div className="rounded-md h-full border p-2 aspect-[112/159] relative overflow-hidden">
+              <div className="rounded-md h-full border p-2 aspect-112/159 relative overflow-hidden">
                 {coverPreview ? (
                   <Image src={coverPreview} alt="Cover preview" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
                 ) : (
@@ -170,7 +199,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
               </div>
             </div>
 
-            <div className="flex-1 shrink-1 space-y-4">
+            <div className="flex-1 shrink space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -263,8 +292,10 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
 
               <div>
                 <label className="block text-sm font-medium mb-1">{ebook ? "Thay đổi file ebook (không bắt buộc)" : "Tải lên file ebook"}</label>
-                <Input type="file" accept=".epub,.pdf" onChange={handleEbookChange} disabled={isSubmitting} />
-                <p className="text-xs text-muted-foreground mt-1">Định dạng: EPUB, PDF</p>
+                <Input type="file" accept=".epub" onChange={handleEbookChange} disabled={isSubmitting || isParsing} />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {isParsing ? "Đang đọc thông tin từ EPUB..." : "Định dạng: EPUB · Chọn file EPUB sẽ tự điền tên/tác giả/ảnh bìa"}
+                </p>
                 {ebook && <p className="text-xs font-medium mt-2">File hiện tại: {ebook.filePath}</p>}
               </div>
             </div>
