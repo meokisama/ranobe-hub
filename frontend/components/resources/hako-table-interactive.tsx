@@ -324,7 +324,7 @@ function ReadLink({ hakoId, hasEpub }: { hakoId: string | null; hasEpub: boolean
       </span>
     );
   }
-  const href = `https://epub.ranobe.vn/?book=https://r2.ranobe.vn/hako/epub/${hakoId}.epub`;
+  const href = `${process.env.NEXT_PUBLIC_API_URL}/reader?book=https://r2.ranobe.vn/hako/epub/${hakoId}.epub`;
   return (
     <a
       href={href}

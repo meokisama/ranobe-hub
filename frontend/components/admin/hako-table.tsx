@@ -128,7 +128,7 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess, headerAction }: Hako
               currentHakos.map((hako) => {
                 const readUrl =
                   hako.hakoId && hako.epub
-                    ? `https://epub.ranobe.vn/?book=https://r2.ranobe.vn/hako/epub/${hako.hakoId}.epub`
+                    ? `${process.env.NEXT_PUBLIC_API_URL}/reader?book=https://r2.ranobe.vn/hako/epub/${hako.hakoId}.epub`
                     : null;
                 return (
                   <TableRow key={hako._id}>
