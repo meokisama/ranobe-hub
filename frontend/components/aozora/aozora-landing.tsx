@@ -13,22 +13,56 @@ const features = ["Từ điển Yomitan", "Flashcard Anki", "Giọng waifu (TTS)
 
 const ease = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
+// Drifting clouds — negative delays prefill the sky on load
+const clouds = [
+  { top: "13%", w: "18rem", dur: "62s", delay: "-8s", opacity: 0.5 },
+  { top: "30%", w: "25rem", dur: "86s", delay: "-52s", opacity: 0.4 },
+  { top: "50%", w: "14rem", dur: "50s", delay: "-24s", opacity: 0.48 },
+  { top: "68%", w: "21rem", dur: "72s", delay: "-38s", opacity: 0.35 },
+];
+
+function Cloud({ style }: { style: React.CSSProperties }) {
+  return (
+    <svg viewBox="0 0 200 96" className="aozora-cloud absolute h-auto" style={{ filter: "blur(9px)", ...style }} aria-hidden="true">
+      <g fill="#ffffff">
+        <ellipse cx="100" cy="74" rx="94" ry="20" />
+        <circle cx="56" cy="58" r="28" />
+        <circle cx="100" cy="44" r="40" />
+        <circle cx="146" cy="56" r="30" />
+      </g>
+    </svg>
+  );
+}
+
 export function AozoraLanding() {
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden text-slate-800">
       {/* Sky background */}
-      <div
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{ background: "linear-gradient(to bottom, #eaf4ff 0%, #d3e9fd 38%, #b8ddfb 66%, #cfe9fc 100%)" }}
-      />
-      {/* Sun glow */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -z-10 size-[36rem] -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
-      {/* Clouds */}
-      <div className="pointer-events-none absolute -bottom-24 -left-16 -z-10 h-72 w-[36rem] rounded-full bg-white/60 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-28 right-0 -z-10 h-72 w-[40rem] rounded-full bg-white/50 blur-3xl" />
-      {/* Giant watermark */}
-      <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center">
-        <span className="select-none text-[38vw] font-black leading-none text-sky-200/30">青空</span>
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, #eaf4ff 0%, #d3e9fd 38%, #b8ddfb 66%, #cfe9fc 100%)" }} />
+
+        {/* Sun glow */}
+        <div className="absolute -top-40 left-1/2 size-[36rem] -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
+
+        {/* Soft white cloud fields — break up the blue */}
+        <div className="absolute -left-24 top-[8%] h-72 w-[34rem] rounded-full bg-white/55 blur-3xl" />
+        <div className="absolute -right-28 top-[22%] h-80 w-[38rem] rounded-full bg-white/45 blur-3xl" />
+        <div className="absolute left-[12%] top-[46%] h-64 w-[30rem] rounded-full bg-white/40 blur-3xl" />
+        <div className="absolute right-[6%] top-[58%] h-72 w-[32rem] rounded-full bg-white/45 blur-3xl" />
+
+        {/* Ambient bottom haze */}
+        <div className="absolute -bottom-24 -left-16 h-72 w-[36rem] rounded-full bg-white/60 blur-3xl" />
+        <div className="absolute -bottom-28 right-0 h-72 w-[40rem] rounded-full bg-white/50 blur-3xl" />
+
+        {/* Giant watermark */}
+        <div className="absolute inset-0 flex items-center justify-center -mt-8">
+          <span className="select-none text-[38vw] font-black leading-none text-sky-200/30">青空</span>
+        </div>
+
+        {/* Drifting clouds — above the watermark */}
+        {clouds.map((c, i) => (
+          <Cloud key={i} style={{ top: c.top, width: c.w, opacity: c.opacity, animationDuration: c.dur, animationDelay: c.delay }} />
+        ))}
       </div>
 
       {/* Vertical Japanese tagline accent */}
