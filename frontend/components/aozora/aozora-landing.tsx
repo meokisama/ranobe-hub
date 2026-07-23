@@ -4,6 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, type Variants } from "motion/react";
 import { ArrowLeft, Download, Globe } from "lucide-react";
+import { Noto_Sans_JP } from "next/font/google";
+
+const notoSansJp = Noto_Sans_JP({
+  weight: "900",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 const WEB_URL = `${process.env.NEXT_PUBLIC_API_URL}/reader`;
 const DESKTOP_URL = "https://github.com/meokisama/aozora/releases";
@@ -90,7 +97,7 @@ export function AozoraLanding() {
               filter: { duration: 1.6, ease },
               y: { duration: 3.6, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" },
             }}
-            className="select-none text-[38vw] font-black leading-none text-sky-200/30"
+            className={`${notoSansJp.className} select-none text-[38vw] font-black leading-none text-sky-200/30`}
           >
             青空
           </motion.span>
@@ -143,8 +150,8 @@ export function AozoraLanding() {
         </motion.div>
 
         <motion.p variants={rise} className="mt-6 max-w-xl text-base font-light leading-relaxed text-slate-600 sm:text-lg">
-          Trình đọc EPUB dành cho người học tiếng Nhật. Đọc light novel &amp; manga với từ điển tiếng Nhật tích hợp, tạo flashcard Anki, đọc câu văn
-          với giọng waifu và nhiều tính năng khác.
+          Trình đọc EPUB dành cho người học tiếng Nhật. Đọc light novel &amp; manga với từ điển tiếng Nhật tích hợp, tạo flashcard Anki, đọc tiểu
+          thuyết với giọng waifu và nhiều tính năng khác.
         </motion.p>
 
         <motion.div variants={pillsWrap} className="mt-7 flex flex-wrap items-center justify-center gap-2">
