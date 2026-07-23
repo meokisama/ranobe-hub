@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export function SiteFooter() {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/maintenance")) return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/maintenance") || pathname.startsWith("/aozora")) return null;
 
   return (
     <footer className="relative w-full bg-gradient-to-b from-[#fffbfb] to-orange-50">

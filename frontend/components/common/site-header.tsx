@@ -3,18 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Library } from "lucide-react";
+import { House, Library, BookText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Trang Chủ", icon: House },
   { href: "/resources", label: "Tài Nguyên", icon: Library },
+  { href: "/aozora", label: "Aozora", icon: BookText },
 ];
 
 export function SiteHeader() {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/maintenance")) return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/maintenance") || pathname.startsWith("/aozora")) return null;
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background/70 backdrop-blur-md">
@@ -46,7 +47,7 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "group relative flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-300",
+                  "group relative flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-300",
                   active
                     ? "bg-gradient-to-br from-orange-500 via-amber-500 to-rose-500 text-white shadow-md shadow-orange-300/50"
                     : "text-gray-600 hover:text-orange-700",
