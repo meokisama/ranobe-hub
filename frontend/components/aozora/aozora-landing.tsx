@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "motion/react";
+import { motion, type Variants } from "motion/react";
 import { ArrowLeft, Download, Globe } from "lucide-react";
 
 const WEB_URL = `${process.env.NEXT_PUBLIC_API_URL}/reader`;
@@ -12,6 +12,31 @@ const REPO_URL = "https://github.com/meokisama/aozora";
 const features = ["Từ điển Yomitan", "Flashcard Anki", "Giọng waifu (TTS)", "Discord RP", "Tategaki", "Thống kê đọc"];
 
 const ease = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
+const container: Variants = {
+  hidden: {},
+  show: { transition: { delayChildren: 0.15, staggerChildren: 0.14 } },
+};
+
+const rise: Variants = {
+  hidden: { opacity: 0, y: 28, filter: "blur(10px)" },
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.85, ease } },
+};
+
+const logoVariant: Variants = {
+  hidden: { opacity: 0, scale: 0.82, y: -36, filter: "blur(14px)" },
+  show: { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transition: { duration: 1.05, ease } },
+};
+
+const pillsWrap: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+};
+
+const pop: Variants = {
+  hidden: { opacity: 0, scale: 0.7, y: 8 },
+  show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 320, damping: 18 } },
+};
 
 // Drifting clouds — negative delays prefill the sky on load
 const clouds = [
@@ -23,7 +48,7 @@ const clouds = [
 
 function Cloud({ style }: { style: React.CSSProperties }) {
   return (
-    <svg viewBox="0 0 200 96" className="aozora-cloud absolute h-auto" style={{ filter: "blur(9px)", ...style }} aria-hidden="true">
+    <svg viewBox="0 0 200 96" className="aozora-cloud absolute h-auto" style={{ filter: "blur(16px)", ...style }} aria-hidden="true">
       <g fill="#ffffff">
         <ellipse cx="100" cy="74" rx="94" ry="20" />
         <circle cx="56" cy="58" r="28" />
@@ -56,7 +81,19 @@ export function AozoraLanding() {
 
         {/* Giant watermark */}
         <div className="absolute inset-0 flex items-center justify-center -mt-8">
-          <span className="select-none text-[38vw] font-black leading-none text-sky-200/30">青空</span>
+          <motion.span
+            initial={{ opacity: 0, scale: 1.12, filter: "blur(24px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)", y: [0, -22] }}
+            transition={{
+              opacity: { duration: 1.6, ease },
+              scale: { duration: 1.6, ease },
+              filter: { duration: 1.6, ease },
+              y: { duration: 3.6, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" },
+            }}
+            className="select-none text-[38vw] font-black leading-none text-sky-200/30"
+          >
+            青空
+          </motion.span>
         </div>
 
         {/* Drifting clouds — above the watermark */}
@@ -66,12 +103,17 @@ export function AozoraLanding() {
       </div>
 
       {/* Vertical Japanese tagline accent */}
-      <p
-        className="pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 select-none text-lg tracking-[0.35em] text-sky-900/30 md:block lg:right-10"
-        style={{ writingMode: "vertical-rl", fontFamily: "serif" }}
-      >
-        青空の下で、物語が始まる。
-      </p>
+      <div className="pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 md:block lg:right-10">
+        <motion.p
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1.2, ease, delay: 0.9 }}
+          className="select-none text-lg tracking-[0.35em] text-sky-900/30"
+          style={{ writingMode: "vertical-rl", fontFamily: "serif" }}
+        >
+          青空の下で、物語が始まる。
+        </motion.p>
+      </div>
 
       {/* Back link */}
       <Link
@@ -83,8 +125,13 @@ export function AozoraLanding() {
       </Link>
 
       {/* Hero */}
-      <div className="relative z-0 flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
-        <motion.div initial={{ opacity: 0, scale: 0.94, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.9, ease }}>
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="relative z-0 flex flex-1 flex-col items-center justify-center px-6 py-24 text-center"
+      >
+        <motion.div variants={logoVariant}>
           <Image
             src="/aozora/aozora-logo.png"
             alt="Aozora"
@@ -95,38 +142,24 @@ export function AozoraLanding() {
           />
         </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease, delay: 0.25 }}
-          className="mt-6 max-w-xl text-base font-light leading-relaxed text-slate-600 sm:text-lg"
-        >
+        <motion.p variants={rise} className="mt-6 max-w-xl text-base font-light leading-relaxed text-slate-600 sm:text-lg">
           Trình đọc EPUB dành cho người học tiếng Nhật. Đọc light novel &amp; manga với từ điển tiếng Nhật tích hợp, tạo flashcard Anki, đọc câu văn
           với giọng waifu và nhiều tính năng khác.
         </motion.p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease, delay: 0.4 }}
-          className="mt-7 flex flex-wrap items-center justify-center gap-2"
-        >
+        <motion.div variants={pillsWrap} className="mt-7 flex flex-wrap items-center justify-center gap-2">
           {features.map((f) => (
-            <span
+            <motion.span
               key={f}
+              variants={pop}
               className="rounded-full border border-sky-300/70 bg-white/60 px-3 py-1 text-xs font-medium text-sky-800/90 backdrop-blur-sm"
             >
               {f}
-            </span>
+            </motion.span>
           ))}
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease, delay: 0.55 }}
-          className="mt-10 flex flex-col items-center gap-3 sm:flex-row"
-        >
+        <motion.div variants={rise} className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
           <Link
             href={WEB_URL}
             target="_blank"
@@ -145,12 +178,7 @@ export function AozoraLanding() {
           </Link>
         </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, ease, delay: 0.7 }}
-          className="mt-6 text-xs font-light text-slate-500"
-        >
+        <motion.p variants={rise} className="mt-6 text-xs font-light text-slate-500">
           Chi tiết tính năng &amp; mã nguồn •{" "}
           <Link
             href={REPO_URL}
@@ -160,7 +188,7 @@ export function AozoraLanding() {
             Github
           </Link>{" "}
         </motion.p>
-      </div>
+      </motion.div>
     </main>
   );
 }
