@@ -2,9 +2,9 @@
     <img style="width:10%;" src="./frontend/public/logo.png" />
 </p>
 
-<h2 align="center"> Ranobe Hub </h2>
+<h2 align="center">Ranobe Hub</h2>
 
-<h4 align="center"> A central place to share light novels with people who ask to read them. </h4>
+<h4 align="center">My central hub for archiving and sharing light novels with anyone who requests a copy to read.</h4>
 
 <p align="center">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg"/>
