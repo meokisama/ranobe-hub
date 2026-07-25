@@ -3,6 +3,11 @@ import Publisher from "../models/Publisher.js";
 import Ebook from "../models/Ebook.js";
 import { revalidateFrontend } from "../utils/revalidate.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
+import type { TypedRequest } from "../types/request.js";
+
+interface PublisherBody {
+  name: string;
+}
 
 // Get all publishers
 export const getAllPublishers = async (_req: Request, res: Response) => {
@@ -15,7 +20,7 @@ export const getAllPublishers = async (_req: Request, res: Response) => {
 };
 
 // Create publisher
-export const createPublisher = async (req: Request, res: Response) => {
+export const createPublisher = async (req: TypedRequest<PublisherBody>, res: Response) => {
   try {
     const { name } = req.body;
 
@@ -27,7 +32,7 @@ export const createPublisher = async (req: Request, res: Response) => {
     const publisher = new Publisher({ name });
     await publisher.save();
 
-    setImmediate(() => revalidateFrontend("publishers"));
+    setImmediate(() => void revalidateFrontend("publishers"));
 
     res.json(publisher);
   } catch (err) {
@@ -36,7 +41,7 @@ export const createPublisher = async (req: Request, res: Response) => {
 };
 
 // Update publisher
-export const updatePublisher = async (req: Request, res: Response) => {
+export const updatePublisher = async (req: TypedRequest<PublisherBody>, res: Response) => {
   try {
     const { name } = req.body;
 
@@ -55,7 +60,7 @@ export const updatePublisher = async (req: Request, res: Response) => {
       return notFoundResponse(res, "nhãn hiệu");
     }
 
-    setImmediate(() => revalidateFrontend("publishers"));
+    setImmediate(() => void revalidateFrontend("publishers"));
 
     res.json(publisher);
   } catch (err) {
@@ -82,7 +87,7 @@ export const deletePublisher = async (req: Request, res: Response) => {
 
     await Publisher.findByIdAndDelete(req.params.id);
 
-    setImmediate(() => revalidateFrontend("publishers"));
+    setImmediate(() => void revalidateFrontend("publishers"));
 
     res.json({ msg: "Nhãn hiệu đã được xóa" });
   } catch (err) {

@@ -7,18 +7,27 @@ import { revalidateFrontend } from "../utils/revalidate.js";
 import { deleteOldFile, deleteFileIfExists } from "../utils/fileManager.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 import type { UploadedFiles, OldFileRef } from "../types/upload.js";
+import type { TypedRequest } from "../types/request.js";
+
+interface EbookBody {
+  name: string;
+  author: string;
+  illustrator?: string;
+  releaseDate: Date;
+  publisher: string;
+}
 
 const EBOOK_CACHE_LIST = "cache:/api/ebooks";
 const EBOOK_CACHE_LIST_GLOB = "cache:/api/ebooks?*";
 
 const invalidateEbookCache = async (id?: string): Promise<void> => {
-  await clearCache(EBOOK_CACHE_LIST);
-  await clearCache(EBOOK_CACHE_LIST_GLOB);
-  if (id) {
-    await clearCache(`cache:/api/ebooks/${id}`);
-  }
+  await Promise.all([
+    clearCache(EBOOK_CACHE_LIST),
+    clearCache(EBOOK_CACHE_LIST_GLOB),
+    ...(id ? [clearCache(`cache:/api/ebooks/${id}`)] : []),
+  ]);
   // Revalidate frontend (background, non-blocking)
-  setImmediate(() => revalidateFrontend("ebooks"));
+  setImmediate(() => void revalidateFrontend("ebooks"));
 };
 
 // Get all ebooks (paginated)
@@ -65,7 +74,7 @@ export const getEbookById = async (req: Request, res: Response) => {
 };
 
 // Create ebook
-export const createEbook = async (req: Request, res: Response) => {
+export const createEbook = async (req: TypedRequest<EbookBody>, res: Response) => {
   const files = req.files as UploadedFiles;
   // Multer writes files to disk before the handler runs — clean up if anything below fails
   const filesToCleanupOnError: string[] = [];
@@ -107,7 +116,7 @@ export const createEbook = async (req: Request, res: Response) => {
     await invalidateEbookCache();
 
     // Notify subscribers (background, non-blocking)
-    setImmediate(() => sendNotification(name));
+    setImmediate(() => void sendNotification(name));
 
     res.json(populatedEbook);
   } catch (err) {
@@ -120,7 +129,7 @@ export const createEbook = async (req: Request, res: Response) => {
 };
 
 // Update ebook
-export const updateEbook = async (req: Request, res: Response) => {
+export const updateEbook = async (req: TypedRequest<EbookBody>, res: Response) => {
   const files = req.files as UploadedFiles;
   // Newly uploaded files — clean up if downstream fails
   const newFilesToCleanupOnError: string[] = [];

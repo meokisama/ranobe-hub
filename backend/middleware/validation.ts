@@ -7,7 +7,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const firstError = errors.array()[0];
-    validationErrorResponse(res, firstError.msg);
+    validationErrorResponse(res, String(firstError.msg));
     return;
   }
   next();

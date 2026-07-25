@@ -5,6 +5,11 @@ import Subscriber from "../models/Subscriber.js";
 import { serverErrorResponse, validationErrorResponse, notFoundResponse } from "../utils/errorHandler.js";
 import { verifyUnsubscribeToken } from "../utils/unsubscribeToken.js";
 import { buildAdminNotifyEmail, buildConfirmationEmail, buildNewBookEmail, type EmailPayload } from "../utils/emailTemplates.js";
+import type { TypedRequest } from "../types/request.js";
+
+interface SubscribeBody {
+  email: string;
+}
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -33,7 +38,7 @@ const sendBatched = async (emails: EmailPayload[]): Promise<void> => {
 };
 
 // Subscribe
-export const subscribe = async (req: Request, res: Response) => {
+export const subscribe = async (req: TypedRequest<SubscribeBody>, res: Response) => {
   try {
     const { email } = req.body;
 

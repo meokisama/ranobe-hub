@@ -3,18 +3,30 @@ import Hako from "../models/Hako.js";
 import { clearCache } from "../middleware/cache.js";
 import { revalidateFrontend } from "../utils/revalidate.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
+import type { TypedRequest } from "../types/request.js";
+
+// name is required on create but optional on update (partial), hence all fields optional.
+interface HakoBody {
+  hakoId?: string;
+  name?: string;
+  uploader?: string;
+  translator?: string;
+  lastUpdated?: Date;
+  epub?: string;
+  pdf?: string;
+}
 
 const HAKO_CACHE_LIST = "cache:/api/hakos";
 const HAKO_CACHE_LIST_GLOB = "cache:/api/hakos?*";
 
 const invalidateHakoCache = async (id?: string): Promise<void> => {
-  await clearCache(HAKO_CACHE_LIST);
-  await clearCache(HAKO_CACHE_LIST_GLOB);
-  if (id) {
-    await clearCache(`cache:/api/hakos/${id}`);
-  }
+  await Promise.all([
+    clearCache(HAKO_CACHE_LIST),
+    clearCache(HAKO_CACHE_LIST_GLOB),
+    ...(id ? [clearCache(`cache:/api/hakos/${id}`)] : []),
+  ]);
   // Revalidate the frontend /resources page (background, non-blocking)
-  setImmediate(() => revalidateFrontend("hakos"));
+  setImmediate(() => void revalidateFrontend("hakos"));
 };
 
 // Get all hakos (paginated + search)
@@ -89,7 +101,7 @@ export const getHakoByHakoId = async (req: Request, res: Response) => {
 };
 
 // Create hako
-export const createHako = async (req: Request, res: Response) => {
+export const createHako = async (req: TypedRequest<HakoBody>, res: Response) => {
   try {
     const { hakoId, name, uploader, translator, lastUpdated, epub, pdf } = req.body;
 
@@ -123,7 +135,7 @@ export const createHako = async (req: Request, res: Response) => {
 };
 
 // Update hako
-export const updateHako = async (req: Request, res: Response) => {
+export const updateHako = async (req: TypedRequest<HakoBody>, res: Response) => {
   try {
     const { hakoId, name, uploader, translator, lastUpdated, epub, pdf } = req.body;
 

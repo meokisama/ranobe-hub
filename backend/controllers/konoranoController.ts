@@ -6,18 +6,26 @@ import { revalidateFrontend } from "../utils/revalidate.js";
 import { deleteOldFile, deleteFileIfExists } from "../utils/fileManager.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 import type { UploadedFiles, OldFileRef } from "../types/upload.js";
+import type { TypedRequest } from "../types/request.js";
+
+interface KonoranoBody {
+  name: string;
+  author?: string;
+  releaseDate: Date;
+  viURL: string;
+}
 
 const KONORANO_CACHE_LIST = "cache:/api/konoranos";
 const KONORANO_CACHE_LIST_GLOB = "cache:/api/konoranos?*";
 
 const invalidateKonoranoCache = async (id?: string): Promise<void> => {
-  await clearCache(KONORANO_CACHE_LIST);
-  await clearCache(KONORANO_CACHE_LIST_GLOB);
-  if (id) {
-    await clearCache(`cache:/api/konoranos/${id}`);
-  }
+  await Promise.all([
+    clearCache(KONORANO_CACHE_LIST),
+    clearCache(KONORANO_CACHE_LIST_GLOB),
+    ...(id ? [clearCache(`cache:/api/konoranos/${id}`)] : []),
+  ]);
   // Revalidate frontend (background, non-blocking)
-  setImmediate(() => revalidateFrontend("konoranos"));
+  setImmediate(() => void revalidateFrontend("konoranos"));
 };
 
 // Get all konoranos (paginated)
@@ -64,7 +72,7 @@ export const getKonoranoById = async (req: Request, res: Response) => {
 };
 
 // Create konorano
-export const createKonorano = async (req: Request, res: Response) => {
+export const createKonorano = async (req: TypedRequest<KonoranoBody>, res: Response) => {
   const files = req.files as UploadedFiles;
   // Multer writes files to disk before the handler runs — clean up if anything below fails
   const filesToCleanupOnError: string[] = [];
@@ -98,7 +106,7 @@ export const createKonorano = async (req: Request, res: Response) => {
     await invalidateKonoranoCache();
 
     // Notify subscribers (background, non-blocking)
-    setImmediate(() => sendNotification(name));
+    setImmediate(() => void sendNotification(name));
 
     res.json(konorano);
   } catch (err) {
@@ -111,7 +119,7 @@ export const createKonorano = async (req: Request, res: Response) => {
 };
 
 // Update konorano
-export const updateKonorano = async (req: Request, res: Response) => {
+export const updateKonorano = async (req: TypedRequest<KonoranoBody>, res: Response) => {
   const files = req.files as UploadedFiles;
   // Newly uploaded files — clean up if downstream fails
   const newFilesToCleanupOnError: string[] = [];

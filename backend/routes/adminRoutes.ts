@@ -12,10 +12,10 @@ const router = express.Router();
 // @access  Public
 router.post("/login", loginLimiter, async (req: Request, res: Response) => {
   try {
-    const { password } = req.body ?? {};
+    const { password } = (req.body ?? {}) as { password?: string };
 
     // Compare against the hashed password
-    const isMatch = await bcrypt.compare(password, config.ADMIN_PASSWORD);
+    const isMatch = await bcrypt.compare(password ?? "", config.ADMIN_PASSWORD);
 
     if (isMatch) {
       const token = jwt.sign({ admin: true }, config.JWT_SECRET, {

@@ -21,7 +21,6 @@ const KonoranoSchema = new Schema<IKonorano>(
     author: {
       type: String,
       default: "宝島社",
-      required: true,
     },
     coverImage: {
       type: String,
