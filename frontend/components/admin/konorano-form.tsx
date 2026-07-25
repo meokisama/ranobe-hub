@@ -48,7 +48,6 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
       const file = e.target.files[0];
       setCoverFile(file);
 
-      // Preview
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target && typeof event.target.result === "string") {
@@ -69,7 +68,7 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
     try {
       setIsSubmitting(true);
 
-      // Kiểm tra file upload
+      // Require both cover and file when creating
       if (!konorano && (!coverFile || !konoranoFile)) {
         toast.error("Lỗi", {
           description: "Vui lòng upload cả ảnh bìa và file sách",
@@ -86,7 +85,6 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
       formData.append("releaseDate", values.releaseDate);
       formData.append("viURL", values.viURL);
 
-      // Thêm file nếu có
       if (coverFile) {
         formData.append("cover", coverFile);
       }
@@ -97,7 +95,6 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
 
       let response;
       if (konorano) {
-        // Cập nhật
         response = await api.put(`/konoranos/${konorano._id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -107,7 +104,6 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
           description: `Đã cập nhật thông tin cho "${values.name}"`,
         });
       } else {
-        // Thêm mới
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         response = await api.post("/konoranos", formData, {
           headers: {

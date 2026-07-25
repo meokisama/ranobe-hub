@@ -17,6 +17,6 @@ const PublisherSchema = new Schema<IPublisher>(
   { timestamps: true },
 );
 
-// name đã có unique index tự động → không cần khai báo index thêm
+// name already gets a unique index automatically, so no extra index is needed
 
 export default mongoose.model<IPublisher>("Publisher", PublisherSchema);

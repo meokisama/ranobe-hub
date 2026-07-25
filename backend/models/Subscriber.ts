@@ -24,7 +24,7 @@ const subscriberSchema = new Schema<ISubscriber>(
   { timestamps: true },
 );
 
-// Indexes để tối ưu queries (email đã có unique index tự động)
+// Indexes for query optimization (email already gets a unique index automatically)
 subscriberSchema.index({ isActive: 1 });
 
 export default mongoose.model<ISubscriber>("Subscriber", subscriberSchema);

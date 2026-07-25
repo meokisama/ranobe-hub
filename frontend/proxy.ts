@@ -4,9 +4,9 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Bỏ qua route /admin/login
+  // Skip the /admin/login route
   if (pathname === "/admin/login") {
-    // Nếu đã có token hợp lệ, chuyển hướng về /admin
+    // Redirect to /admin if already authenticated
     const token = request.cookies.get("adminToken")?.value;
     const tokenExpires = request.cookies.get("adminTokenExpires")?.value;
 
@@ -19,26 +19,23 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Lấy token từ cookie
   const token = request.cookies.get("adminToken")?.value;
   const tokenExpires = request.cookies.get("adminTokenExpires")?.value;
 
-  // Kiểm tra token và thời gian hết hạn
   if (!token || !tokenExpires) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
-  // Kiểm tra thời gian hết hạn
   const expiresDate = new Date(tokenExpires);
   if (expiresDate < new Date()) {
-    // Xóa cookie khi token hết hạn
+    // Clear cookies once the token has expired
     const response = NextResponse.redirect(new URL("/admin/login", request.url));
     response.cookies.delete("adminToken");
     response.cookies.delete("adminTokenExpires");
     return response;
   }
 
-  // Thêm token vào header cho các request đến /admin
+  // Forward the token in a header for /admin requests
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-admin-token", token);
 
@@ -49,7 +46,7 @@ export function proxy(request: NextRequest) {
   });
 }
 
-// Chỉ chạy middleware cho /admin
+// Only run middleware for /admin
 export const config = {
   matcher: ["/admin/:path*"],
 };

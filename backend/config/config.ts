@@ -22,7 +22,7 @@ interface AppConfig {
   RATE_LIMIT_MAX: number;
 }
 
-// Đã validate ở trên nên chắc chắn tồn tại → ép kiểu string.
+// Validated above, so guaranteed to exist; cast to string.
 const config: AppConfig = {
   JWT_SECRET: process.env.JWT_SECRET as string,
   JWT_EXPIRES_IN: "24h",

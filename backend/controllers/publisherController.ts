@@ -4,7 +4,7 @@ import Ebook from "../models/Ebook.js";
 import { revalidateFrontend } from "../utils/revalidate.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 
-// Lấy tất cả nhãn hiệu
+// Get all publishers
 export const getAllPublishers = async (_req: Request, res: Response) => {
   try {
     const publishers = await Publisher.find().select("-__v").sort({ name: 1 });
@@ -14,12 +14,11 @@ export const getAllPublishers = async (_req: Request, res: Response) => {
   }
 };
 
-// Tạo nhãn hiệu mới
+// Create publisher
 export const createPublisher = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
 
-    // Kiểm tra xem nhãn hiệu đã tồn tại chưa
     const existingPublisher = await Publisher.findOne({ name });
     if (existingPublisher) {
       return validationErrorResponse(res, "Nhãn hiệu này đã tồn tại");
@@ -36,12 +35,12 @@ export const createPublisher = async (req: Request, res: Response) => {
   }
 };
 
-// Cập nhật nhãn hiệu
+// Update publisher
 export const updatePublisher = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
 
-    // Kiểm tra xem tên mới đã tồn tại chưa
+    // Reject if the new name is already taken by another publisher
     const existingPublisher = await Publisher.findOne({
       name,
       _id: { $ne: req.params.id },
@@ -67,7 +66,7 @@ export const updatePublisher = async (req: Request, res: Response) => {
   }
 };
 
-// Xóa nhãn hiệu
+// Delete publisher
 export const deletePublisher = async (req: Request, res: Response) => {
   try {
     const publisher = await Publisher.findById(req.params.id);
@@ -75,7 +74,7 @@ export const deletePublisher = async (req: Request, res: Response) => {
       return notFoundResponse(res, "nhãn hiệu");
     }
 
-    // Chặn xóa nếu còn ebook tham chiếu để tránh orphan
+    // Block deletion if any ebook still references it (avoid orphans)
     const inUse = await Ebook.exists({ publisher: req.params.id });
     if (inUse) {
       return validationErrorResponse(res, "Không thể xóa: nhãn hiệu vẫn đang được dùng bởi ebook");

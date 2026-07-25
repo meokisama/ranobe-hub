@@ -16,7 +16,7 @@ const buildUnsubscribeUrl = (email: string): string => {
   return `${process.env.FRONTEND_URL}/unsubscribe?token=${encodeURIComponent(token)}`;
 };
 
-// Bulletproof button — VML fallback cho Outlook desktop
+// Bulletproof button — VML fallback for Outlook desktop
 const renderButton = (href: string, label: string, { color = "#111111", textColor = "#ffffff" }: { color?: string; textColor?: string } = {}): string => `
   <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto;">
     <tr>
@@ -38,7 +38,7 @@ const renderButton = (href: string, label: string, { color = "#111111", textColo
   </table>
 `;
 
-// Khung email chung — table-based, an toàn cho Outlook/Gmail clip
+// Shared email layout — table-based, safe against Outlook/Gmail clipping
 const renderLayout = ({
   preheader,
   title,
@@ -113,7 +113,7 @@ const subscriberFooter = (email: string): string => {
 
 const adminFooter = `Email tự động từ hệ thống Ranobe Hub — không cần phản hồi.`;
 
-// 1) Email báo admin có người đăng ký mới
+// 1) Notify admin of a new subscriber
 export const buildAdminNotifyEmail = (subscriberEmail: string): EmailPayload => {
   const time = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
   const preheader = `Có subscriber mới: ${subscriberEmail}`;
@@ -146,7 +146,7 @@ export const buildAdminNotifyEmail = (subscriberEmail: string): EmailPayload => 
   };
 };
 
-// 2) Email xác nhận cho subscriber
+// 2) Confirmation email for the subscriber
 export const buildConfirmationEmail = (email: string, isReactivation = false): EmailPayload => {
   const unsubscribeUrl = buildUnsubscribeUrl(email);
   const heading = isReactivation ? "Chào mừng bạn quay lại!" : "Đăng ký thành công!";
@@ -191,7 +191,7 @@ export const buildConfirmationEmail = (email: string, isReactivation = false): E
   };
 };
 
-// 3) Email thông báo sách mới
+// 3) New-book notification email
 export const buildNewBookEmail = (email: string, bookTitle: string): EmailPayload => {
   const preheader = `「${bookTitle}」vừa được đăng tải trên Ranobe Hub.`;
   const bodyHtml = `

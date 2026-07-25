@@ -57,7 +57,7 @@ export function HakoTableInteractive({ initialItems }: HakoTableInteractiveProps
     setPage(1);
   }, [query, filter, sortKey, sortDir]);
 
-  // Keyboard shortcut: "/" để focus search
+  // Keyboard shortcut: "/" focuses search, Escape blurs it
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -220,7 +220,7 @@ export function HakoTableInteractive({ initialItems }: HakoTableInteractiveProps
                     Nhóm Dịch
                   </SortableHead>
                   <TableHead className="w-[260px] py-3 pr-5 text-right text-[11px] font-semibold uppercase tracking-widest text-stone-500">
-                    {/* Hành động */}
+                    {/* Actions */}
                   </TableHead>
                 </TableRow>
               </TableHeader>

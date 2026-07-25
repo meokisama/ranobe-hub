@@ -11,7 +11,6 @@ export default function adminAuth(req: Request, res: Response, next: NextFunctio
   }
 
   try {
-    // Verify JWT token
     const decoded = jwt.verify(adminToken, config.JWT_SECRET);
     req.admin = decoded;
     next();

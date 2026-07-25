@@ -46,7 +46,7 @@ const HakoSchema = new Schema<IHako>(
   { timestamps: true },
 );
 
-// Indexes để tối ưu queries (hakoId đã có unique index tự động)
+// Indexes for query optimization (hakoId already gets a unique index automatically)
 HakoSchema.index({ name: 1 });
 HakoSchema.index({ uploader: 1 });
 HakoSchema.index({ translator: 1 });

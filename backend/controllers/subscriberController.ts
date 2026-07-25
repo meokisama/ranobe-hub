@@ -8,16 +8,15 @@ import { buildAdminNotifyEmail, buildConfirmationEmail, buildNewBookEmail, type 
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Resend giới hạn 100 email mỗi batch và 2 request mỗi giây
+// Resend limits: 100 emails per batch, 2 requests per second
 const BATCH_SIZE = 100;
 
-// Bottleneck
 const limiter = new Bottleneck({
   minTime: 800,
   maxConcurrent: 1,
 });
 
-// Gửi danh sách email theo từng batch tối đa 100 email
+// Send emails in batches of up to 100
 const sendBatched = async (emails: EmailPayload[]): Promise<void> => {
   if (!emails.length) return;
   for (let i = 0; i < emails.length; i += BATCH_SIZE) {
@@ -33,12 +32,11 @@ const sendBatched = async (emails: EmailPayload[]): Promise<void> => {
   }
 };
 
-// Đăng ký nhận tin
+// Subscribe
 export const subscribe = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
 
-    // Kiểm tra email đã tồn tại chưa
     const existingSubscriber = await Subscriber.findOne({ email });
 
     let isReactivation = false;
@@ -48,12 +46,12 @@ export const subscribe = async (req: Request, res: Response) => {
         return validationErrorResponse(res, "Email này đã được đăng ký trước đó");
       }
 
-      // Nếu email tồn tại nhưng không active, cập nhật lại thành active
+      // Reactivate an existing inactive subscriber
       existingSubscriber.isActive = true;
       await existingSubscriber.save();
       isReactivation = true;
 
-      // Gộp 2 email vào 1 batch để chỉ tốn 1 request, gửi background
+      // Combine both emails into one batch to use a single request; send in background
       setImmediate(() => {
         void sendBatched([buildConfirmationEmail(email, isReactivation), buildAdminNotifyEmail(email)]);
       });
@@ -61,11 +59,10 @@ export const subscribe = async (req: Request, res: Response) => {
       return res.status(200).json({ msg: "Đăng ký thành công" });
     }
 
-    // Tạo subscriber mới
     const subscriber = new Subscriber({ email });
     await subscriber.save();
 
-    // Gộp 2 email vào 1 batch để chỉ tốn 1 request, gửi background
+    // Combine both emails into one batch to use a single request; send in background
     setImmediate(() => {
       void sendBatched([buildConfirmationEmail(email, false), buildAdminNotifyEmail(email)]);
     });
@@ -77,7 +74,7 @@ export const subscribe = async (req: Request, res: Response) => {
   }
 };
 
-// Hủy đăng ký
+// Unsubscribe
 export const unsubscribe = async (req: Request, res: Response) => {
   try {
     const { token } = req.query;
@@ -112,7 +109,7 @@ export const unsubscribe = async (req: Request, res: Response) => {
   }
 };
 
-// Gửi thông báo cho tất cả subscribers
+// Notify all subscribers
 export const sendNotification = async (bookTitle: string): Promise<void> => {
   try {
     const subscribers = await Subscriber.find({ isActive: true });

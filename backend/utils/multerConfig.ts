@@ -7,17 +7,15 @@ import { v4 as uuidv4 } from "uuid";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export interface UploadConfig {
-  /** Map field names to upload directories, ví dụ { cover: 'covers', ebook: 'ebooks' } */
+  /** Map field names to upload directories, e.g. { cover: 'covers', ebook: 'ebooks' } */
   fieldMapping: Record<string, string>;
-  /** Map field names to allowed file extensions, ví dụ { cover: ['.jpg'], ebook: ['.epub'] } */
+  /** Map field names to allowed file extensions, e.g. { cover: ['.jpg'], ebook: ['.epub'] } */
   allowedTypes: Record<string, string[]>;
-  /** Field configurations cho upload.fields() */
+  /** Field configurations for upload.fields() */
   fields: readonly multer.Field[];
 }
 
-/**
- * Tạo multer storage configuration
- */
+/** Create the multer storage configuration. */
 function createStorage(fieldMapping: Record<string, string>): multer.StorageEngine {
   return multer.diskStorage({
     destination: function (_req: Request, file: Express.Multer.File, cb) {
@@ -36,9 +34,7 @@ function createStorage(fieldMapping: Record<string, string>): multer.StorageEngi
   });
 }
 
-/**
- * Tạo file filter cho multer
- */
+/** Create the multer file filter. */
 function createFileFilter(allowedTypes: Record<string, string[]>) {
   return function (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) {
     const allowed = allowedTypes[file.fieldname];
@@ -56,9 +52,7 @@ function createFileFilter(allowedTypes: Record<string, string[]>) {
   };
 }
 
-/**
- * Tạo multer upload middleware với cấu hình
- */
+/** Create the multer upload middleware from a config. */
 export function createUploadMiddleware(config: UploadConfig) {
   const { fieldMapping, allowedTypes, fields } = config;
 
@@ -73,9 +67,7 @@ export function createUploadMiddleware(config: UploadConfig) {
   return upload.fields(fields);
 }
 
-/**
- * Cấu hình upload cho Ebook
- */
+/** Upload config for Ebook. */
 export const ebookUploadConfig: UploadConfig = {
   fieldMapping: {
     cover: "covers",
@@ -91,9 +83,7 @@ export const ebookUploadConfig: UploadConfig = {
   ],
 };
 
-/**
- * Cấu hình upload cho Konorano
- */
+/** Upload config for Konorano. */
 export const konoranoUploadConfig: UploadConfig = {
   fieldMapping: {
     cover: "covers",

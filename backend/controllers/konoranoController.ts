@@ -16,14 +16,14 @@ const invalidateKonoranoCache = async (id?: string): Promise<void> => {
   if (id) {
     await clearCache(`cache:/api/konoranos/${id}`);
   }
-  // Revalidate frontend (background, không block response)
+  // Revalidate frontend (background, non-blocking)
   setImmediate(() => revalidateFrontend("konoranos"));
 };
 
-// Lấy tất cả konorano (với pagination)
+// Get all konoranos (paginated)
 export const getAllKonoranos = async (req: Request, res: Response) => {
   try {
-    // page/limit đã được validatePagination sanitize (.toInt())
+    // page/limit already sanitized by validatePagination (.toInt())
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
     const skip = (page - 1) * limit;
@@ -47,7 +47,7 @@ export const getAllKonoranos = async (req: Request, res: Response) => {
   }
 };
 
-// Lấy konorano theo ID
+// Get konorano by ID
 export const getKonoranoById = async (req: Request, res: Response) => {
   try {
     const konorano = await Konorano.findById(req.params.id);
@@ -63,10 +63,10 @@ export const getKonoranoById = async (req: Request, res: Response) => {
   }
 };
 
-// Tạo konorano mới
+// Create konorano
 export const createKonorano = async (req: Request, res: Response) => {
   const files = req.files as UploadedFiles;
-  // Multer đã ghi file lên disk trước khi handler chạy → cleanup nếu phía dưới fail
+  // Multer writes files to disk before the handler runs — clean up if anything below fails
   const filesToCleanupOnError: string[] = [];
   if (files?.cover?.[0]) filesToCleanupOnError.push(files.cover[0].path);
   if (files?.konorano?.[0]) filesToCleanupOnError.push(files.konorano[0].path);
@@ -74,7 +74,6 @@ export const createKonorano = async (req: Request, res: Response) => {
   try {
     const { name, author, releaseDate, viURL } = req.body;
 
-    // Kiểm tra file upload
     if (!files || !files.cover || !files.konorano) {
       return validationErrorResponse(res, "Cần upload cả cover và file konorano");
     }
@@ -84,7 +83,7 @@ export const createKonorano = async (req: Request, res: Response) => {
 
     const newKonorano = new Konorano({
       name,
-      author: author || "宝島社", // Sử dụng giá trị nhập hoặc mặc định
+      author: author || "宝島社", // use provided value or default
       coverImage: coverFile.filename,
       filePath: konoranoFile.filename,
       releaseDate,
@@ -93,12 +92,12 @@ export const createKonorano = async (req: Request, res: Response) => {
 
     const konorano = await newKonorano.save();
 
-    // Save thành công → giữ file lại
+    // Save succeeded — keep the files
     filesToCleanupOnError.length = 0;
 
     await invalidateKonoranoCache();
 
-    // Gửi thông báo cho subscribers (background, không block response)
+    // Notify subscribers (background, non-blocking)
     setImmediate(() => sendNotification(name));
 
     res.json(konorano);
@@ -111,10 +110,10 @@ export const createKonorano = async (req: Request, res: Response) => {
   }
 };
 
-// Cập nhật konorano
+// Update konorano
 export const updateKonorano = async (req: Request, res: Response) => {
   const files = req.files as UploadedFiles;
-  // File MỚI vừa upload — cleanup nếu downstream fail
+  // Newly uploaded files — clean up if downstream fails
   const newFilesToCleanupOnError: string[] = [];
   if (files?.cover?.[0]) newFilesToCleanupOnError.push(files.cover[0].path);
   if (files?.konorano?.[0]) newFilesToCleanupOnError.push(files.konorano[0].path);
@@ -122,7 +121,6 @@ export const updateKonorano = async (req: Request, res: Response) => {
   try {
     const { name, author, releaseDate, viURL } = req.body;
 
-    // Kiểm tra konorano tồn tại
     const existingKonorano = await Konorano.findById(req.params.id);
     if (!existingKonorano) {
       return notFoundResponse(res, "konorano");
@@ -134,15 +132,14 @@ export const updateKonorano = async (req: Request, res: Response) => {
       viURL,
     };
 
-    // Chỉ cập nhật author nếu có giá trị được cung cấp
+    // Only update author if a value was provided
     if (author) {
       konoranoFields.author = author;
     }
 
-    // Đánh dấu các file cũ cần xóa (chỉ xóa SAU khi update DB thành công)
+    // Mark old files for deletion (only delete AFTER the DB update succeeds)
     const oldFilesToDelete: OldFileRef[] = [];
 
-    // Kiểm tra nếu có file cover mới
     if (files && files.cover) {
       const coverFile = files.cover[0];
       konoranoFields.coverImage = coverFile.filename;
@@ -151,7 +148,6 @@ export const updateKonorano = async (req: Request, res: Response) => {
       }
     }
 
-    // Kiểm tra nếu có file konorano mới
     if (files && files.konorano) {
       const konoranoFile = files.konorano[0];
       konoranoFields.filePath = konoranoFile.filename;
@@ -160,7 +156,7 @@ export const updateKonorano = async (req: Request, res: Response) => {
 
     const updatedKonorano = await Konorano.findByIdAndUpdate(req.params.id, { $set: konoranoFields }, { new: true });
 
-    // Update DB thành công → giữ file mới, xóa file cũ
+    // DB update succeeded — keep new files, delete old ones
     newFilesToCleanupOnError.length = 0;
     await Promise.all(oldFilesToDelete.map((f) => deleteOldFile(f.filename, f.type, f.def)));
 
@@ -179,7 +175,7 @@ export const updateKonorano = async (req: Request, res: Response) => {
   }
 };
 
-// Xóa konorano
+// Delete konorano
 export const deleteKonorano = async (req: Request, res: Response) => {
   try {
     const konorano = await Konorano.findById(req.params.id);
@@ -187,7 +183,7 @@ export const deleteKonorano = async (req: Request, res: Response) => {
       return notFoundResponse(res, "konorano");
     }
 
-    // Xóa các file đi kèm (async)
+    // Delete associated files
     const deletePromises: Promise<boolean>[] = [];
 
     if (konorano.coverImage !== "default-cover.jpg") {
@@ -196,7 +192,6 @@ export const deleteKonorano = async (req: Request, res: Response) => {
 
     deletePromises.push(deleteOldFile(konorano.filePath, "ebooks"));
 
-    // Xóa tất cả files song song
     await Promise.all(deletePromises);
 
     await Konorano.findByIdAndDelete(req.params.id);

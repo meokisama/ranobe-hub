@@ -76,7 +76,6 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
       const file = e.target.files[0];
       setCoverFile(file);
 
-      // Tạo preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setCoverPreview(reader.result as string);
@@ -122,7 +121,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
     try {
       setIsSubmitting(true);
 
-      // Kiểm tra file khi thêm mới
+      // Require a file when creating a new ebook
       if (!ebook && !ebookFile) {
         toast.error("Lỗi", {
           description: "Vui lòng tải lên file ebook",
@@ -147,7 +146,6 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
 
       let response;
       if (ebook) {
-        // Cập nhật
         response = await api.put(`/ebooks/${ebook._id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -157,7 +155,6 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
           description: `Đã cập nhật thông tin cho "${values.name}"`,
         });
       } else {
-        // Thêm mới
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         response = await api.post("/ebooks", formData, {
           headers: {

@@ -1,11 +1,11 @@
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
-// Các tag hợp lệ, khớp với tag đã gắn ở các fetch ISR
+// Valid tags, matching those attached to the ISR fetches
 const VALID_TAGS = new Set(["ebooks", "publishers", "konoranos", "hakos"]);
 
-// Endpoint on-demand revalidation: backend gọi sau khi thêm/sửa/xóa sách
-// để dựng lại trang ngay thay vì chờ hết 6h ISR.
+// On-demand revalidation endpoint: backend calls this after adding/editing/deleting
+// a book to rebuild pages immediately instead of waiting out the 6h ISR.
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-revalidate-secret");
   if (!process.env.REVALIDATE_SECRET || secret !== process.env.REVALIDATE_SECRET) {

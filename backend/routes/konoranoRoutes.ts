@@ -8,31 +8,31 @@ import { validateKonorano, validateObjectId, validatePagination } from "../middl
 
 const router = express.Router();
 
-// Tạo upload middleware từ config
+// Build upload middleware from config
 const uploadFields = createUploadMiddleware(konoranoUploadConfig);
 
 // @route   GET api/konoranos
-// @desc    Lấy tất cả konorano (với pagination)
+// @desc    Get all konoranos (paginated)
 // @access  Public
 router.get("/", [...validatePagination, cache(300)], konoranoController.getAllKonoranos);
 
 // @route   GET api/konoranos/:id
-// @desc    Lấy konorano theo ID
+// @desc    Get konorano by ID
 // @access  Public
 router.get("/:id", [...validateObjectId, cache(600)], konoranoController.getKonoranoById);
 
 // @route   POST api/konoranos
-// @desc    Tạo konorano mới
+// @desc    Create konorano
 // @access  Admin
 router.post("/", [adminAuth, uploadLimiter, uploadFields, ...validateKonorano], konoranoController.createKonorano);
 
 // @route   PUT api/konoranos/:id
-// @desc    Cập nhật konorano
+// @desc    Update konorano
 // @access  Admin
 router.put("/:id", [adminAuth, uploadLimiter, ...validateObjectId, uploadFields, ...validateKonorano], konoranoController.updateKonorano);
 
 // @route   DELETE api/konoranos/:id
-// @desc    Xóa konorano
+// @desc    Delete konorano
 // @access  Admin
 router.delete("/:id", [adminAuth, ...validateObjectId], konoranoController.deleteKonorano);
 

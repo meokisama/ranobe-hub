@@ -11,32 +11,28 @@ const connectDB = async (): Promise<void> => {
       authSource: process.env.MONGO_AUTH_SOURCE || "admin",
       retryWrites: true,
       w: "majority",
-      maxPoolSize: 10, // Giới hạn kết nối tối đa
-      connectTimeoutMS: 30000, // Timeout kết nối
-      socketTimeoutMS: 45000, // Timeout socket
+      maxPoolSize: 10,
+      connectTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
     };
 
     let connectionString = MONGO_URI;
 
-    // Nếu có username và password, thêm vào connection string
+    // Inject credentials into the connection string when provided
     if (MONGO_USER && MONGO_PASSWORD) {
-      // Xử lý connection string có chứa username và password
       if (MONGO_URI.includes("@")) {
-        // Nếu URI đã có username và password, không thêm vào nữa
+        // URI already embeds credentials; leave as-is
         connectionString = MONGO_URI;
       } else {
-        // Nếu URI chưa có username và password, thêm vào
         const dbPart = MONGO_URI.replace("mongodb://", "");
         connectionString = `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${dbPart}`;
       }
     }
 
-    // Tạo kết nối với các tùy chọn an toàn
     await mongoose.connect(connectionString, options);
 
     console.log("MongoDB Connected Securely");
 
-    // Đăng ký sự kiện xử lý lỗi kết nối
     mongoose.connection.on("error", (err) => {
       console.error("MongoDB connection error:", err);
     });

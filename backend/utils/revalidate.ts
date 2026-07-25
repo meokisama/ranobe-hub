@@ -1,13 +1,14 @@
-// Gọi endpoint on-demand revalidation của frontend để dựng lại trang ISR ngay
-// sau khi thêm/sửa/xóa sách, thay vì chờ hết chu kỳ 6h.
+// Calls the frontend's on-demand revalidation endpoint to rebuild ISR pages right
+// after a book is added/edited/deleted, instead of waiting out the 6h cycle.
 //
-// Chạy trong setImmediate ở controller nên không block response. Mọi lỗi (frontend
-// tắt, sai secret, timeout...) chỉ log chứ không làm hỏng request đã thành công.
+// Runs via setImmediate in the controller so it doesn't block the response. Any error
+// (frontend down, wrong secret, timeout...) is only logged and never breaks the
+// already-successful request.
 export const revalidateFrontend = async (tags: string | string[]): Promise<void> => {
   const secret = process.env.REVALIDATE_SECRET;
   const frontendUrl = process.env.FRONTEND_URL;
 
-  // Chưa cấu hình → bỏ qua, ISR vẫn tự làm mới sau 6h
+  // Not configured → skip; ISR still refreshes on its own after 6h
   if (!secret || !frontendUrl) return;
 
   const list = Array.isArray(tags) ? tags : [tags];

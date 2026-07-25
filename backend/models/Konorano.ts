@@ -43,7 +43,7 @@ const KonoranoSchema = new Schema<IKonorano>(
   { timestamps: true },
 );
 
-// Indexes để tối ưu queries (name đã có unique index tự động)
+// Indexes for query optimization (name already gets a unique index automatically)
 KonoranoSchema.index({ author: 1 });
 KonoranoSchema.index({ createdAt: -1 });
 KonoranoSchema.index({ releaseDate: -1 });

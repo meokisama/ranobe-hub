@@ -8,17 +8,16 @@ import adminAuth from "../middleware/adminAuth.js";
 const router = express.Router();
 
 // @route   POST api/admin/login
-// @desc    Đăng nhập admin
+// @desc    Admin login
 // @access  Public
 router.post("/login", loginLimiter, async (req: Request, res: Response) => {
   try {
     const { password } = req.body ?? {};
 
-    // So sánh mật khẩu đã hash
+    // Compare against the hashed password
     const isMatch = await bcrypt.compare(password, config.ADMIN_PASSWORD);
 
     if (isMatch) {
-      // Tạo JWT token
       const token = jwt.sign({ admin: true }, config.JWT_SECRET, {
         expiresIn: config.JWT_EXPIRES_IN as SignOptions["expiresIn"],
       });

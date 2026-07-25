@@ -7,32 +7,32 @@ import { validateHako, validateObjectId, validatePagination } from "../middlewar
 const router = express.Router();
 
 // @route   GET api/hakos
-// @desc    Lấy tất cả hako (với pagination + search)
+// @desc    Get all hakos (paginated + search)
 // @access  Public
 router.get("/", [...validatePagination, cache(300)], hakoController.getAllHakos);
 
 // @route   GET api/hakos/by-hako-id/:hakoId
-// @desc    Lấy hako theo hakoId (id gốc từ data.json)
+// @desc    Get hako by hakoId (original id from data.json)
 // @access  Public
 router.get("/by-hako-id/:hakoId", cache(600), hakoController.getHakoByHakoId);
 
 // @route   GET api/hakos/:id
-// @desc    Lấy hako theo _id Mongo
+// @desc    Get hako by Mongo _id
 // @access  Public
 router.get("/:id", [...validateObjectId, cache(600)], hakoController.getHakoById);
 
 // @route   POST api/hakos
-// @desc    Tạo hako mới
+// @desc    Create hako
 // @access  Admin
 router.post("/", [adminAuth, ...validateHako], hakoController.createHako);
 
 // @route   PUT api/hakos/:id
-// @desc    Cập nhật hako
+// @desc    Update hako
 // @access  Admin
 router.put("/:id", [adminAuth, ...validateObjectId, ...validateHako], hakoController.updateHako);
 
 // @route   DELETE api/hakos/:id
-// @desc    Xóa hako
+// @desc    Delete hako
 // @access  Admin
 router.delete("/:id", [adminAuth, ...validateObjectId], hakoController.deleteHako);
 

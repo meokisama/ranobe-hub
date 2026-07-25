@@ -10,7 +10,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Kiểm tra nếu đã đăng nhập thì chuyển hướng đến trang admin
+    // Redirect to admin if already logged in
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);

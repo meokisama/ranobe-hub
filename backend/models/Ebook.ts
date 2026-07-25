@@ -48,7 +48,7 @@ const EbookSchema = new Schema<IEbook>(
   { timestamps: true },
 );
 
-// Indexes để tối ưu queries (name đã có unique index tự động)
+// Indexes for query optimization (name already gets a unique index automatically)
 EbookSchema.index({ author: 1 });
 EbookSchema.index({ publisher: 1 });
 EbookSchema.index({ createdAt: -1 });

@@ -34,7 +34,7 @@ export function LoginForm() {
       setIsLoading(true);
       const res = await api.post("/admin/login", { password: values.password });
 
-      // Lưu token và thời gian hết hạn vào cookie
+      // Store token and expiry in cookies
       document.cookie = `adminToken=${res.data.token}; path=/; max-age=${24 * 60 * 60}; SameSite=Strict`;
       document.cookie = `adminTokenExpires=${new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()}; path=/; max-age=${
         24 * 60 * 60
@@ -55,7 +55,7 @@ export function LoginForm() {
     }
   }
 
-  // Kiểm tra token hết hạn
+  // Clear an expired token and redirect to login
   useEffect(() => {
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
@@ -67,7 +67,6 @@ export function LoginForm() {
     if (tokenExpires) {
       const expiresDate = new Date(tokenExpires);
       if (expiresDate < new Date()) {
-        // Xóa cookie
         document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
         router.push("/admin/login");

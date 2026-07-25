@@ -13,19 +13,19 @@ const invalidateHakoCache = async (id?: string): Promise<void> => {
   if (id) {
     await clearCache(`cache:/api/hakos/${id}`);
   }
-  // Revalidate trang /resources trên frontend (background, không block response)
+  // Revalidate the frontend /resources page (background, non-blocking)
   setImmediate(() => revalidateFrontend("hakos"));
 };
 
-// Lấy tất cả hako (với pagination + search)
+// Get all hakos (paginated + search)
 export const getAllHakos = async (req: Request, res: Response) => {
   try {
-    // page/limit đã được validatePagination sanitize (.toInt())
+    // page/limit already sanitized by validatePagination (.toInt())
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    // Chỉ nhận query dạng string (chống ?q[x]=y biến thành object → "[object Object]")
+    // Only accept string queries (prevents ?q[x]=y from becoming an object → "[object Object]")
     const filter: Record<string, unknown> = {};
     if (typeof req.query.q === "string") {
       const q = req.query.q.trim();
@@ -59,7 +59,7 @@ export const getAllHakos = async (req: Request, res: Response) => {
   }
 };
 
-// Lấy hako theo ID (_id của Mongo)
+// Get hako by Mongo _id
 export const getHakoById = async (req: Request, res: Response) => {
   try {
     const hako = await Hako.findById(req.params.id);
@@ -75,7 +75,7 @@ export const getHakoById = async (req: Request, res: Response) => {
   }
 };
 
-// Lấy hako theo hakoId (id gốc từ data.json)
+// Get hako by hakoId (original id from data.json)
 export const getHakoByHakoId = async (req: Request, res: Response) => {
   try {
     const hako = await Hako.findOne({ hakoId: req.params.hakoId });
@@ -88,7 +88,7 @@ export const getHakoByHakoId = async (req: Request, res: Response) => {
   }
 };
 
-// Tạo hako mới
+// Create hako
 export const createHako = async (req: Request, res: Response) => {
   try {
     const { hakoId, name, uploader, translator, lastUpdated, epub, pdf } = req.body;
@@ -122,7 +122,7 @@ export const createHako = async (req: Request, res: Response) => {
   }
 };
 
-// Cập nhật hako
+// Update hako
 export const updateHako = async (req: Request, res: Response) => {
   try {
     const { hakoId, name, uploader, translator, lastUpdated, epub, pdf } = req.body;
@@ -154,7 +154,7 @@ export const updateHako = async (req: Request, res: Response) => {
   }
 };
 
-// Xóa hako
+// Delete hako
 export const deleteHako = async (req: Request, res: Response) => {
   try {
     const hako = await Hako.findByIdAndDelete(req.params.id);

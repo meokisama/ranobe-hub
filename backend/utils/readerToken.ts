@@ -10,9 +10,9 @@ interface ReaderTokenPayload extends JwtPayload {
 }
 
 /**
- * Token cấp cho reader để tải một cuốn ebook cụ thể. Gắn với tên file (không có
- * đuôi .epub) và hết hạn ngắn, nên link tải rò rỉ sẽ vô dụng sau ít phút và một
- * token không mở được cuốn khác.
+ * Token issued to a reader to download one specific ebook. Bound to the file name
+ * (without the .epub extension) with a short expiry, so a leaked download link is
+ * useless after a few minutes and one token can't open a different book.
  */
 export function signReaderToken(book: string): string {
   return jwt.sign({ book, purpose: PURPOSE }, config.JWT_SECRET, { expiresIn: "10m" });
@@ -27,17 +27,17 @@ export function verifyReaderToken(token: string, book: string): ReaderTokenPaylo
 }
 
 /**
- * Khóa AES-256 ổn định cho mỗi cuốn, dẫn xuất từ bí mật server. Không bao giờ ra
- * khỏi server trừ khi được cấp cho reader qua endpoint token (đã referer-gate).
+ * Stable per-book AES-256 key derived from the server secret. Never leaves the
+ * server except when handed to a reader via the (referer-gated) token endpoint.
  */
 export function bookKey(book: string): Buffer {
   return crypto.createHash("sha256").update(`reader-epub:${config.JWT_SECRET}:${book}`).digest();
 }
 
 /**
- * Mã hóa nội dung epub để trả về reader. Định dạng: iv(12) || ciphertext || tag(16).
- * Reader giải mã trong bộ nhớ (WebCrypto) trước khi parse — nên "lưu response"
- * chỉ ra ciphertext, không phải một file .epub dùng được.
+ * Encrypt epub content sent to the reader. Format: iv(12) || ciphertext || tag(16).
+ * The reader decrypts in memory (WebCrypto) before parsing, so "save response"
+ * yields only ciphertext, not a usable .epub file.
  */
 export function encryptEpub(buf: Buffer, key: Buffer): Buffer {
   const iv = crypto.randomBytes(12);

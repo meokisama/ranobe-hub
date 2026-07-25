@@ -5,9 +5,9 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Xóa file nếu tồn tại (async version)
- * @param filePath - Đường dẫn tuyệt đối đến file
- * @returns True nếu xóa thành công hoặc file không tồn tại, false nếu có lỗi
+ * Delete a file if it exists.
+ * @param filePath - Absolute path to the file
+ * @returns true on success or if the file is missing, false on error
  */
 export async function deleteFileIfExists(filePath: string): Promise<boolean> {
   try {
@@ -16,7 +16,7 @@ export async function deleteFileIfExists(filePath: string): Promise<boolean> {
     return true;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-      // File không tồn tại - không phải lỗi
+      // File doesn't exist — not an error
       return true;
     }
     console.error(`Error deleting file ${filePath}:`, err);
@@ -25,23 +25,21 @@ export async function deleteFileIfExists(filePath: string): Promise<boolean> {
 }
 
 /**
- * Xóa file cũ khi update (cover hoặc ebook)
- * @param filename - Tên file cũ
- * @param uploadType - Loại upload: 'covers' hoặc 'ebooks'
- * @param defaultFilename - Tên file mặc định (không xóa nếu trùng)
+ * Delete an old file on update (cover or ebook).
+ * @param filename - Old file name
+ * @param uploadType - Upload type: 'covers' or 'ebooks'
+ * @param defaultFilename - Default file name; never deleted
  */
 export async function deleteOldFile(filename: string, uploadType = "ebooks", defaultFilename: string | null = null): Promise<boolean> {
   if (defaultFilename && filename === defaultFilename) {
-    return true; // Không xóa file mặc định
+    return true; // Never delete the default file
   }
 
   const filePath = path.join(__dirname, `../uploads/${uploadType}`, filename);
   return await deleteFileIfExists(filePath);
 }
 
-/**
- * Tạo thư mục nếu chưa tồn tại (async version)
- */
+/** Create a directory if it doesn't exist. */
 export async function createDirIfNotExists(dirPath: string): Promise<boolean> {
   try {
     await fs.mkdir(dirPath, { recursive: true });
@@ -53,9 +51,7 @@ export async function createDirIfNotExists(dirPath: string): Promise<boolean> {
   }
 }
 
-/**
- * Tạo tất cả thư mục upload cần thiết
- */
+/** Create all required upload directories. */
 export async function initializeUploadDirs(): Promise<void> {
   const baseDir = path.join(__dirname, "../uploads");
   const dirs = [baseDir, path.join(baseDir, "covers"), path.join(baseDir, "ebooks")];

@@ -1,7 +1,7 @@
-// Multer upload.fields() → req.files là map field → mảng file
+// Multer upload.fields() → req.files is a map of field → file array
 export type UploadedFiles = { [fieldname: string]: Express.Multer.File[] } | undefined;
 
-// Tham chiếu file cũ cần xóa (chỉ xóa SAU khi update DB thành công)
+// Reference to an old file to delete (only AFTER the DB update succeeds)
 export interface OldFileRef {
   filename: string;
   type: string;

@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { body, param, query, validationResult } from "express-validator";
 import { validationErrorResponse } from "../utils/errorHandler.js";
 
-// Middleware để xử lý validation errors
+// Handle validation errors
 export const handleValidationErrors = (req: Request, res: Response, next: NextFunction): void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -13,7 +13,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
   next();
 };
 
-// Validation rules cho Ebook
+// Validation rules for Ebook
 export const validateEbook = [
   body("name").trim().notEmpty().withMessage("Tên sách không được để trống").isLength({ max: 255 }).withMessage("Tên sách quá dài"),
   body("author").trim().notEmpty().withMessage("Tên tác giả không được để trống").isLength({ max: 100 }).withMessage("Tên tác giả quá dài"),
@@ -23,7 +23,7 @@ export const validateEbook = [
   handleValidationErrors,
 ];
 
-// Validation rules cho Konorano
+// Validation rules for Konorano
 export const validateKonorano = [
   body("name").trim().notEmpty().withMessage("Tên sách không được để trống").isLength({ max: 255 }).withMessage("Tên sách quá dài"),
   body("author").optional().trim().isLength({ max: 100 }).withMessage("Tên tác giả quá dài"),
@@ -32,7 +32,7 @@ export const validateKonorano = [
   handleValidationErrors,
 ];
 
-// Validation rules cho Hako
+// Validation rules for Hako
 export const validateHako = [
   body("name").trim().notEmpty().withMessage("Tên sách không được để trống").isLength({ max: 500 }).withMessage("Tên sách quá dài"),
   body("hakoId").optional({ checkFalsy: true }).trim().isLength({ max: 50 }).withMessage("hakoId quá dài"),
@@ -44,28 +44,28 @@ export const validateHako = [
   handleValidationErrors,
 ];
 
-// Validation rules cho Publisher
+// Validation rules for Publisher
 export const validatePublisher = [
   body("name").trim().notEmpty().withMessage("Tên nhãn hiệu không được để trống").isLength({ max: 100 }).withMessage("Tên nhãn hiệu quá dài"),
   handleValidationErrors,
 ];
 
-// Validation rules cho Subscriber
+// Validation rules for Subscriber
 export const validateSubscriber = [
   body("email").trim().notEmpty().withMessage("Email không được để trống").isEmail().withMessage("Email không hợp lệ").normalizeEmail(),
   handleValidationErrors,
 ];
 
-// Validation cho MongoDB ObjectId params
+// Validation for MongoDB ObjectId params
 export const validateObjectId = [param("id").isMongoId().withMessage("ID không hợp lệ"), handleValidationErrors];
 
-// Validation cho token unsubscribe (JWT signed)
+// Validation for unsubscribe token (JWT signed)
 export const validateUnsubscribeToken = [
   query("token").trim().notEmpty().withMessage("Token không được để trống").isLength({ max: 1024 }).withMessage("Token không hợp lệ"),
   handleValidationErrors,
 ];
 
-// Validation cho pagination
+// Validation for pagination
 export const validatePagination = [
   query("page").optional().isInt({ min: 1 }).withMessage("Page phải là số nguyên dương").toInt(),
   query("limit").optional().isInt({ min: 1, max: 10000 }).withMessage("Limit phải từ 1-10000").toInt(),

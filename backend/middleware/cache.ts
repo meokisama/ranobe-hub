@@ -3,7 +3,7 @@ import redisClient from "../config/redis.js";
 
 export const cache = (duration: number) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    // Chỉ cache GET requests
+    // Only cache GET requests
     if (req.method !== "GET") {
       return next();
     }
@@ -18,10 +18,10 @@ export const cache = (duration: number) => {
         return;
       }
 
-      // Lưu response gốc
+      // Preserve the original res.json
       const originalJson = res.json;
       res.json = function (this: Response, data: unknown): Response {
-        // Chỉ cache response thành công, không cache lỗi 4xx/5xx
+        // Only cache successful responses, not 4xx/5xx errors
         if (res.statusCode < 400) {
           redisClient.setEx(key, duration, JSON.stringify(data)).catch((err) => console.error("Cache write error:", err));
         }
@@ -36,7 +36,7 @@ export const cache = (duration: number) => {
   };
 };
 
-// Hàm xóa cache (dùng SCAN để không block Redis main thread)
+// Clear cache by pattern (uses SCAN to avoid blocking the Redis main thread)
 export const clearCache = async (pattern: string): Promise<void> => {
   try {
     let total = 0;
