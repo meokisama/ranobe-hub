@@ -36,8 +36,8 @@ const title = "Light Novel Hub - Thư viện Light Novel miễn phí";
 const description = "Đọc Light Novel miễn phí. Chia sẻ bộ sưu tập KonoRano và tổng hợp tài nguyên Light Novel miễn phí.";
 
 export const metadata: Metadata = {
-  title: title,
-  description: description,
+  title,
+  description,
   creator: "Meoki",
   publisher: "Meoki",
   keywords: [
@@ -56,15 +56,15 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL("https://hub.ranobe.vn"),
   openGraph: {
-    title: title,
-    description: description,
+    title,
+    description,
     siteName: title,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: title,
-    description: description,
+    title,
+    description,
   },
 };
 

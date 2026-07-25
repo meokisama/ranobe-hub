@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
+import { setAdminToken } from "@/lib/auth-cookies";
 import { toast } from "sonner";
+import axios from "axios";
 
 const formSchema = z.object({
   password: z.string().min(1, {
@@ -33,46 +35,20 @@ export function LoginForm() {
     try {
       setIsLoading(true);
       const res = await api.post("/admin/login", { password: values.password });
-
-      // Store token and expiry in cookies
-      document.cookie = `adminToken=${res.data.token}; path=/; max-age=${24 * 60 * 60}; SameSite=Strict`;
-      document.cookie = `adminTokenExpires=${new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()}; path=/; max-age=${
-        24 * 60 * 60
-      }; SameSite=Strict`;
+      setAdminToken(res.data.token);
 
       toast.success("Đăng nhập thành công", {
         description: "Đang chuyển hướng đến trang quản trị...",
       });
       router.push("/admin");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      toast.error("Đăng nhập thất bại", {
-        description: error.response?.data?.msg || "Có lỗi xảy ra",
-      });
+    } catch (error) {
+      const msg = axios.isAxiosError<{ msg?: string }>(error) ? error.response?.data?.msg : undefined;
+      toast.error("Đăng nhập thất bại", { description: msg || "Có lỗi xảy ra" });
       console.error("Lỗi đăng nhập:", error);
     } finally {
       setIsLoading(false);
     }
   }
-
-  // Clear an expired token and redirect to login
-  useEffect(() => {
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(";").shift();
-    };
-
-    const tokenExpires = getCookie("adminTokenExpires");
-    if (tokenExpires) {
-      const expiresDate = new Date(tokenExpires);
-      if (expiresDate < new Date()) {
-        document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
-        document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
-        router.push("/admin/login");
-      }
-    }
-  }, [router]);
 
   return (
     <Form {...form}>

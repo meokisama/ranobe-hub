@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
-import { AdminTopbar } from "@/components/admin/admin-topbar";
+import { AdminShellProvider } from "@/components/admin/admin-shell";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const openSidebar = useCallback(() => setSidebarOpen(true), []);
 
   if (pathname === "/admin/login") {
     return <>{children}</>;
@@ -35,8 +36,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex min-h-screen flex-1 flex-col lg:min-w-0">
-        <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1">{children}</main>
+        <AdminShellProvider openSidebar={openSidebar}>
+          <main className="flex-1">{children}</main>
+        </AdminShellProvider>
       </div>
     </div>
   );

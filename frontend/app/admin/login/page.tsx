@@ -1,28 +1,9 @@
-"use client";
-
 import Image from "next/image";
 import { LoginForm } from "@/components/admin/login-form";
 import { Card, CardContent } from "@/components/ui/card";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
+// Redirecting an already-authenticated visitor to /admin is handled by proxy.ts.
 export default function AdminLoginPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Redirect to admin if already logged in
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(";").shift();
-    };
-
-    const token = getCookie("adminToken");
-    if (token) {
-      router.push("/admin");
-    }
-  }, [router]);
-
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
       {/* Glow background */}

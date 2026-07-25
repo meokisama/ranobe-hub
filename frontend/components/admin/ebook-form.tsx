@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,21 +9,18 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
-import { Ebook } from "@/lib/types";
+import { Ebook, Publisher } from "@/lib/types";
 import Image from "next/image";
 import { PublisherDialog } from "./publisher-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { extractEpubForForm } from "@/lib/epub-metadata";
+import { toDateInputValue } from "@/lib/format";
+import { loadPublishers } from "@/lib/publishers";
 
 interface EbookFormProps {
   ebook: Ebook | null;
   onSuccess: () => void;
   onCancel: () => void;
-}
-
-interface Publisher {
-  _id: string;
-  name: string;
 }
 
 const formSchema = z.object({
@@ -50,26 +47,32 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
       name: ebook?.name || "",
       author: ebook?.author || "",
       illustrator: ebook?.illustrator === "Unknown" ? "" : ebook?.illustrator || "",
-      releaseDate: ebook?.releaseDate ? new Date(ebook.releaseDate).toISOString().split("T")[0] : "",
+      releaseDate: toDateInputValue(ebook?.releaseDate),
       publisher: ebook?.publisher._id || "",
     },
   });
 
-  const fetchPublishers = async () => {
-    try {
-      const response = await api.get("/publishers");
-      setPublishers(response.data);
-    } catch (error) {
-      console.error("Lỗi khi lấy danh sách nhãn hiệu:", error);
-      toast.error("Lỗi", {
-        description: "Không thể lấy danh sách nhãn hiệu. Vui lòng thử lại sau.",
-      });
-    }
-  };
+  const [publishersKey, setPublishersKey] = useState(0);
+
+  /** Called after the manage-publishers dialog closes, to pick up its edits. */
+  const reloadPublishers = useCallback(() => setPublishersKey((key) => key + 1), []);
 
   useEffect(() => {
-    fetchPublishers();
-  }, []);
+    let cancelled = false;
+    loadPublishers()
+      .then((list) => {
+        if (!cancelled) setPublishers(list);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách nhãn hiệu:", error);
+        toast.error("Lỗi", {
+          description: "Không thể lấy danh sách nhãn hiệu. Vui lòng thử lại sau.",
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [publishersKey]);
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -144,23 +147,14 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
         formData.append("ebook", ebookFile);
       }
 
-      let response;
+      const headers = { "Content-Type": "multipart/form-data" };
       if (ebook) {
-        response = await api.put(`/ebooks/${ebook._id}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        await api.put(`/ebooks/${ebook._id}`, formData, { headers });
         toast.success("Cập nhật thành công", {
           description: `Đã cập nhật thông tin cho "${values.name}"`,
         });
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        response = await api.post("/ebooks", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        await api.post("/ebooks", formData, { headers });
         toast.success("Thêm mới thành công", {
           description: `Đã thêm "${values.name}" vào thư viện`,
         });
@@ -274,7 +268,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                           </SelectContent>
                         </Select>
                       </FormControl>
-                      <PublisherDialog onClose={fetchPublishers} />
+                      <PublisherDialog onClose={reloadPublishers} />
                     </div>
                     <FormMessage />
                   </FormItem>

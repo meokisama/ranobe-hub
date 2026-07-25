@@ -4,47 +4,44 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
-import { api } from "@/lib/api";
+import { Publisher } from "@/lib/types";
+import { loadPublishers } from "@/lib/publishers";
+import type { SortOrder } from "@/lib/sort";
 
-interface Publisher {
-  _id: string;
-  name: string;
-}
+type ContentType = "ebook" | "konorano" | "hako";
+
+const PLACEHOLDERS: Record<ContentType, string> = {
+  ebook: "Tìm kiếm theo tên sách, tác giả, họa sĩ...",
+  hako: "Tìm theo tên, uploader, translator hoặc ID...",
+  konorano: "Tìm kiếm theo tên sách...",
+};
 
 interface ContentFiltersProps {
-  contentType: "ebook" | "konorano" | "hako";
+  contentType: ContentType;
   onSearch: (search: string) => void;
-  onSort: (sort: "asc" | "desc") => void;
+  onSort: (sort: SortOrder) => void;
   onPublisherFilter?: (publisher: string) => void;
-  action?: React.ReactNode;
+  /** Fired on any filter change so the caller can reset pagination. */
+  onFilterChange?: () => void;
   initialPublishers?: Publisher[];
 }
 
-export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilter, action, initialPublishers }: ContentFiltersProps) {
+export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilter, onFilterChange, initialPublishers }: ContentFiltersProps) {
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<"asc" | "desc">("desc");
+  const [sort, setSort] = useState<SortOrder>("desc");
   const [selectedPublisher, setSelectedPublisher] = useState<string>("all");
   const [publishers, setPublishers] = useState<Publisher[]>(initialPublishers ?? []);
 
   const isEbook = contentType === "ebook";
-  const placeholder =
-    contentType === "ebook"
-      ? "Tìm kiếm theo tên sách, tác giả, họa sĩ..."
-      : contentType === "hako"
-      ? "Tìm theo tên, uploader, translator hoặc ID..."
-      : "Tìm kiếm theo tên sách...";
 
   useEffect(() => {
     if (!isEbook || initialPublishers) return;
     let cancelled = false;
-    (async () => {
-      try {
-        const response = await api.get("/publishers");
-        if (!cancelled) setPublishers(response.data);
-      } catch (error) {
-        console.error("Lỗi khi lấy danh sách nhãn hiệu:", error);
-      }
-    })();
+    loadPublishers()
+      .then((list) => {
+        if (!cancelled) setPublishers(list);
+      })
+      .catch((error) => console.error("Lỗi khi lấy danh sách nhãn hiệu:", error));
     return () => {
       cancelled = true;
     };
@@ -53,11 +50,13 @@ export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilte
   const handleSearch = (value: string) => {
     setSearch(value);
     onSearch(value);
+    onFilterChange?.();
   };
 
-  const handleSort = (value: "asc" | "desc") => {
+  const handleSort = (value: SortOrder) => {
     setSort(value);
     onSort(value);
+    onFilterChange?.();
   };
 
   const handlePublisherFilter = (value: string) => {
@@ -65,18 +64,14 @@ export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilte
 
     setSelectedPublisher(value);
     onPublisherFilter(value === "all" ? "" : value);
+    onFilterChange?.();
   };
 
   return (
     <div className="flex flex-col md:flex-row gap-2 mb-6">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-        <Input
-          placeholder={placeholder}
-          value={search}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="pl-9 h-12 backdrop-blur"
-        />
+        <Input placeholder={PLACEHOLDERS[contentType]} value={search} onChange={(e) => handleSearch(e.target.value)} className="pl-9 h-12 backdrop-blur" />
       </div>
 
       {isEbook && onPublisherFilter && (
@@ -104,8 +99,6 @@ export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilte
           <SelectItem value="asc">Cũ nhất</SelectItem>
         </SelectContent>
       </Select>
-
-      {action}
     </div>
   );
 }

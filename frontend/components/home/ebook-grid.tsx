@@ -1,34 +1,12 @@
 import { Ebook, Publisher } from "@/lib/types";
+import { fetchList } from "@/lib/server-fetch";
 import { EbookGridInteractive } from "./ebook-grid-interactive";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-
-async function getEbooks(): Promise<Ebook[]> {
-  try {
-    const res = await fetch(`${API_BASE}/api/ebooks?limit=1000`, { next: { revalidate: 21600, tags: ["ebooks"] } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.ebooks ?? [];
-  } catch (err) {
-    console.error("Lỗi khi tải danh sách ebook:", err);
-    return [];
-  }
-}
-
-async function getPublishers(): Promise<Publisher[]> {
-  try {
-    const res = await fetch(`${API_BASE}/api/publishers`, { next: { revalidate: 21600, tags: ["publishers"] } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (err) {
-    console.error("Lỗi khi tải danh sách nhãn hiệu:", err);
-    return [];
-  }
-}
-
 export async function EbookGrid() {
-  const [ebooks, publishers] = await Promise.all([getEbooks(), getPublishers()]);
+  const [ebooks, publishers] = await Promise.all([
+    fetchList<Ebook>("/ebooks?limit=1000", "ebooks", "ebooks"),
+    fetchList<Publisher>("/publishers", "publishers", ""),
+  ]);
 
   return (
     <div className="max-w-screen-xl mx-auto p-4 min-h-screen isolate">

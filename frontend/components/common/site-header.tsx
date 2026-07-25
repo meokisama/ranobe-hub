@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { House, Library, BookText } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { hidesSiteChrome } from "./chrome-routes";
 
 const navItems = [
   { href: "/", label: "Trang Chủ", icon: House },
@@ -15,7 +16,7 @@ const navItems = [
 export function SiteHeader() {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/maintenance") || pathname.startsWith("/aozora")) return null;
+  if (hidesSiteChrome(pathname)) return null;
 
   return (
     <header className="sticky top-0 z-30 w-full bg-background/70 backdrop-blur-md">

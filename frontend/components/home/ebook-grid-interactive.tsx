@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { ContentCard } from "@/components/common/content-card";
 import { Ebook, Publisher } from "@/lib/types";
 import { ContentFilters } from "@/components/common/content-filters";
 import { Pagination } from "@/components/ui/pagination";
 import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
+import { sortByDate, type SortOrder } from "@/lib/sort";
+import { scrollToRef } from "@/lib/utils";
+
+const ITEMS_PER_PAGE = 15;
 
 const EBOOK_SEARCH_KEYS: ReadonlyArray<FuzzyKey<Ebook>> = [
   { name: "name", weight: 3 },
@@ -19,53 +23,35 @@ interface EbookGridInteractiveProps {
 }
 
 export function EbookGridInteractive({ initialEbooks, initialPublishers }: EbookGridInteractiveProps) {
-  const [allEbooks] = useState<Ebook[]>(initialEbooks);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [selectedPublisher, setSelectedPublisher] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
   const filterRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortOrder, selectedPublisher]);
-
   const publisherFiltered = useMemo(
-    () => (selectedPublisher ? allEbooks.filter((e) => e.publisher._id === selectedPublisher) : allEbooks),
-    [allEbooks, selectedPublisher],
+    () => (selectedPublisher ? initialEbooks.filter((e) => e.publisher._id === selectedPublisher) : initialEbooks),
+    [initialEbooks, selectedPublisher],
   );
 
   const searchedEbooks = useFuzzySearch(publisherFiltered, searchQuery, EBOOK_SEARCH_KEYS);
 
-  const sortedEbooks = useMemo(() => {
-    if (searchQuery.trim()) return searchedEbooks;
-    const arr = searchedEbooks.slice();
-    arr.sort((a, b) => {
-      const dateA = new Date(a.releaseDate).getTime();
-      const dateB = new Date(b.releaseDate).getTime();
-      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-    });
-    return arr;
-  }, [searchedEbooks, searchQuery, sortOrder]);
+  // A query already ranks by relevance; only sort by date when browsing.
+  const sortedEbooks = useMemo(
+    () => (searchQuery.trim() ? searchedEbooks : sortByDate(searchedEbooks, sortOrder, (e) => e.releaseDate)),
+    [searchedEbooks, searchQuery, sortOrder],
+  );
 
-  const totalPages = Math.ceil(sortedEbooks.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentEbooks = sortedEbooks.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(sortedEbooks.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentEbooks = sortedEbooks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    if (filterRef.current) {
-      const filterTop = filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
-      window.scrollTo({
-        top: filterTop,
-        behavior: "smooth",
-      });
-    }
+    scrollToRef(filterRef);
   };
 
-  if (allEbooks.length === 0) {
+  if (initialEbooks.length === 0) {
     return <div className="text-center py-12 text-muted-foreground">Chưa có ebook nào trong thư viện</div>;
   }
 
@@ -77,6 +63,7 @@ export function EbookGridInteractive({ initialEbooks, initialPublishers }: Ebook
           onSearch={setSearchQuery}
           onSort={setSortOrder}
           onPublisherFilter={setSelectedPublisher}
+          onFilterChange={() => setCurrentPage(1)}
           initialPublishers={initialPublishers}
         />
       </div>

@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 const DIACRITICS_RE = /\p{M}+/gu;
 
-export function normalize(s: string): string {
+function normalize(s: string): string {
   return (s ?? "")
     .toString()
     .normalize("NFD")

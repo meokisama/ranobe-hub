@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { hidesSiteChrome } from "./chrome-routes";
 
 export function SiteFooter() {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/maintenance") || pathname.startsWith("/aozora")) return null;
+  if (hidesSiteChrome(pathname)) return null;
 
   return (
     <footer className="relative w-full bg-gradient-to-b from-[#fffbfb] to-orange-50">

@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useSplashGate } from "@/lib/use-splash-gate";
 
 const TOTAL_DURATION = 5500;
 const FADE_IN_DELAY = 500;
@@ -15,30 +16,8 @@ const HOME_SPLASH_DURATION_MS = TOTAL_DURATION + 500;
 const HOME_SPLASH_STORAGE_KEY = "splash-home-seen";
 
 const SplashScreen = () => {
-  const [shouldUnmount, setShouldUnmount] = useState(false);
+  const shouldUnmount = useSplashGate(HOME_SPLASH_STORAGE_KEY, HOME_SPLASH_DURATION_MS, "fixed");
   const [imagesLoaded, setImagesLoaded] = useState(false);
-
-  useEffect(() => {
-    if (sessionStorage.getItem(HOME_SPLASH_STORAGE_KEY)) {
-      setShouldUnmount(true);
-      return;
-    }
-
-    document.body.style.position = "fixed";
-    document.body.style.width = "100vw";
-    const timeoutId = setTimeout(() => {
-      sessionStorage.setItem(HOME_SPLASH_STORAGE_KEY, "1");
-      document.body.style.position = "";
-      document.body.style.width = "";
-      setShouldUnmount(true);
-    }, HOME_SPLASH_DURATION_MS);
-
-    return () => {
-      clearTimeout(timeoutId);
-      document.body.style.position = "";
-      document.body.style.width = "";
-    };
-  }, []);
 
   const handleImageLoad = () => {
     setImagesLoaded(true);

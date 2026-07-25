@@ -11,6 +11,8 @@ import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { api } from "@/lib/api";
 import { Konorano } from "@/lib/types";
 import Image from "next/image";
+import { extractEpubForForm } from "@/lib/epub-metadata";
+import { toDateInputValue } from "@/lib/format";
 
 interface KonoranoFormProps {
   konorano: Konorano | null;
@@ -22,23 +24,27 @@ const formSchema = z.object({
   name: z.string().min(1, { message: "Tên sách không được để trống" }),
   author: z.string().optional(),
   releaseDate: z.string().min(1, { message: "Ngày phát hành không được để trống" }),
-  viURL: z.string().min(1, { message: "Link bản dịch tiếng Việt không được để trống" }).url({ message: "Link không hợp lệ" }),
+  viURL: z
+    .string()
+    .min(1, { message: "Link bản dịch tiếng Việt không được để trống" })
+    .pipe(z.url({ message: "Link không hợp lệ" })),
 });
 
 export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProps) {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [konoranoFile, setKonoranoFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(
-    konorano ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${konorano.coverImage}` : null
+    konorano ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${konorano.coverImage}` : null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: konorano?.name || "",
       author: konorano?.author || "宝島社",
-      releaseDate: konorano?.releaseDate ? new Date(konorano.releaseDate).toISOString().split("T")[0] : "",
+      releaseDate: toDateInputValue(konorano?.releaseDate),
       viURL: konorano?.viURL || "",
     },
   });
@@ -58,9 +64,37 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
     }
   };
 
-  const handleKonoranoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setKonoranoFile(e.target.files[0]);
+  const handleKonoranoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    setKonoranoFile(file);
+
+    // Auto-fill title/date/cover from the EPUB so the admin doesn't retype them.
+    // Runs entirely in the browser; PDFs and unreadable EPUBs just fall through to
+    // manual entry.
+    if (!file.name.toLowerCase().endsWith(".epub")) return;
+    try {
+      setIsParsing(true);
+      const prefill = await extractEpubForForm(file);
+      // Only fill empty fields so we never clobber what the admin already typed
+      // (author keeps its 宝島社 default).
+      if (prefill.title && !form.getValues("name")) form.setValue("name", prefill.title, { shouldValidate: true });
+      if (prefill.author && !form.getValues("author")) form.setValue("author", prefill.author, { shouldValidate: true });
+      if (prefill.releaseDate && !form.getValues("releaseDate")) form.setValue("releaseDate", prefill.releaseDate, { shouldValidate: true });
+      if (prefill.coverFile && !coverFile) {
+        setCoverFile(prefill.coverFile);
+        setCoverPreview(URL.createObjectURL(prefill.coverFile));
+      }
+      if (prefill.title || prefill.releaseDate || prefill.coverFile) {
+        toast.success("Đã tự động điền thông tin từ EPUB", {
+          description: "Kiểm tra lại và chỉnh sửa nếu cần.",
+        });
+      }
+    } catch (error) {
+      console.error("Không đọc được metadata EPUB:", error);
+      // Silent: the admin can still fill everything manually.
+    } finally {
+      setIsParsing(false);
     }
   };
 
@@ -93,23 +127,14 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
         formData.append("konorano", konoranoFile);
       }
 
-      let response;
+      const headers = { "Content-Type": "multipart/form-data" };
       if (konorano) {
-        response = await api.put(`/konoranos/${konorano._id}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        await api.put(`/konoranos/${konorano._id}`, formData, { headers });
         toast.success("Cập nhật thành công", {
           description: `Đã cập nhật thông tin cho "${values.name}"`,
         });
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        response = await api.post("/konoranos", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        await api.post("/konoranos", formData, { headers });
         toast.success("Thêm mới thành công", {
           description: `Đã thêm "${values.name}" vào thư viện`,
         });
@@ -205,15 +230,19 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
 
               <div>
                 <FormLabel htmlFor="cover">Ảnh bìa</FormLabel>
-                <Input id="cover" type="file" accept="image/*" onChange={handleCoverChange} />
+                <Input id="cover" type="file" accept="image/*" onChange={handleCoverChange} disabled={isSubmitting} />
                 <p className="text-xs text-muted-foreground mt-1">{konorano ? "Để trống nếu không muốn thay đổi ảnh bìa" : "Chọn file ảnh bìa"}</p>
               </div>
 
               <div>
                 <FormLabel htmlFor="konorano">File sách</FormLabel>
-                <Input id="konorano" type="file" accept=".epub,.pdf" onChange={handleKonoranoFileChange} />
+                <Input id="konorano" type="file" accept=".epub,.pdf" onChange={handleKonoranoFileChange} disabled={isSubmitting || isParsing} />
                 <p className="text-xs text-muted-foreground mt-1">
-                  {konorano ? "Để trống nếu không muốn thay đổi file sách" : "Chọn file .epub hoặc .pdf"}
+                  {isParsing
+                    ? "Đang đọc thông tin từ EPUB..."
+                    : konorano
+                      ? "Để trống nếu không muốn thay đổi file sách · Chọn file EPUB sẽ tự điền tên/ngày/ảnh bìa"
+                      : "Chọn file .epub hoặc .pdf · Chọn file EPUB sẽ tự điền tên/ngày/ảnh bìa"}
                 </p>
               </div>
             </div>

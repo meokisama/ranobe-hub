@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye, BookOpen, FileText } from "lucide-react";
@@ -21,12 +21,15 @@ import Link from "next/link";
 import { ContentFilters } from "@/components/common/content-filters";
 import { Pagination } from "@/components/ui/pagination";
 import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
+import { formatDateVi } from "@/lib/format";
+import { sortByDate, type SortOrder } from "@/lib/sort";
+
+const ITEMS_PER_PAGE = 10;
 
 interface HakoTableProps {
   hakos: Hako[];
   onEdit: (hako: Hako) => void;
   onDeleteSuccess: () => void;
-  headerAction?: React.ReactNode;
 }
 
 const HAKO_SEARCH_KEYS: ReadonlyArray<FuzzyKey<Hako>> = [
@@ -36,36 +39,25 @@ const HAKO_SEARCH_KEYS: ReadonlyArray<FuzzyKey<Hako>> = [
   { name: "hakoId", weight: 2, get: (h) => h.hakoId ?? "" },
 ];
 
-export function HakoTable({ hakos, onEdit, onDeleteSuccess, headerAction }: HakoTableProps) {
+export function HakoTable({ hakos, onEdit, onDeleteSuccess }: HakoTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [hakoToDelete, setHakoToDelete] = useState<Hako | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const itemsPerPage = 10;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortOrder]);
 
   const filtered = useFuzzySearch(hakos, searchQuery, HAKO_SEARCH_KEYS);
 
-  const sorted = useMemo(() => {
-    if (searchQuery.trim()) return filtered;
-    const arr = filtered.slice();
-    const dir = sortOrder === "asc" ? 1 : -1;
-    arr.sort((a, b) => {
-      const aTs = a.lastUpdated ? new Date(a.lastUpdated).getTime() : 0;
-      const bTs = b.lastUpdated ? new Date(b.lastUpdated).getTime() : 0;
-      return (aTs - bTs) * dir;
-    });
-    return arr;
-  }, [filtered, sortOrder, searchQuery]);
+  // A query already ranks by relevance; only sort by date when browsing.
+  const sorted = useMemo(
+    () => (searchQuery.trim() ? filtered : sortByDate(filtered, sortOrder, (h) => h.lastUpdated)),
+    [filtered, sortOrder, searchQuery],
+  );
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / itemsPerPage));
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentHakos = sorted.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / ITEMS_PER_PAGE));
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentHakos = sorted.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const openDeleteDialog = (hako: Hako) => {
     setHakoToDelete(hako);
@@ -93,16 +85,12 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess, headerAction }: Hako
     }
   };
 
-  const formatDate = (iso: string | null) => {
-    if (!iso) return "—";
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return "—";
-    return d.toLocaleDateString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit" });
-  };
-
   return (
     <div className="space-y-4">
-      <ContentFilters contentType="hako" onSearch={setSearchQuery} onSort={setSortOrder} action={headerAction} />
+      {/* Nothing to filter through yet — the toolbar would just be noise. */}
+      {hakos.length > 0 && (
+        <ContentFilters contentType="hako" onSearch={setSearchQuery} onSort={setSortOrder} onFilterChange={() => setCurrentPage(1)} />
+      )}
 
       <div className="rounded-md border">
         <Table>
@@ -121,7 +109,7 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess, headerAction }: Hako
             {currentHakos.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
-                  Không có dữ liệu
+                  {hakos.length === 0 ? "Chưa có Hako nào trong kho lưu trữ" : "Không có dữ liệu"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -133,16 +121,14 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess, headerAction }: Hako
                 return (
                   <TableRow key={hako._id}>
                     <TableCell className="font-mono text-xs text-muted-foreground tabular-nums">{hako.hakoId ?? "—"}</TableCell>
-                    <TableCell className="min-w-[260px] max-w-[420px] whitespace-normal break-words font-medium leading-snug">
-                      {hako.name}
-                    </TableCell>
+                    <TableCell className="min-w-[260px] max-w-[420px] whitespace-normal break-words font-medium leading-snug">{hako.name}</TableCell>
                     <TableCell className="w-[160px] max-w-[160px] truncate text-sm text-muted-foreground" title={hako.uploader || undefined}>
                       {hako.uploader || "—"}
                     </TableCell>
                     <TableCell className="w-[160px] max-w-[160px] truncate text-sm text-muted-foreground" title={hako.translator || undefined}>
                       {hako.translator || "—"}
                     </TableCell>
-                    <TableCell className="text-center font-light text-sm">{formatDate(hako.lastUpdated)}</TableCell>
+                    <TableCell className="text-center font-light text-sm">{formatDateVi(hako.lastUpdated)}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1.5">
                         {hako.epub ? (
@@ -186,13 +172,7 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess, headerAction }: Hako
                         <Button size="icon" variant="outline" onClick={() => onEdit(hako)} title="Chỉnh sửa">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="text-red-500"
-                          onClick={() => openDeleteDialog(hako)}
-                          title="Xóa"
-                        >
+                        <Button size="icon" variant="outline" className="text-red-500" onClick={() => openDeleteDialog(hako)} title="Xóa">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

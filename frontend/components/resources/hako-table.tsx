@@ -1,27 +1,9 @@
 import { Hako } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { fetchList } from "@/lib/server-fetch";
 import { HakoTableInteractive } from "./hako-table-interactive";
 
-interface Stats {
-  total: number;
-  withEpub: number;
-  withPdf: number;
-}
-
-async function getHakos(): Promise<Hako[]> {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-  try {
-    const res = await fetch(`${base}/api/hakos?limit=5000`, { next: { revalidate: 21600, tags: ["hakos"] } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.hakos ?? [];
-  } catch (err) {
-    console.error("Lỗi khi tải danh sách hako:", err);
-    return [];
-  }
-}
-
-function computeStats(items: Hako[]): Stats {
+function computeStats(items: Hako[]) {
   let withEpub = 0;
   let withPdf = 0;
   for (const h of items) {
@@ -32,7 +14,7 @@ function computeStats(items: Hako[]): Stats {
 }
 
 export async function HakoTable() {
-  const items = await getHakos();
+  const items = await fetchList<Hako>("/hakos?limit=5000", "hakos", "hakos");
   const stats = computeStats(items);
 
   return (

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useSplashGate } from "@/lib/use-splash-gate";
 
 const TOTAL_DURATION = 4000;
 const START_DELAY = 0.5;
@@ -12,26 +12,7 @@ const RESOURCES_SPLASH_STORAGE_KEY = "splash-resources-seen";
 
 const ResourcesSplashScreen = () => {
   const reduceMotion = useReducedMotion();
-  const [shouldUnmount, setShouldUnmount] = useState(false);
-
-  useEffect(() => {
-    if (sessionStorage.getItem(RESOURCES_SPLASH_STORAGE_KEY)) {
-      setShouldUnmount(true);
-      return;
-    }
-
-    document.body.style.overflow = "hidden";
-    const timeoutId = setTimeout(() => {
-      sessionStorage.setItem(RESOURCES_SPLASH_STORAGE_KEY, "1");
-      document.body.style.overflow = "";
-      setShouldUnmount(true);
-    }, RESOURCES_SPLASH_DURATION_MS);
-
-    return () => {
-      document.body.style.overflow = "";
-      clearTimeout(timeoutId);
-    };
-  }, []);
+  const shouldUnmount = useSplashGate(RESOURCES_SPLASH_STORAGE_KEY, RESOURCES_SPLASH_DURATION_MS, "overflow");
 
   if (shouldUnmount) return null;
 

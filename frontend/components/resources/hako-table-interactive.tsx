@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowDown, ArrowUp, ArrowUpDown, BookOpen, Download, Search, UserPen, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, scrollToRef } from "@/lib/utils";
 import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
 
 const PAGE_SIZE = 25;
@@ -31,11 +31,15 @@ interface HakoTableInteractiveProps {
 }
 
 export function HakoTableInteractive({ initialItems }: HakoTableInteractiveProps) {
-  const [items] = useState<IndexedHako[]>(() =>
-    initialItems.map<IndexedHako>((h) => ({
-      ...h,
-      _lastUpdatedTs: h.lastUpdated ? new Date(h.lastUpdated).getTime() : Number.NEGATIVE_INFINITY,
-    })),
+  // Timestamps are precomputed once: re-parsing lastUpdated inside the comparator
+  // would cost thousands of Date parses per sort on a 5k-row archive.
+  const items = useMemo<IndexedHako[]>(
+    () =>
+      initialItems.map<IndexedHako>((h) => ({
+        ...h,
+        _lastUpdatedTs: h.lastUpdated ? new Date(h.lastUpdated).getTime() : Number.NEGATIVE_INFINITY,
+      })),
+    [initialItems],
   );
 
   const [rawQuery, setRawQuery] = useState("");
@@ -48,14 +52,14 @@ export function HakoTableInteractive({ initialItems }: HakoTableInteractiveProps
   const searchRef = useRef<HTMLInputElement>(null);
   const tableTopRef = useRef<HTMLDivElement>(null);
 
+  // Debounced query; a new search always restarts at page 1.
   useEffect(() => {
-    const id = setTimeout(() => setQuery(rawQuery), 150);
+    const id = setTimeout(() => {
+      setQuery(rawQuery);
+      setPage(1);
+    }, 150);
     return () => clearTimeout(id);
   }, [rawQuery]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [query, filter, sortKey, sortDir]);
 
   // Keyboard shortcut: "/" focuses search, Escape blurs it
   useEffect(() => {
@@ -106,6 +110,7 @@ export function HakoTableInteractive({ initialItems }: HakoTableInteractiveProps
   const pageItems = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const handleSort = (key: SortKey) => {
+    setPage(1);
     if (key === sortKey) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
@@ -114,12 +119,14 @@ export function HakoTableInteractive({ initialItems }: HakoTableInteractiveProps
     }
   };
 
+  const handleFilter = (next: Filter) => {
+    setFilter(next);
+    setPage(1);
+  };
+
   const handlePageChange = (p: number) => {
     setPage(p);
-    if (tableTopRef.current) {
-      const top = tableTopRef.current.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
+    scrollToRef(tableTopRef, 80);
   };
 
   return (
@@ -161,7 +168,7 @@ export function HakoTableInteractive({ initialItems }: HakoTableInteractiveProps
                 <button
                   key={f}
                   type="button"
-                  onClick={() => setFilter(f)}
+                  onClick={() => handleFilter(f)}
                   className={cn(
                     "rounded-full px-4 py-1.5 text-sm font-medium transition",
                     filter === f ? "bg-gradient-to-br from-orange-500 to-rose-500 text-white shadow" : "text-stone-600 hover:bg-stone-100",

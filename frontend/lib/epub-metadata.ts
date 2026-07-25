@@ -122,7 +122,7 @@ function resolveCoverHref(manifestItems: XmlNode[], metadata: XmlNode | undefine
   return null;
 }
 
-export interface EpubMetadata {
+interface EpubMetadata {
   title: string;
   author: string;
   /** dc:date, raw string as authored (may be a full ISO timestamp or just a year). */
@@ -134,7 +134,7 @@ export interface EpubMetadata {
 
 /** Extracts display metadata + cover from an EPUB blob, reading only the entries
  *  needed (container.xml, the OPF, and the cover image). */
-export async function extractEpubMetadata(blob: Blob): Promise<EpubMetadata> {
+async function extractEpubMetadata(blob: Blob): Promise<EpubMetadata> {
   const reader = new ZipReader(new BlobReader(blob));
   try {
     const entries = await reader.getEntries();
@@ -175,9 +175,9 @@ export async function extractEpubMetadata(blob: Blob): Promise<EpubMetadata> {
 // ---- Cover downscaling -----------------------------------------------------
 
 /** Master cover width cap. EPUB covers range from ~200px to 3000px+; capping at
- *  800px keeps them crisp anywhere on the site while cutting multi-MB covers to
+ *  600px keeps them crisp anywhere on the site while cutting multi-MB covers to
  *  ~100KB. Never upscales past the source. */
-export const COVER_MAX_WIDTH = 600;
+const COVER_MAX_WIDTH = 600;
 const COVER_JPEG_QUALITY = 0.85;
 
 /**
@@ -186,7 +186,7 @@ const COVER_JPEG_QUALITY = 0.85;
  * bytes if the image can't be decoded/drawn (e.g. no canvas). Returns null for
  * empty input.
  */
-export async function resizeCoverToFile(
+async function resizeCoverToFile(
   bytes: ArrayBuffer | null | undefined,
   mime: string | null,
   filename = "cover.jpg",
@@ -220,7 +220,7 @@ export async function resizeCoverToFile(
   }
 }
 
-export interface EpubFormPrefill {
+interface EpubFormPrefill {
   title: string;
   author: string;
   /** yyyy-mm-dd for a <input type="date">, or "" when dc:date isn't cleanly parseable. */

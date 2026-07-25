@@ -17,8 +17,8 @@ export const CoverCarousel = () => {
         </div>
       </div>
       <div className="opacity-40">
-        <InfiniteScroll items="/anniv_cover01.jpg" direction="left" speed="slow" pauseOnHover={false} />
-        <InfiniteScroll items="/anniv_cover02.jpg" direction="right" speed="slow" pauseOnHover={false} />
+        <InfiniteScroll src="/anniv_cover01.jpg" direction="left" speed="slow" pauseOnHover={false} />
+        <InfiniteScroll src="/anniv_cover02.jpg" direction="right" speed="slow" pauseOnHover={false} />
       </div>
     </div>
   );

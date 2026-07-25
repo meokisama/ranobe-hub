@@ -1,21 +1,9 @@
 import { Konorano } from "@/lib/types";
+import { fetchList } from "@/lib/server-fetch";
 import { KonoranoGridInteractive } from "./konorano-grid-interactive";
 
-async function getKonoranos(): Promise<Konorano[]> {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-  try {
-    const res = await fetch(`${base}/api/konoranos?limit=1000`, { next: { revalidate: 21600, tags: ["konoranos"] } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.konoranos ?? [];
-  } catch (err) {
-    console.error("Lỗi khi tải danh sách konorano:", err);
-    return [];
-  }
-}
-
 export async function KonoranoGrid() {
-  const konoranos = await getKonoranos();
+  const konoranos = await fetchList<Konorano>("/konoranos?limit=1000", "konoranos", "konoranos");
 
   return (
     <div className="max-w-screen-xl mx-auto p-4 pb-12 isolate">

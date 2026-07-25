@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Library, BookMarked, Archive, LogOut, X } from "lucide-react";
+import { Library, BookMarked, Archive, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { clearAdminToken } from "@/lib/auth-cookies";
 import { cn } from "@/lib/utils";
 
 interface AdminSidebarProps {
@@ -38,8 +39,7 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
   const router = useRouter();
 
   const handleLogout = () => {
-    document.cookie = "adminToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
-    document.cookie = "adminTokenExpires=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+    clearAdminToken();
     router.push("/admin/login");
   };
 
@@ -118,14 +118,13 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="border-t p-4">
+        <div className="p-4">
           <Button
             variant="outline"
             size="lg"
             className="flex w-full justify-center gap-2 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:hover:border-rose-900/60 dark:hover:bg-rose-950/30 dark:hover:text-rose-300"
             onClick={handleLogout}
           >
-            <LogOut className="h-4 w-4" />
             Đăng xuất
           </Button>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,15 +28,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Edit, Trash2, Plus, Tag, Loader2, Building2, X, Check, Inbox } from "lucide-react";
 import { api } from "@/lib/api";
+import { Publisher } from "@/lib/types";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Tên nhãn hiệu không được để trống" }),
 });
-
-interface Publisher {
-  _id: string;
-  name: string;
-}
 
 interface PublisherDialogProps {
   onClose?: () => void;
@@ -50,15 +46,6 @@ export function PublisherDialog({ onClose }: PublisherDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [publisherToDelete, setPublisherToDelete] = useState<Publisher | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
-      setEditingPublisher(null);
-      form.reset();
-      onClose?.();
-    }
-  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -82,11 +69,17 @@ export function PublisherDialog({ onClose }: PublisherDialogProps) {
     }
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchPublishers();
+  // Loading on open is an event, not a side effect of rendering — no useEffect needed.
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      void fetchPublishers();
+    } else {
+      setEditingPublisher(null);
+      form.reset();
+      onClose?.();
     }
-  }, [isOpen]);
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -106,7 +99,7 @@ export function PublisherDialog({ onClose }: PublisherDialogProps) {
 
       form.reset();
       setEditingPublisher(null);
-      fetchPublishers();
+      void fetchPublishers();
     } catch (error) {
       console.error("Lỗi khi lưu nhãn hiệu:", error);
       toast.error("Lỗi", {
@@ -138,7 +131,7 @@ export function PublisherDialog({ onClose }: PublisherDialogProps) {
       if (editingPublisher?._id === publisherToDelete._id) {
         cancelEdit();
       }
-      fetchPublishers();
+      void fetchPublishers();
     } catch (error) {
       console.error("Lỗi khi xóa nhãn hiệu:", error);
       toast.error("Lỗi", {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye } from "lucide-react";
@@ -22,6 +22,11 @@ import Link from "next/link";
 import { ContentFilters } from "@/components/common/content-filters";
 import { Pagination } from "@/components/ui/pagination";
 import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
+import { formatDateVi } from "@/lib/format";
+import { sortByDate, type SortOrder } from "@/lib/sort";
+import { scrollToRef } from "@/lib/utils";
+
+const ITEMS_PER_PAGE = 15;
 
 const EBOOK_SEARCH_KEYS: ReadonlyArray<FuzzyKey<Ebook>> = [
   { name: "name", weight: 3 },
@@ -33,65 +38,34 @@ interface EbookTableProps {
   ebooks: Ebook[];
   onEdit: (ebook: Ebook) => void;
   onDeleteSuccess: () => void;
-  headerAction?: React.ReactNode;
 }
 
-export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess, headerAction }: EbookTableProps) {
+export function EbookTable({ ebooks, onEdit, onDeleteSuccess }: EbookTableProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [ebookToDelete, setEbookToDelete] = useState<Ebook | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [allEbooks, setAllEbooks] = useState<Ebook[]>(initialEbooks);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [selectedPublisher, setSelectedPublisher] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
   const filterRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchEbooks = async () => {
-      try {
-        const res = await api.get("/ebooks?limit=1000");
-        setAllEbooks(res.data.ebooks);
-      } catch (error) {
-        console.error("Lỗi khi tải danh sách ebook:", error);
-        toast.error("Lỗi", {
-          description: "Không thể tải danh sách ebook. Vui lòng thử lại sau.",
-        });
-      }
-    };
-
-    fetchEbooks();
-  }, []);
-
-  // Reset current page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortOrder, selectedPublisher]);
-
   const publisherFiltered = useMemo(
-    () => (selectedPublisher ? allEbooks.filter((e) => e.publisher._id === selectedPublisher) : allEbooks),
-    [allEbooks, selectedPublisher],
+    () => (selectedPublisher ? ebooks.filter((e) => e.publisher._id === selectedPublisher) : ebooks),
+    [ebooks, selectedPublisher],
   );
 
   const searchedEbooks = useFuzzySearch(publisherFiltered, searchQuery, EBOOK_SEARCH_KEYS);
 
-  const sortedEbooks = useMemo(() => {
-    if (searchQuery.trim()) return searchedEbooks;
-    const arr = searchedEbooks.slice();
-    arr.sort((a, b) => {
-      const dateA = new Date(a.releaseDate).getTime();
-      const dateB = new Date(b.releaseDate).getTime();
-      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-    });
-    return arr;
-  }, [searchedEbooks, searchQuery, sortOrder]);
+  // A query already ranks by relevance; only sort by date when browsing.
+  const sortedEbooks = useMemo(
+    () => (searchQuery.trim() ? searchedEbooks : sortByDate(searchedEbooks, sortOrder, (e) => e.releaseDate)),
+    [searchedEbooks, searchQuery, sortOrder],
+  );
 
-  // Calculate pagination
-  const totalPages = Math.ceil(sortedEbooks.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentEbooks = sortedEbooks.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(sortedEbooks.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentEbooks = sortedEbooks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handleDelete = async () => {
     if (!ebookToDelete) return;
@@ -103,8 +77,6 @@ export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess, hea
         description: `Đã xóa "${ebookToDelete.name}" khỏi thư viện`,
       });
       onDeleteSuccess();
-      // Update local state after deletion
-      setAllEbooks(allEbooks.filter((ebook) => ebook._id !== ebookToDelete._id));
     } catch (error) {
       console.error("Lỗi khi xóa ebook:", error);
       toast.error("Lỗi", {
@@ -124,31 +96,23 @@ export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess, hea
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Smooth scroll to filter section
-    if (filterRef.current) {
-      const filterTop = filterRef.current.getBoundingClientRect().top + window.scrollY - 50;
-      window.scrollTo({
-        top: filterTop,
-        behavior: "smooth",
-      });
-    }
+    scrollToRef(filterRef);
   };
-
-  if (allEbooks.length === 0) {
-    return <div className="text-center py-12 text-muted-foreground">Chưa có ebook nào trong thư viện</div>;
-  }
 
   return (
     <>
-      <div ref={filterRef}>
-        <ContentFilters
-          contentType="ebook"
-          onSearch={setSearchQuery}
-          onSort={setSortOrder}
-          onPublisherFilter={setSelectedPublisher}
-          action={headerAction}
-        />
-      </div>
+      {/* Nothing to filter through yet — the toolbar would just be noise. */}
+      {ebooks.length > 0 && (
+        <div ref={filterRef}>
+          <ContentFilters
+            contentType="ebook"
+            onSearch={setSearchQuery}
+            onSort={setSortOrder}
+            onPublisherFilter={setSelectedPublisher}
+            onFilterChange={() => setCurrentPage(1)}
+          />
+        </div>
+      )}
 
       <div className="rounded-md border">
         <Table>
@@ -164,47 +128,49 @@ export function EbookTable({ ebooks: initialEbooks, onEdit, onDeleteSuccess, hea
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentEbooks.map((ebook) => (
-              <TableRow key={ebook._id}>
-                <TableCell>
-                  <div className="relative h-12 w-9 overflow-hidden rounded">
-                    <Image
-                      src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${ebook.coverImage}`}
-                      alt={ebook.name}
-                      fill
-                      sizes="36px"
-                      className="object-cover"
-                    />
-                  </div>
-                </TableCell>
-                <TableCell className="font-['Yu_Mincho']">{ebook.name}</TableCell>
-                <TableCell className="font-['Yu_Mincho']">{ebook.author}</TableCell>
-                <TableCell className="font-['Yu_Mincho']">{ebook.illustrator}</TableCell>
-                <TableCell className="font-light text-center">
-                  {new Date(ebook.releaseDate).toLocaleDateString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })}
-                </TableCell>
-                <TableCell className="font-light">{ebook.publisher.name}</TableCell>
-                <TableCell className="text-end">
-                  <div className="flex justify-end gap-1">
-                    <Button size="icon" variant="outline" asChild>
-                      <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${ebook.filePath.replace(/\.epub$/i, "")}`} target="_blank">
-                        <Eye className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button size="icon" variant="outline" onClick={() => onEdit(ebook)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="outline" className="text-red-500" onClick={() => openDeleteDialog(ebook)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+            {currentEbooks.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
+                  {ebooks.length === 0 ? "Chưa có ebook nào trong thư viện" : "Không có dữ liệu"}
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              currentEbooks.map((ebook) => (
+                <TableRow key={ebook._id}>
+                  <TableCell>
+                    <div className="relative h-12 w-9 overflow-hidden rounded">
+                      <Image
+                        src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/covers/${ebook.coverImage}`}
+                        alt={ebook.name}
+                        fill
+                        sizes="36px"
+                        className="object-cover"
+                      />
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-['Yu_Mincho']">{ebook.name}</TableCell>
+                  <TableCell className="font-['Yu_Mincho']">{ebook.author}</TableCell>
+                  <TableCell className="font-['Yu_Mincho']">{ebook.illustrator}</TableCell>
+                  <TableCell className="font-light text-center">{formatDateVi(ebook.releaseDate)}</TableCell>
+                  <TableCell className="font-light">{ebook.publisher.name}</TableCell>
+                  <TableCell className="text-end">
+                    <div className="flex justify-end gap-1">
+                      <Button size="icon" variant="outline" asChild>
+                        <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${ebook.filePath.replace(/\.epub$/i, "")}`} target="_blank">
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button size="icon" variant="outline" onClick={() => onEdit(ebook)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="outline" className="text-red-500" onClick={() => openDeleteDialog(ebook)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

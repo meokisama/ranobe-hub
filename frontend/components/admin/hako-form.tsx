@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
 import { Hako } from "@/lib/types";
+import { toDateInputValue } from "@/lib/format";
 
 interface HakoFormProps {
   hako: Hako | null;
@@ -45,7 +46,7 @@ export function HakoForm({ hako, onSuccess, onCancel }: HakoFormProps) {
       hakoId: hako?.hakoId || "",
       uploader: hako?.uploader || "",
       translator: hako?.translator || "",
-      lastUpdated: hako?.lastUpdated ? new Date(hako.lastUpdated).toISOString().split("T")[0] : "",
+      lastUpdated: toDateInputValue(hako?.lastUpdated),
       epub: hako?.epub || "",
       pdf: hako?.pdf || "",
     },
@@ -55,20 +56,16 @@ export function HakoForm({ hako, onSuccess, onCancel }: HakoFormProps) {
     try {
       setIsSubmitting(true);
 
+      const lastUpdated = values.lastUpdated?.trim();
       const payload: Record<string, string | null> = {
         name: values.name.trim(),
         hakoId: values.hakoId?.trim() || "",
         uploader: values.uploader?.trim() || "",
         translator: values.translator?.trim() || "",
-        epub: values.epub?.trim() ? values.epub.trim() : null,
-        pdf: values.pdf?.trim() ? values.pdf.trim() : null,
+        epub: values.epub?.trim() || null,
+        pdf: values.pdf?.trim() || null,
+        lastUpdated: lastUpdated ? new Date(lastUpdated).toISOString() : null,
       };
-
-      if (values.lastUpdated && values.lastUpdated.trim().length > 0) {
-        payload.lastUpdated = new Date(values.lastUpdated).toISOString();
-      } else {
-        payload.lastUpdated = null;
-      }
 
       if (hako) {
         await api.put(`/hakos/${hako._id}`, payload);
