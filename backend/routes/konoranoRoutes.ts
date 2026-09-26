@@ -1,7 +1,6 @@
 import express from "express";
 import adminAuth from "../middleware/adminAuth.js";
 import * as konoranoController from "../controllers/konoranoController.js";
-import { cache } from "../middleware/cache.js";
 import { uploadLimiter } from "../middleware/security.js";
 import { createUploadMiddleware, konoranoUploadConfig } from "../utils/multerConfig.js";
 import { validateKonorano, validateObjectId, validatePagination } from "../middleware/validation.js";
@@ -14,12 +13,12 @@ const uploadFields = createUploadMiddleware(konoranoUploadConfig);
 // @route   GET api/konoranos
 // @desc    Get all konoranos (paginated)
 // @access  Public
-router.get("/", [...validatePagination, cache(300)], konoranoController.getAllKonoranos);
+router.get("/", validatePagination, konoranoController.getAllKonoranos);
 
 // @route   GET api/konoranos/:id
 // @desc    Get konorano by ID
 // @access  Public
-router.get("/:id", [...validateObjectId, cache(600)], konoranoController.getKonoranoById);
+router.get("/:id", validateObjectId, konoranoController.getKonoranoById);
 
 // @route   POST api/konoranos
 // @desc    Create konorano

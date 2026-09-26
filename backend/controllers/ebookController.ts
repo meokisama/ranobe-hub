@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import Ebook from "../models/Ebook.js";
 import Publisher from "../models/Publisher.js";
-import { clearCache } from "../middleware/cache.js";
 import { sendNotification } from "./subscriberController.js";
 import { revalidateFrontend } from "../utils/revalidate.js";
 import { deleteOldFile, deleteFileIfExists } from "../utils/fileManager.js";
@@ -17,16 +16,8 @@ interface EbookBody {
   publisher: string;
 }
 
-const EBOOK_CACHE_LIST = "cache:/api/ebooks";
-const EBOOK_CACHE_LIST_GLOB = "cache:/api/ebooks?*";
-
-const invalidateEbookCache = async (id?: string): Promise<void> => {
-  await Promise.all([
-    clearCache(EBOOK_CACHE_LIST),
-    clearCache(EBOOK_CACHE_LIST_GLOB),
-    ...(id ? [clearCache(`cache:/api/ebooks/${id}`)] : []),
-  ]);
-  // Revalidate frontend (background, non-blocking)
+// Revalidate frontend (background, non-blocking)
+const invalidateEbookCache = (): void => {
   setImmediate(() => void revalidateFrontend("ebooks"));
 };
 
@@ -113,7 +104,7 @@ export const createEbook = async (req: TypedRequest<EbookBody>, res: Response) =
 
     const populatedEbook = await Ebook.findById(ebook._id).populate("publisher", "name");
 
-    await invalidateEbookCache();
+    invalidateEbookCache();
 
     // Notify subscribers (background, non-blocking)
     setImmediate(() => void sendNotification(name));
@@ -180,7 +171,7 @@ export const updateEbook = async (req: TypedRequest<EbookBody>, res: Response) =
     newFilesToCleanupOnError.length = 0;
     await Promise.all(oldFilesToDelete.map((f) => deleteOldFile(f.filename, f.type, f.def)));
 
-    await invalidateEbookCache(String(req.params.id));
+    invalidateEbookCache();
 
     res.json(updatedEbook);
   } catch (err) {
@@ -216,7 +207,7 @@ export const deleteEbook = async (req: Request, res: Response) => {
 
     await Ebook.findByIdAndDelete(req.params.id);
 
-    await invalidateEbookCache(String(req.params.id));
+    invalidateEbookCache();
 
     res.json({ msg: "Ebook đã được xóa" });
   } catch (err) {

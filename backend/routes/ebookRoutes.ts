@@ -1,7 +1,6 @@
 import express from "express";
 import adminAuth from "../middleware/adminAuth.js";
 import * as ebookController from "../controllers/ebookController.js";
-import { cache } from "../middleware/cache.js";
 import { uploadLimiter } from "../middleware/security.js";
 import { createUploadMiddleware, ebookUploadConfig } from "../utils/multerConfig.js";
 import { validateEbook, validateObjectId, validatePagination } from "../middleware/validation.js";
@@ -14,12 +13,12 @@ const uploadFields = createUploadMiddleware(ebookUploadConfig);
 // @route   GET api/ebooks
 // @desc    Get all ebooks (paginated)
 // @access  Public
-router.get("/", [...validatePagination, cache(300)], ebookController.getAllEbooks);
+router.get("/", validatePagination, ebookController.getAllEbooks);
 
 // @route   GET api/ebooks/:id
 // @desc    Get ebook by ID
 // @access  Public
-router.get("/:id", [...validateObjectId, cache(600)], ebookController.getEbookById);
+router.get("/:id", validateObjectId, ebookController.getEbookById);
 
 // @route   POST api/ebooks
 // @desc    Create ebook

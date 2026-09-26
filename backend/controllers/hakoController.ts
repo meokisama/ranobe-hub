@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import Hako from "../models/Hako.js";
-import { clearCache } from "../middleware/cache.js";
 import { revalidateFrontend } from "../utils/revalidate.js";
 import { serverErrorResponse, notFoundResponse, validationErrorResponse, handleObjectIdError } from "../utils/errorHandler.js";
 import type { TypedRequest } from "../types/request.js";
@@ -16,16 +15,8 @@ interface HakoBody {
   pdf?: string;
 }
 
-const HAKO_CACHE_LIST = "cache:/api/hakos";
-const HAKO_CACHE_LIST_GLOB = "cache:/api/hakos?*";
-
-const invalidateHakoCache = async (id?: string): Promise<void> => {
-  await Promise.all([
-    clearCache(HAKO_CACHE_LIST),
-    clearCache(HAKO_CACHE_LIST_GLOB),
-    ...(id ? [clearCache(`cache:/api/hakos/${id}`)] : []),
-  ]);
-  // Revalidate the frontend /resources page (background, non-blocking)
+// Revalidate frontend (background, non-blocking)
+const invalidateHakoCache = (): void => {
   setImmediate(() => void revalidateFrontend("hakos"));
 };
 
@@ -123,7 +114,7 @@ export const createHako = async (req: TypedRequest<HakoBody>, res: Response) => 
     });
 
     const hako = await newHako.save();
-    await invalidateHakoCache();
+    invalidateHakoCache();
 
     res.json(hako);
   } catch (err) {
@@ -153,7 +144,7 @@ export const updateHako = async (req: TypedRequest<HakoBody>, res: Response) => 
       return notFoundResponse(res, "hako");
     }
 
-    await invalidateHakoCache(String(req.params.id));
+    invalidateHakoCache();
     res.json(hako);
   } catch (err) {
     if ((err as { code?: number }).code === 11000) {
@@ -174,7 +165,7 @@ export const deleteHako = async (req: Request, res: Response) => {
       return notFoundResponse(res, "hako");
     }
 
-    await invalidateHakoCache(String(req.params.id));
+    invalidateHakoCache();
     res.json({ msg: "Hako đã được xóa" });
   } catch (err) {
     if (handleObjectIdError(err, res, "hako")) {

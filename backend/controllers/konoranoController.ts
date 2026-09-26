@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import Konorano from "../models/Konorano.js";
-import { clearCache } from "../middleware/cache.js";
 import { sendNotification } from "./subscriberController.js";
 import { revalidateFrontend } from "../utils/revalidate.js";
 import { deleteOldFile, deleteFileIfExists } from "../utils/fileManager.js";
@@ -15,16 +14,8 @@ interface KonoranoBody {
   viURL: string;
 }
 
-const KONORANO_CACHE_LIST = "cache:/api/konoranos";
-const KONORANO_CACHE_LIST_GLOB = "cache:/api/konoranos?*";
-
-const invalidateKonoranoCache = async (id?: string): Promise<void> => {
-  await Promise.all([
-    clearCache(KONORANO_CACHE_LIST),
-    clearCache(KONORANO_CACHE_LIST_GLOB),
-    ...(id ? [clearCache(`cache:/api/konoranos/${id}`)] : []),
-  ]);
-  // Revalidate frontend (background, non-blocking)
+// Revalidate frontend (background, non-blocking)
+const invalidateKonoranoCache = (): void => {
   setImmediate(() => void revalidateFrontend("konoranos"));
 };
 
@@ -103,7 +94,7 @@ export const createKonorano = async (req: TypedRequest<KonoranoBody>, res: Respo
     // Save succeeded — keep the files
     filesToCleanupOnError.length = 0;
 
-    await invalidateKonoranoCache();
+    invalidateKonoranoCache();
 
     // Notify subscribers (background, non-blocking)
     setImmediate(() => void sendNotification(name));
@@ -168,7 +159,7 @@ export const updateKonorano = async (req: TypedRequest<KonoranoBody>, res: Respo
     newFilesToCleanupOnError.length = 0;
     await Promise.all(oldFilesToDelete.map((f) => deleteOldFile(f.filename, f.type, f.def)));
 
-    await invalidateKonoranoCache(String(req.params.id));
+    invalidateKonoranoCache();
 
     res.json(updatedKonorano);
   } catch (err) {
@@ -204,7 +195,7 @@ export const deleteKonorano = async (req: Request, res: Response) => {
 
     await Konorano.findByIdAndDelete(req.params.id);
 
-    await invalidateKonoranoCache(String(req.params.id));
+    invalidateKonoranoCache();
 
     res.json({ msg: "Konorano đã được xóa" });
   } catch (err) {
