@@ -11,6 +11,9 @@ const CIRCLE_REVEAL_DELAY = 3000;
 const FADE_IN_DURATION = 1000;
 const TEXT_FADE_DURATION = 1000;
 const CIRCLE_REVEAL_DURATION = 1500;
+// Opens right after the circle reveal and ends at TOTAL_DURATION.
+const SPLIT_DELAY = CIRCLE_REVEAL_DELAY + CIRCLE_REVEAL_DURATION;
+const SPLIT_DURATION = TOTAL_DURATION - SPLIT_DELAY;
 
 const HOME_SPLASH_DURATION_MS = TOTAL_DURATION + 500;
 const HOME_SPLASH_STORAGE_KEY = "splash-home-seen";
@@ -33,11 +36,12 @@ const SplashScreen = () => {
   // The content renders twice (one copy per half), so each image loads twice.
   const handleImageLoad = (src: string) => () => setLoaded((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
 
-  const splitTransition = {
-    duration: TOTAL_DURATION / 1000,
-    times: [0, 0.86, 1],
-    ease: [0.76, 0, 0.24, 1] as [number, number, number, number],
-  };
+  // A CSS animation on transform runs off the main thread; Motion's `x` is ticked per frame in JS and jumps to the end when
+  // hydration or the companion's model load blocks it.
+  const split = (side: "left" | "right") =>
+    imagesLoaded
+      ? `splash-open-${side} ${SPLIT_DURATION}ms cubic-bezier(0.76, 0, 0.24, 1) ${SPLIT_DELAY}ms both`
+      : undefined;
 
   const splashContent = (
     <>
@@ -169,24 +173,18 @@ const SplashScreen = () => {
 
   return shouldUnmount ? null : (
     <>
-      <motion.div
+      <div
         className="flex flex-col lg:flex-row fixed inset-0 z-100 w-screen h-screen bg-background"
-        style={{ clipPath: "inset(0 50% 0 0)", willChange: "transform" }}
-        initial={{ x: 0 }}
-        animate={imagesLoaded ? { x: [0, 0, "-50%"] } : { x: 0 }}
-        transition={splitTransition}
+        style={{ clipPath: "inset(0 50% 0 0)", willChange: "transform", animation: split("left") }}
       >
         {splashContent}
-      </motion.div>
-      <motion.div
+      </div>
+      <div
         className="flex flex-col lg:flex-row fixed inset-0 z-100 w-screen h-screen bg-background"
-        style={{ clipPath: "inset(0 0 0 50%)", willChange: "transform" }}
-        initial={{ x: 0 }}
-        animate={imagesLoaded ? { x: [0, 0, "50%"] } : { x: 0 }}
-        transition={splitTransition}
+        style={{ clipPath: "inset(0 0 0 50%)", willChange: "transform", animation: split("right") }}
       >
         {splashContent}
-      </motion.div>
+      </div>
     </>
   );
 };

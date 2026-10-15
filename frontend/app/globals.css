@@ -173,3 +173,16 @@
     animation: none;
   }
 }
+
+/* Home splash: the two halves slide apart on the compositor, so a busy main thread can't make them skip. */
+@keyframes splash-open-left {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes splash-open-right {
+  to {
+    transform: translate3d(50%, 0, 0);
+  }
+}

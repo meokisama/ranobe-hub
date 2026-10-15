@@ -179,13 +179,13 @@ export function Companion() {
 
         {tip && (
           <p
-            className="absolute right-4 w-max max-w-64 rounded-3xl border-2 border-pink-200 bg-pink-50 px-5 py-3 text-sm leading-relaxed text-pink-950 shadow-[0_4px_0_0] shadow-pink-200/70 animate-in duration-300 zoom-in-90 fade-in slide-in-from-bottom-2"
+            className="absolute right-4 w-max max-w-64 rounded-3xl border-2 border-orange-200 bg-[#fffbf3] px-5 py-3 text-sm leading-relaxed text-stone-700 shadow-[0_4px_0_0] shadow-orange-200/60 animate-in duration-300 zoom-in-90 fade-in slide-in-from-bottom-2"
             style={{ bottom: HEIGHT - head + GAP }}
           >
             {tip.chars.slice(0, tip.typed).join("")}
             <span className="invisible">{tip.chars.slice(tip.typed).join("")}</span>
-            <span aria-hidden className="absolute -top-2 -right-1.5 rotate-12 text-base text-pink-300">✦</span>
-            <span aria-hidden className="absolute right-20 -bottom-2 size-3 rotate-45 rounded-br-sm border-r-2 border-b-2 border-pink-200 bg-pink-50" />
+            <span aria-hidden className="absolute -top-2 -right-1.5 rotate-12 text-base text-amber-400">✦</span>
+            <span aria-hidden className="absolute right-20 -bottom-2 size-3 rotate-45 rounded-br-sm border-r-2 border-b-2 border-orange-200 bg-[#fffbf3]" />
           </p>
         )}
 
