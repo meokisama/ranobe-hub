@@ -14,6 +14,8 @@ interface EbookBody {
   illustrator?: string;
   releaseDate: Date;
   publisher: string;
+  /** Email subscribers about a new upload; defaults to true. */
+  notify?: boolean;
 }
 
 // Revalidate frontend (background, non-blocking)
@@ -107,7 +109,7 @@ export const createEbook = async (req: TypedRequest<EbookBody>, res: Response) =
     invalidateEbookCache();
 
     // Notify subscribers (background, non-blocking)
-    setImmediate(() => void sendNotification(name));
+    if (req.body.notify !== false) setImmediate(() => void sendNotification(name));
 
     res.json(populatedEbook);
   } catch (err) {

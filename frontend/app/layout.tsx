@@ -3,6 +3,7 @@ import { Lexend, Poppins, Playfair_Display } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/common/site-header";
 import { SiteFooter } from "@/components/common/site-footer";
+import { Companion } from "@/components/common/companion";
 import localFont from "next/font/local";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
@@ -80,6 +81,7 @@ export default function RootLayout({
         {!maintenance && <SiteHeader />}
         {children}
         {!maintenance && <SiteFooter />}
+        {!maintenance && <Companion />}
         <Toaster richColors />
       </body>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA4 as string} />

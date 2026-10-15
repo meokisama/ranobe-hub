@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSplashGate } from "@/lib/use-splash-gate";
 
 const TOTAL_DURATION = 5500;
@@ -14,14 +14,24 @@ const CIRCLE_REVEAL_DURATION = 1500;
 
 const HOME_SPLASH_DURATION_MS = TOTAL_DURATION + 500;
 const HOME_SPLASH_STORAGE_KEY = "splash-home-seen";
+const IMAGES = ["/shiro_clr.jpg", "/shiro_bw.jpg", "/sora_clr.jpg", "/sora_bw.jpg"];
+// Past this, play anyway rather than hold a blank screen on a slow connection.
+const MAX_WAIT_MS = 4000;
 
 const SplashScreen = () => {
-  const shouldUnmount = useSplashGate(HOME_SPLASH_STORAGE_KEY, HOME_SPLASH_DURATION_MS, "fixed");
-  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [loaded, setLoaded] = useState<ReadonlySet<string>>(() => new Set());
+  const [timedOut, setTimedOut] = useState(false);
+  // Every timeline waits for all four images: the colour ones reveal at 3s and would pop in if still loading.
+  const imagesLoaded = timedOut || IMAGES.every((src) => loaded.has(src));
+  const shouldUnmount = useSplashGate(HOME_SPLASH_STORAGE_KEY, HOME_SPLASH_DURATION_MS, "fixed", imagesLoaded);
 
-  const handleImageLoad = () => {
-    setImagesLoaded(true);
-  };
+  useEffect(() => {
+    const timeoutId = setTimeout(() => setTimedOut(true), MAX_WAIT_MS);
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  // The content renders twice (one copy per half), so each image loads twice.
+  const handleImageLoad = (src: string) => () => setLoaded((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
 
   const splitTransition = {
     duration: TOTAL_DURATION / 1000,
@@ -34,7 +44,7 @@ const SplashScreen = () => {
       <div className="w-full h-1/2 lg:h-full lg:w-1/2 relative overflow-hidden">
         <motion.div
           initial={{ clipPath: "circle(0% at 50% 50%)" }}
-          animate={{ clipPath: "circle(150% at 50% 50%)" }}
+          animate={{ clipPath: imagesLoaded ? "circle(150% at 50% 50%)" : "circle(0% at 50% 50%)" }}
           transition={{
             duration: CIRCLE_REVEAL_DURATION / 1000,
             delay: CIRCLE_REVEAL_DELAY / 1000,
@@ -48,8 +58,8 @@ const SplashScreen = () => {
             width={913}
             height={1302}
             className="w-full h-full object-cover object-[center_25%] lg:object-top select-none pointer-events-none"
-            priority
-            onLoad={handleImageLoad}
+            preload
+            onLoad={handleImageLoad("/shiro_clr.jpg")}
             quality={75}
           />
         </motion.div>
@@ -69,7 +79,8 @@ const SplashScreen = () => {
             width={913}
             height={1302}
             className="w-full h-full object-cover object-[center_25%] lg:object-top select-none pointer-events-none"
-            onLoad={handleImageLoad}
+            preload
+            onLoad={handleImageLoad("/shiro_bw.jpg")}
             quality={75}
           />
         </motion.div>
@@ -77,7 +88,7 @@ const SplashScreen = () => {
       <div className="w-full h-1/2 lg:h-full lg:w-1/2 relative overflow-hidden">
         <motion.div
           initial={{ clipPath: "circle(0% at 50% 50%)" }}
-          animate={{ clipPath: "circle(150% at 50% 50%)" }}
+          animate={{ clipPath: imagesLoaded ? "circle(150% at 50% 50%)" : "circle(0% at 50% 50%)" }}
           transition={{
             duration: CIRCLE_REVEAL_DURATION / 1000,
             delay: CIRCLE_REVEAL_DELAY / 1000,
@@ -91,7 +102,8 @@ const SplashScreen = () => {
             width={913}
             height={1302}
             className="w-full h-full object-cover object-top select-none pointer-events-none"
-            onLoad={handleImageLoad}
+            preload
+            onLoad={handleImageLoad("/sora_clr.jpg")}
             quality={75}
           />
         </motion.div>
@@ -111,7 +123,8 @@ const SplashScreen = () => {
             width={913}
             height={1302}
             className="w-full h-full object-cover object-top select-none pointer-events-none"
-            onLoad={handleImageLoad}
+            preload
+            onLoad={handleImageLoad("/sora_bw.jpg")}
             quality={75}
           />
         </motion.div>
@@ -130,7 +143,7 @@ const SplashScreen = () => {
         >
           <motion.div
             initial={{ clipPath: "circle(0% at 50% 50%)" }}
-            animate={{ clipPath: "circle(150% at 50% 50%)" }}
+            animate={{ clipPath: imagesLoaded ? "circle(150% at 50% 50%)" : "circle(0% at 50% 50%)" }}
             transition={{
               duration: CIRCLE_REVEAL_DURATION / 1000,
               delay: CIRCLE_REVEAL_DELAY / 1000,
@@ -160,7 +173,7 @@ const SplashScreen = () => {
         className="flex flex-col lg:flex-row fixed inset-0 z-100 w-screen h-screen bg-background"
         style={{ clipPath: "inset(0 50% 0 0)", willChange: "transform" }}
         initial={{ x: 0 }}
-        animate={{ x: [0, 0, "-50%"] }}
+        animate={imagesLoaded ? { x: [0, 0, "-50%"] } : { x: 0 }}
         transition={splitTransition}
       >
         {splashContent}
@@ -169,7 +182,7 @@ const SplashScreen = () => {
         className="flex flex-col lg:flex-row fixed inset-0 z-100 w-screen h-screen bg-background"
         style={{ clipPath: "inset(0 0 0 50%)", willChange: "transform" }}
         initial={{ x: 0 }}
-        animate={{ x: [0, 0, "50%"] }}
+        animate={imagesLoaded ? { x: [0, 0, "50%"] } : { x: 0 }}
         transition={splitTransition}
       >
         {splashContent}

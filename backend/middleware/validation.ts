@@ -19,6 +19,7 @@ export const validateEbook = [
   body("author").trim().notEmpty().withMessage("Tên tác giả không được để trống").isLength({ max: 100 }).withMessage("Tên tác giả quá dài"),
   body("illustrator").optional().trim().isLength({ max: 100 }).withMessage("Tên họa sĩ quá dài"),
   body("releaseDate").notEmpty().withMessage("Ngày phát hành không được để trống").isISO8601().toDate().withMessage("Ngày phát hành không hợp lệ"),
+  body("notify").optional().isBoolean().withMessage("notify không hợp lệ").toBoolean(),
   body("publisher").notEmpty().withMessage("Nhãn hiệu không được để trống").isMongoId().withMessage("ID nhãn hiệu không hợp lệ"),
   handleValidationErrors,
 ];
@@ -28,6 +29,7 @@ export const validateKonorano = [
   body("name").trim().notEmpty().withMessage("Tên sách không được để trống").isLength({ max: 255 }).withMessage("Tên sách quá dài"),
   body("author").optional().trim().isLength({ max: 100 }).withMessage("Tên tác giả quá dài"),
   body("releaseDate").notEmpty().withMessage("Ngày phát hành không được để trống").isISO8601().toDate().withMessage("Ngày phát hành không hợp lệ"),
+  body("notify").optional().isBoolean().withMessage("notify không hợp lệ").toBoolean(),
   body("viURL").trim().notEmpty().withMessage("URL bản dịch không được để trống").isURL().withMessage("URL không hợp lệ"),
   handleValidationErrors,
 ];

@@ -40,6 +40,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
+  const [notify, setNotify] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -102,6 +103,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
       // Only fill empty fields so we never clobber what the admin already typed.
       if (prefill.title && !form.getValues("name")) form.setValue("name", prefill.title, { shouldValidate: true });
       if (prefill.author && !form.getValues("author")) form.setValue("author", prefill.author, { shouldValidate: true });
+      if (prefill.illustrator && !form.getValues("illustrator")) form.setValue("illustrator", prefill.illustrator, { shouldValidate: true });
       if (prefill.releaseDate && !form.getValues("releaseDate")) form.setValue("releaseDate", prefill.releaseDate, { shouldValidate: true });
       if (prefill.coverFile && !coverFile) {
         setCoverFile(prefill.coverFile);
@@ -145,6 +147,10 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
 
       if (ebookFile) {
         formData.append("ebook", ebookFile);
+      }
+
+      if (!ebook) {
+        formData.append("notify", String(notify));
       }
 
       const headers = { "Content-Type": "multipart/form-data" };
@@ -289,6 +295,19 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                 </p>
                 {ebook && <p className="text-xs font-medium mt-2">File hiện tại: {ebook.filePath}</p>}
               </div>
+
+              {!ebook && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={notify}
+                    onChange={(e) => setNotify(e.target.checked)}
+                    disabled={isSubmitting}
+                    className="size-4 accent-primary"
+                  />
+                  Gửi email thông báo cho người đăng ký
+                </label>
+              )}
             </div>
           </div>
 

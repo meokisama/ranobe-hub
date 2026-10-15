@@ -12,6 +12,8 @@ interface KonoranoBody {
   author?: string;
   releaseDate: Date;
   viURL: string;
+  /** Email subscribers about a new upload; defaults to true. */
+  notify?: boolean;
 }
 
 // Revalidate frontend (background, non-blocking)
@@ -97,7 +99,7 @@ export const createKonorano = async (req: TypedRequest<KonoranoBody>, res: Respo
     invalidateKonoranoCache();
 
     // Notify subscribers (background, non-blocking)
-    setImmediate(() => void sendNotification(name));
+    if (req.body.notify !== false) setImmediate(() => void sendNotification(name));
 
     res.json(konorano);
   } catch (err) {

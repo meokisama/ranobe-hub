@@ -2830,6 +2830,11 @@ minizlib@^3.1.0:
   dependencies:
     minipass "^7.1.2"
 
+moe2d@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/moe2d/-/moe2d-0.3.1.tgz#02eda1148d58323190f67220a6bc30311117dde5"
+  integrity sha512-hWwSyu30fcRBC92bKoG1BCfiQqhSAx8HdSmrt0rl2Fa6gUkLyxVmEqhnPhvO+ieWMiTz1isR/mrUzMmkvpP9MQ==
+
 motion-dom@^12.38.0:
   version "12.38.0"
   resolved "https://registry.npmjs.org/motion-dom/-/motion-dom-12.38.0.tgz"

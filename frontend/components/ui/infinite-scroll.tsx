@@ -42,7 +42,9 @@ export const InfiniteScroll = ({ src, direction = "left", speed = "fast", pauseO
             height={230}
             aria-hidden={i === 1}
             className="h-[300px] w-full object-cover md:h-[230px]"
-            quality={100}
+            // Sits under the home splash at reduced opacity: yield bandwidth to the splash images.
+            fetchPriority="low"
+            quality={75}
           />
         ))}
       </div>

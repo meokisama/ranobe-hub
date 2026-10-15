@@ -38,6 +38,7 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
+  const [notify, setNotify] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -125,6 +126,10 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
 
       if (konoranoFile) {
         formData.append("konorano", konoranoFile);
+      }
+
+      if (!konorano) {
+        formData.append("notify", String(notify));
       }
 
       const headers = { "Content-Type": "multipart/form-data" };
@@ -245,6 +250,19 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
                       : "Chọn file .epub hoặc .pdf · Chọn file EPUB sẽ tự điền tên/ngày/ảnh bìa"}
                 </p>
               </div>
+
+              {!konorano && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={notify}
+                    onChange={(e) => setNotify(e.target.checked)}
+                    disabled={isSubmitting}
+                    className="size-4 accent-primary"
+                  />
+                  Gửi email thông báo cho người đăng ký
+                </label>
+              )}
             </div>
           </div>
 

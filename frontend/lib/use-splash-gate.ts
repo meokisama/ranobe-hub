@@ -28,28 +28,31 @@ function unlock(mode: ScrollLock) {
  *
  * Already seen this session → resolves on the next tick instead of synchronously,
  * since sessionStorage can't be read during render without a hydration mismatch.
+ * The `durationMs` countdown starts once `ready` is true; until then the page stays locked.
  */
-export function useSplashGate(storageKey: string, durationMs: number, scrollLock: ScrollLock): boolean {
+export function useSplashGate(storageKey: string, durationMs: number, scrollLock: ScrollLock, ready = true): boolean {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    const seen = sessionStorage.getItem(storageKey) !== null;
-    if (!seen) lock(scrollLock);
+    if (sessionStorage.getItem(storageKey) !== null) {
+      const timeoutId = setTimeout(() => setDone(true), 0);
+      return () => clearTimeout(timeoutId);
+    }
 
-    const timeoutId = setTimeout(
-      () => {
-        sessionStorage.setItem(storageKey, "1");
-        unlock(scrollLock);
-        setDone(true);
-      },
-      seen ? 0 : durationMs,
-    );
+    lock(scrollLock);
+    if (!ready) return () => unlock(scrollLock);
+
+    const timeoutId = setTimeout(() => {
+      sessionStorage.setItem(storageKey, "1");
+      unlock(scrollLock);
+      setDone(true);
+    }, durationMs);
 
     return () => {
       clearTimeout(timeoutId);
       unlock(scrollLock);
     };
-  }, [storageKey, durationMs, scrollLock]);
+  }, [storageKey, durationMs, scrollLock, ready]);
 
   return done;
 }

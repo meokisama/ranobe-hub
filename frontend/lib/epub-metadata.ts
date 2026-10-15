@@ -54,16 +54,18 @@ function asArray<T = unknown>(value: T | T[] | null | undefined): T[] {
   return Array.isArray(value) ? value : [value];
 }
 
-/** dc:* fields may be a string, an object with `#text`, or an array of either. */
-function firstText(value: unknown): string {
+/** dc:* fields may be a string, an object with `#text`, or an array of either.
+ *  Returns every non-empty text value, in document order. */
+function allTexts(value: unknown): string[] {
+  const out: string[] = [];
   for (const entry of asArray(value)) {
-    if (typeof entry === "string" && entry.trim()) return entry.trim();
-    if (entry && typeof entry === "object") {
-      const text = (entry as Record<string, unknown>)["#text"];
-      if (text) return String(text).trim();
-    }
+    const text = entry && typeof entry === "object" ? (entry as Record<string, unknown>)["#text"] : entry;
+    if (text !== undefined && text !== null && String(text).trim()) out.push(String(text).trim());
   }
-  return "";
+  return out;
+}
+function firstText(value: unknown): string {
+  return allTexts(value)[0] ?? "";
 }
 
 // ---- Path helpers (inlined so we don't need path-browserify) ---------------
@@ -125,6 +127,8 @@ function resolveCoverHref(manifestItems: XmlNode[], metadata: XmlNode | undefine
 interface EpubMetadata {
   title: string;
   author: string;
+  /** Second dc:creator — light novels list the illustrator there. */
+  illustrator: string;
   /** dc:date, raw string as authored (may be a full ISO timestamp or just a year). */
   date: string;
   language: string;
@@ -147,7 +151,7 @@ async function extractEpubMetadata(blob: Blob): Promise<EpubMetadata> {
     const metaKey = getMetaKey(contents);
 
     const title = firstText(metadata?.["dc:title"]) || "";
-    const author = firstText(metadata?.["dc:creator"]);
+    const [author = "", illustrator = ""] = allTexts(metadata?.["dc:creator"]);
     const date = firstText(metadata?.["dc:date"]);
     const language = firstText(metadata?.["dc:language"]) || "ja";
 
@@ -166,7 +170,7 @@ async function extractEpubMetadata(blob: Blob): Promise<EpubMetadata> {
       }
     }
 
-    return { title, author, date, language, coverBytes, coverMime };
+    return { title, author, illustrator, date, language, coverBytes, coverMime };
   } finally {
     await reader.close();
   }
@@ -223,6 +227,7 @@ async function resizeCoverToFile(
 interface EpubFormPrefill {
   title: string;
   author: string;
+  illustrator: string;
   /** yyyy-mm-dd for a <input type="date">, or "" when dc:date isn't cleanly parseable. */
   releaseDate: string;
   coverFile: File | null;
@@ -236,6 +241,7 @@ export async function extractEpubForForm(file: Blob): Promise<EpubFormPrefill> {
   return {
     title: meta.title,
     author: meta.author,
+    illustrator: meta.illustrator,
     releaseDate: normalizeDate(meta.date),
     coverFile,
   };
