@@ -1,40 +1,52 @@
-import type { Metadata } from "next";
-import { Lexend, Poppins, Playfair_Display } from "next/font/google";
-import { Toaster } from "@/components/ui/sonner";
-import { SiteHeader } from "@/components/common/site-header";
-import { SiteFooter } from "@/components/common/site-footer";
-import { Companion } from "@/components/common/companion";
-import localFont from "next/font/local";
+import type { Metadata, Viewport } from "next";
+import { Be_Vietnam_Pro, Fraunces, JetBrains_Mono, Lexend, Shippori_Mincho } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { Toaster } from "@/components/ui/sonner";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
+// Admin UI typeface (also used by the toaster).
 const lexend = Lexend({
   variable: "--font-lexend",
   subsets: ["vietnamese"],
 });
 
-const jaro = localFont({
-  weight: "400",
-  src: "./Jaro.ttf",
-  variable: "--font-jaro",
-  display: "swap",
-});
-
-const playfair_display = Playfair_Display({
+// Public site: body copy. Designed for Vietnamese, so stacked diacritics sit properly.
+const beVietnam = Be_Vietnam_Pro({
+  variable: "--font-be-vietnam",
+  weight: ["300", "400", "500", "600"],
   subsets: ["vietnamese"],
-  variable: "--font-playfair_display",
   display: "swap",
 });
 
-const poppins = Poppins({
-  weight: "900",
+// Public site: Latin/Vietnamese display.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["vietnamese"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  display: "swap",
+});
+
+// Public site: Japanese titles. Kanji arrive in unicode-range slices, only the ones a page uses.
+const shippori = Shippori_Mincho({
+  variable: "--font-shippori",
+  weight: ["500", "700", "800"],
   subsets: ["latin"],
-  variable: "--font-poppins",
+  display: "swap",
+  preload: false,
+});
+
+// Public site: labels, numerals, catalogue marks.
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  weight: ["400", "500"],
+  subsets: ["vietnamese"],
   display: "swap",
 });
 
-const title = "Light Novel Hub - Thư viện Light Novel miễn phí";
-const description = "Đọc Light Novel miễn phí. Chia sẻ bộ sưu tập KonoRano và tổng hợp tài nguyên Light Novel miễn phí.";
+const title = "Ranobe Hub — Thư viện Light Novel miễn phí";
+const description = "Đọc Light Novel tiếng Nhật miễn phí ngay trên trình duyệt. Bộ sưu tập KonoRano và kho tài nguyên Light Novel.";
 
 export const metadata: Metadata = {
   title,
@@ -48,18 +60,16 @@ export const metadata: Metadata = {
     "ln",
     "ranobe",
     "ranobe reader",
-    "blog",
     "tiểu thuyết",
-    "light novel blog",
     "light novel epub",
     "epub raw",
     "light novel raw",
   ],
-  metadataBase: new URL("https://hub.ranobe.vn"),
+  metadataBase: new URL(SITE.url),
   openGraph: {
     title,
     description,
-    siteName: title,
+    siteName: SITE.name,
     type: "website",
   },
   twitter: {
@@ -69,19 +79,19 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#f3eee4",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const maintenance = process.env.MAINTENANCE_MODE === "true";
   return (
-    <html lang="en">
-      <body className={`${lexend.variable} ${jaro.variable} ${playfair_display.variable} ${poppins.variable} antialiased`}>
-        {!maintenance && <SiteHeader />}
+    <html lang="vi">
+      <body className={`${lexend.variable} ${beVietnam.variable} ${fraunces.variable} ${shippori.variable} ${jetbrains.variable} antialiased`}>
         {children}
-        {!maintenance && <SiteFooter />}
-        {!maintenance && <Companion />}
         <Toaster richColors />
       </body>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA4 as string} />
