@@ -1,201 +1,159 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, type Variants } from "motion/react";
-import { ArrowLeft, Download, Globe } from "lucide-react";
-import { Noto_Sans_JP } from "next/font/google";
+import { MotionConfig, motion, type Variants } from "motion/react";
+import { ArrowLeft, ArrowUpRight, Download, Globe } from "lucide-react";
+import { AOZORA_WEB_URL, SITE } from "@/lib/site";
 
-const notoSansJp = Noto_Sans_JP({
-  weight: "900",
-  subsets: ["latin"],
-  display: "swap",
-});
+const SkyCanvas = dynamic(() => import("./sky-canvas"), { ssr: false });
 
-const WEB_URL = `${process.env.NEXT_PUBLIC_API_URL}/reader`;
-const DESKTOP_URL = "https://github.com/meokisama/aozora/releases";
-const REPO_URL = "https://github.com/meokisama/aozora";
+const FEATURES = [
+  { kanji: "辞", name: "Từ điển Yomitan", note: "Tra từ ngay khi đọc" },
+  { kanji: "札", name: "Flashcard Anki", note: "Tạo thẻ học từ vựng" },
+  { kanji: "声", name: "Giọng waifu (TTS)", note: "Nghe tiểu thuyết đọc thành tiếng" },
+  { kanji: "縦", name: "Tategaki", note: "Chữ dọc như sách in" },
+  { kanji: "計", name: "Thống kê đọc", note: "Theo dõi quá trình đọc" },
+  { kanji: "遊", name: "Discord RP", note: "Hiển thị sách đang đọc" },
+];
 
-const features = ["Từ điển Yomitan", "Flashcard Anki", "Giọng waifu (TTS)", "Discord RP", "Tategaki", "Thống kê đọc"];
+const EASE = [0.16, 1, 0.3, 1] as const;
 
-const ease = [0.22, 1, 0.36, 1] as [number, number, number, number];
-
-const container: Variants = {
+const stagger: Variants = {
   hidden: {},
-  show: { transition: { delayChildren: 0.15, staggerChildren: 0.14 } },
+  show: { transition: { delayChildren: 0.2, staggerChildren: 0.11 } },
 };
 
 const rise: Variants = {
-  hidden: { opacity: 0, y: 28, filter: "blur(10px)" },
-  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.85, ease } },
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { duration: 1, ease: EASE } },
 };
 
-const logoVariant: Variants = {
-  hidden: { opacity: 0, scale: 0.82, y: -36, filter: "blur(14px)" },
-  show: { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transition: { duration: 1.05, ease } },
+const logoIn: Variants = {
+  hidden: { opacity: 0, y: -30, scale: 0.86 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 1.2, ease: EASE } },
 };
-
-const pillsWrap: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-};
-
-const pop: Variants = {
-  hidden: { opacity: 0, scale: 0.7, y: 8 },
-  show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 320, damping: 18 } },
-};
-
-// Drifting clouds — negative delays prefill the sky on load
-const clouds = [
-  { top: "13%", w: "18rem", dur: "62s", delay: "-8s", opacity: 0.5 },
-  { top: "30%", w: "25rem", dur: "86s", delay: "-52s", opacity: 0.4 },
-  { top: "50%", w: "14rem", dur: "50s", delay: "-24s", opacity: 0.48 },
-  { top: "68%", w: "21rem", dur: "72s", delay: "-38s", opacity: 0.35 },
-];
-
-function Cloud({ style }: { style: React.CSSProperties }) {
-  return (
-    <svg viewBox="0 0 200 96" className="aozora-cloud absolute h-auto" style={{ filter: "blur(16px)", ...style }} aria-hidden="true">
-      <g fill="#ffffff">
-        <ellipse cx="100" cy="74" rx="94" ry="20" />
-        <circle cx="56" cy="58" r="28" />
-        <circle cx="100" cy="44" r="40" />
-        <circle cx="146" cy="56" r="30" />
-      </g>
-    </svg>
-  );
-}
 
 export function AozoraLanding() {
   return (
-    <main className="relative flex min-h-screen w-full flex-col overflow-hidden text-slate-800">
-      {/* Sky background */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, #eaf4ff 0%, #d3e9fd 38%, #b8ddfb 66%, #cfe9fc 100%)" }} />
-
-        {/* Sun glow */}
-        <div className="absolute -top-40 left-1/2 size-[36rem] -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
-
-        {/* Soft white cloud fields — break up the blue */}
-        <div className="absolute -left-24 top-[8%] h-72 w-[34rem] rounded-full bg-white/55 blur-3xl" />
-        <div className="absolute -right-28 top-[22%] h-80 w-[38rem] rounded-full bg-white/45 blur-3xl" />
-        <div className="absolute left-[12%] top-[46%] h-64 w-[30rem] rounded-full bg-white/40 blur-3xl" />
-        <div className="absolute right-[6%] top-[58%] h-72 w-[32rem] rounded-full bg-white/45 blur-3xl" />
-
-        {/* Ambient bottom haze */}
-        <div className="absolute -bottom-24 -left-16 h-72 w-[36rem] rounded-full bg-white/60 blur-3xl" />
-        <div className="absolute -bottom-28 right-0 h-72 w-[40rem] rounded-full bg-white/50 blur-3xl" />
-
-        {/* Giant watermark */}
-        <div className="absolute inset-0 flex items-center justify-center -mt-8">
-          <motion.span
-            initial={{ opacity: 0, scale: 1.12, filter: "blur(24px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)", y: [0, -22] }}
-            transition={{
-              opacity: { duration: 1.6, ease },
-              scale: { duration: 1.6, ease },
-              filter: { duration: 1.6, ease },
-              y: { duration: 3.6, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" },
-            }}
-            className={`${notoSansJp.className} select-none text-[38vw] font-black leading-none text-sky-200/30`}
-          >
-            青空
-          </motion.span>
+    <MotionConfig reducedMotion="user">
+      <main className="relative isolate flex min-h-svh w-full flex-col overflow-hidden font-body text-[#12325f]">
+        {/* Sky: CSS gradient first, the shader fades in over it. */}
+        <div className="absolute inset-0 -z-10" style={{ background: "linear-gradient(to bottom, #4a8cec 0%, #99ccfb 48%, #e6f3ff 100%)" }}>
+          <SkyCanvas />
         </div>
 
-        {/* Drifting clouds — above the watermark */}
-        {clouds.map((c, i) => (
-          <Cloud key={i} style={{ top: c.top, width: c.w, opacity: c.opacity, animationDuration: c.dur, animationDelay: c.delay }} />
-        ))}
-      </div>
+        {/* Giant watermark */}
+        <motion.span
+          aria-hidden
+          lang="ja"
+          initial={{ opacity: 0, scale: 1.08 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 2, ease: EASE }}
+          className="pointer-events-none absolute left-1/2 top-[46%] -z-10 -translate-x-1/2 -translate-y-1/2 select-none whitespace-nowrap font-mincho text-[44vw] font-extrabold leading-none text-white/25 mix-blend-soft-light lg:text-[30vw]"
+        >
+          青空
+        </motion.span>
 
-      {/* Vertical Japanese tagline accent */}
-      <div className="pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 md:block lg:right-10">
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-5 pt-5 sm:px-8 lg:px-14 lg:pt-8">
+          <Link href="/" className="group inline-flex h-10 items-center gap-2 rounded-full bg-white/55 pl-3 pr-4 text-sm font-medium backdrop-blur-md transition-colors hover:bg-white">
+            <ArrowLeft className="size-4 transition-transform duration-300 group-hover:-translate-x-0.5" strokeWidth={1.75} />
+            Ranobe Hub
+          </Link>
+          <a
+            href={SITE.aozoraRepo}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-white/55 pl-4 pr-3 text-sm font-medium backdrop-blur-md transition-colors hover:bg-white"
+          >
+            GitHub
+            <ArrowUpRight className="size-4" strokeWidth={1.75} />
+          </a>
+        </div>
+
+        {/* Tategaki tagline */}
         <motion.p
-          initial={{ opacity: 0, x: 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1.2, ease, delay: 0.9 }}
-          className="select-none text-lg tracking-[0.35em] text-sky-900/30"
-          style={{ writingMode: "vertical-rl", fontFamily: "serif" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.6, delay: 1.1 }}
+          lang="ja"
+          className="tategaki pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 font-mincho text-base font-medium tracking-[0.5em] text-[#12325f]/70 md:block lg:right-14"
         >
           青空の下で、物語が始まる。
         </motion.p>
-      </div>
 
-      {/* Back link */}
-      <Link
-        href="/"
-        className="absolute left-5 top-5 z-10 inline-flex items-center gap-1.5 text-sm font-medium text-sky-900/60 transition-colors hover:text-sky-900 md:left-8 md:top-8"
-      >
-        <ArrowLeft className="size-4" />
-        Ranobe Hub
-      </Link>
+        <motion.div variants={stagger} initial="hidden" animate="show" className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-5 py-8 text-center sm:px-8">
+          <motion.div variants={logoIn}>
+            <Image
+              src="/aozora/aozora-logo.png"
+              alt="Aozora"
+              width={808}
+              height={603}
+              priority
+              className="h-auto w-[190px] select-none drop-shadow-[0_18px_40px_rgba(18,50,95,0.28)] sm:w-[230px]"
+            />
+          </motion.div>
 
-      {/* Hero */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="relative z-0 flex flex-1 flex-col items-center justify-center px-6 py-24 text-center"
-      >
-        <motion.div variants={logoVariant}>
-          <Image
-            src="/aozora/aozora-logo.png"
-            alt="Aozora"
-            width={808}
-            height={603}
-            priority
-            className="h-auto w-[260px] select-none drop-shadow-[0_12px_40px_rgba(30,64,120,0.18)] sm:w-[320px]"
-          />
-        </motion.div>
+          <motion.h1 variants={rise} className="mt-7 max-w-3xl font-display text-[clamp(2.2rem,4.6vw,3.9rem)] font-light leading-[1.02] tracking-[-0.035em]">
+            Trình đọc EPUB cho người <em className="whitespace-nowrap font-normal italic">học tiếng Nhật</em>.
+          </motion.h1>
 
-        <motion.p variants={rise} className="mt-6 max-w-xl text-base font-light leading-relaxed text-slate-600 sm:text-lg">
-          Trình đọc EPUB dành cho người học tiếng Nhật. Đọc light novel &amp; manga với từ điển tiếng Nhật tích hợp, tạo flashcard Anki, đọc tiểu
-          thuyết với giọng waifu và nhiều tính năng khác.
-        </motion.p>
+          <motion.p variants={rise} className="mt-5 max-w-xl text-[15px] leading-[1.8] text-[#12325f]/85 sm:text-base">
+            Đọc light novel &amp; manga với từ điển tiếng Nhật tích hợp, tạo flashcard Anki, nghe tiểu thuyết bằng giọng waifu và nhiều tính năng khác.
+          </motion.p>
 
-        <motion.div variants={pillsWrap} className="mt-7 flex flex-wrap items-center justify-center gap-2">
-          {features.map((f) => (
-            <motion.span
-              key={f}
-              variants={pop}
-              className="rounded-full border border-sky-300/70 bg-white/60 px-3 py-1 text-xs font-medium text-sky-800/90 backdrop-blur-sm"
+          <motion.div variants={rise} className="mt-7 flex flex-col items-center gap-3 sm:flex-row">
+            <a
+              href={AOZORA_WEB_URL}
+              target="_blank"
+              rel="noopener"
+              className="group inline-flex h-14 items-center gap-3 rounded-full bg-[#12325f] pl-7 pr-2.5 text-sm font-medium text-white shadow-[0_18px_40px_-16px_rgba(18,50,95,0.8)] transition-colors duration-300 hover:bg-[#0b2145]"
             >
-              {f}
-            </motion.span>
-          ))}
-        </motion.div>
+              Đọc trên Web
+              <span className="grid size-9 place-items-center rounded-full bg-white text-[#12325f] transition-transform duration-700 group-hover:rotate-[20deg]">
+                <Globe className="size-4" strokeWidth={1.75} />
+              </span>
+            </a>
+            <a
+              href={SITE.aozoraReleases}
+              target="_blank"
+              rel="noopener"
+              className="group inline-flex h-14 items-center gap-3 rounded-full bg-white/70 pl-7 pr-2.5 text-sm font-medium backdrop-blur-md transition-colors duration-300 hover:bg-white"
+            >
+              Tải bản Desktop
+              <span className="grid size-9 place-items-center rounded-full bg-[#12325f] text-white transition-transform duration-500 group-hover:translate-y-0.5">
+                <Download className="size-4" strokeWidth={1.75} />
+              </span>
+            </a>
+          </motion.div>
 
-        <motion.div variants={rise} className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
-          <Link
-            href={WEB_URL}
-            target="_blank"
-            className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:shadow-xl hover:shadow-blue-500/40"
+          <motion.ul
+            variants={rise}
+            className="mt-10 grid w-full grid-cols-2 overflow-hidden rounded-[1.25rem] bg-white/55 text-left shadow-[0_30px_80px_-40px_rgba(18,50,95,0.6)] backdrop-blur-xl md:grid-cols-3"
           >
-            <Globe className="size-4 transition-transform duration-500 group-hover:rotate-12" />
-            Đọc trên Web
-          </Link>
-          <Link
-            href={DESKTOP_URL}
-            target="_blank"
-            className="group inline-flex items-center gap-2 rounded-full border border-sky-300/80 bg-white/70 px-6 py-3 text-sm font-semibold text-sky-900 backdrop-blur-sm transition-all hover:bg-white hover:shadow-md hover:shadow-sky-200/60"
-          >
-            <Download className="size-4 transition-transform duration-300 group-hover:translate-y-0.5" />
-            Tải bản Desktop
-          </Link>
-        </motion.div>
+            {FEATURES.map((feature) => (
+              <li key={feature.name} className="flex items-start gap-3.5 border-b border-r border-white/70 p-4 sm:p-5">
+                <span lang="ja" className="grid size-9 shrink-0 place-items-center rounded-full bg-[#12325f] font-mincho text-base font-bold text-white">
+                  {feature.kanji}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">{feature.name}</span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-[#12325f]/70">{feature.note}</span>
+                </span>
+              </li>
+            ))}
+          </motion.ul>
 
-        <motion.p variants={rise} className="mt-6 text-xs font-light text-slate-500">
-          Chi tiết tính năng &amp; mã nguồn •{" "}
-          <Link
-            href={REPO_URL}
-            target="_blank"
-            className="font-medium text-sky-700 underline-offset-2 transition-colors hover:text-sky-900 hover:underline"
-          >
-            Github
-          </Link>{" "}
-        </motion.p>
-      </motion.div>
-    </main>
+          <motion.p variants={rise} className="mt-7 text-xs text-[#12325f]/70">
+            Chi tiết tính năng &amp; mã nguồn trên{" "}
+            <a href={SITE.aozoraRepo} target="_blank" rel="noopener" className="font-medium text-[#12325f] underline decoration-1 underline-offset-4">
+              GitHub
+            </a>
+          </motion.p>
+        </motion.div>
+      </main>
+    </MotionConfig>
   );
 }
