@@ -1,5 +1,18 @@
-import { BakaScreen } from "@/components/common/baka-screen";
+import { Notice } from "@/components/site/notice";
 
 export default function NotFound() {
-  return <BakaScreen imageAlt="lost" position="fixed" />;
+  return (
+    <Notice
+      kanji="迷子"
+      label="404"
+      title={
+        <>
+          Lạc mất <em className="font-light italic">trang này</em> rồi
+        </>
+      }
+      homeLink
+    >
+      Trang bạn tìm không có trên kệ, hoặc đã được chuyển đi nơi khác.
+    </Notice>
+  );
 }

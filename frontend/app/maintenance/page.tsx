@@ -1,5 +1,23 @@
-import { BakaScreen } from "@/components/common/baka-screen";
+import type { Metadata } from "next";
+import { Notice } from "@/components/site/notice";
+
+export const metadata: Metadata = {
+  title: "Đang bảo trì — Ranobe Hub",
+  robots: { index: false },
+};
 
 export default function MaintenancePage() {
-  return <BakaScreen imageAlt="onsen" note="Tạm dừng mấy hôm do chạm limit Vercel" />;
+  return (
+    <Notice
+      kanji="工事中"
+      label="Bảo trì"
+      title={
+        <>
+          Kệ sách đang được <em className="font-light italic">sắp xếp lại</em>
+        </>
+      }
+    >
+      Ranobe Hub tạm đóng cửa để bảo trì. Bạn quay lại sau ít phút nhé.
+    </Notice>
+  );
 }
