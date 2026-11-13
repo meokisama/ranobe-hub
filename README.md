@@ -19,8 +19,8 @@ Reading is powered by [**Aozora**](https://github.com/meokisama/aozora), an EPUB
 
 ### Screenshots
 
-![](./preview/1.png)
+![](./preview/1.jpg)
 
-![](./preview/2.png)
+![](./preview/2.jpg)
 
-![](./preview/3.png)
+![](./preview/3.jpg)
