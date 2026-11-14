@@ -1,17 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Be_Vietnam_Pro, Fraunces, JetBrains_Mono, Lexend, Shippori_Mincho } from "next/font/google";
+import { Be_Vietnam_Pro, Fraunces, JetBrains_Mono, Shippori_Mincho } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Toaster } from "@/components/ui/sonner";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
-// Admin UI typeface (also used by the toaster).
-const lexend = Lexend({
-  variable: "--font-lexend",
-  subsets: ["vietnamese"],
-});
-
-// Public site: body copy. Designed for Vietnamese, so stacked diacritics sit properly.
+// Body copy, site and admin alike. Designed for Vietnamese, so stacked diacritics sit properly.
 const beVietnam = Be_Vietnam_Pro({
   variable: "--font-be-vietnam",
   weight: ["300", "400", "500", "600"],
@@ -19,7 +13,7 @@ const beVietnam = Be_Vietnam_Pro({
   display: "swap",
 });
 
-// Public site: Latin/Vietnamese display.
+// Latin/Vietnamese display.
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["vietnamese"],
@@ -28,7 +22,7 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-// Public site: Japanese titles. Kanji arrive in unicode-range slices, only the ones a page uses.
+// Japanese titles. Kanji arrive in unicode-range slices, only the ones a page uses.
 const shippori = Shippori_Mincho({
   variable: "--font-shippori",
   weight: ["500", "700", "800"],
@@ -37,7 +31,7 @@ const shippori = Shippori_Mincho({
   preload: false,
 });
 
-// Public site: labels, numerals, catalogue marks.
+// Labels, numerals, catalogue marks.
 const jetbrains = JetBrains_Mono({
   variable: "--font-jetbrains",
   weight: ["400", "500"],
@@ -90,7 +84,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={`${lexend.variable} ${beVietnam.variable} ${fraunces.variable} ${shippori.variable} ${jetbrains.variable} antialiased`}>
+      <body className={`${beVietnam.variable} ${fraunces.variable} ${shippori.variable} ${jetbrains.variable} antialiased`}>
         {children}
         <Toaster richColors />
       </body>

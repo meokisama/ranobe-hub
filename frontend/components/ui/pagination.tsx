@@ -48,7 +48,7 @@ export function Pagination({
   };
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="flex items-center justify-center gap-1 font-label">
       <Button
         variant="outline"
         size="icon"
@@ -61,7 +61,9 @@ export function Pagination({
       {getPageNumbers().map((page, index) => (
         <Button
           key={index}
-          variant={page === currentPage ? "default" : "outline"}
+          variant="ghost"
+          aria-current={page === currentPage ? "page" : undefined}
+          className={page === currentPage ? "bg-shu text-xs text-paper tabular-nums hover:bg-shu" : "text-xs tabular-nums text-muted-foreground"}
           size="icon"
           onClick={() => typeof page === "number" && onPageChange(page)}
           disabled={page === "..."}
