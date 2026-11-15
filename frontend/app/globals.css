@@ -486,6 +486,95 @@ html:has(.site) body {
     radial-gradient(circle, var(--color-paper) 2.4px, transparent 2.9px) 100% 0 / 6px 8px repeat-y;
 }
 
+/* ---- Splash: a seal stamped on blank paper, then the sheet lifts ---- */
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-paper);
+  box-shadow: 0 1px 0 var(--color-shu);
+  transition: transform 0.95s cubic-bezier(0.76, 0, 0.24, 1);
+  /* Failsafe: if scripts never run, the sheet still lifts on its own. */
+  animation: splash-failsafe 0.8s cubic-bezier(0.76, 0, 0.24, 1) 5s forwards;
+  will-change: transform;
+}
+
+@keyframes splash-failsafe {
+  to {
+    transform: translateY(-101%);
+  }
+}
+
+.splash[data-skip] {
+  display: none;
+}
+
+.splash-lifting {
+  transform: translateY(-101%);
+  pointer-events: none;
+}
+
+.splash-seal {
+  position: relative;
+  rotate: -4deg;
+  animation: seal-stamp 0.62s cubic-bezier(0.2, 0.9, 0.3, 1) 0.12s both;
+}
+
+/* Ink pressed out from under the seal. */
+.splash-seal::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 26px;
+  border: 2px solid var(--color-shu);
+  opacity: 0;
+  animation: seal-ink 0.9s ease-out 0.42s both;
+}
+
+.splash-caption {
+  animation: card-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both;
+}
+
+.splash-lifting .splash-seal,
+.splash-lifting .splash-caption {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+@keyframes seal-stamp {
+  0% {
+    opacity: 0;
+    scale: 1.9;
+  }
+  55% {
+    opacity: 1;
+    scale: 0.93;
+  }
+  78% {
+    scale: 1.03;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes seal-ink {
+  0% {
+    opacity: 0.55;
+    scale: 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.45;
+  }
+}
+
 /* ---- Hako archive rows ---- */
 
 .hako-row {

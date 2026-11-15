@@ -39,15 +39,22 @@ interface HeroProps {
   total: number;
   publisherCount: number;
   onOpen: (index: number) => void;
+  /** Start the entrance. False while the splash still covers the page. */
+  play: boolean;
+  /** The ring (or its static fallback) is ready to be seen. */
+  onReady: () => void;
 }
 
-export function Hero({ books, total, publisherCount, onOpen }: HeroProps) {
+export function Hero({ books, total, publisherCount, onOpen, play, onReady }: HeroProps) {
   const controls = useRef<StageControls | null>(null);
   const [front, setFront] = useState(0);
   const [ready, setReady] = useState(false);
 
   const stageBooks = useMemo<StageBook[]>(() => books.map((b) => ({ id: b._id, texture: coverTextureUrl(b.coverImage) })), [books]);
-  const handleReady = useCallback(() => setReady(true), []);
+  const handleReady = useCallback(() => {
+    setReady(true);
+    onReady();
+  }, [onReady]);
 
   const current = books[Math.min(front, books.length - 1)];
   const latest = books[0]?.createdAt;
@@ -79,14 +86,14 @@ export function Hero({ books, total, publisherCount, onOpen }: HeroProps) {
         </div>
       )}
 
-      {stageBooks.length > 0 && <HeroStage books={stageBooks} controlsRef={controls} onFront={setFront} onSelect={onOpen} onReady={handleReady} />}
+      {stageBooks.length > 0 && <HeroStage books={stageBooks} controlsRef={controls} onFront={setFront} onSelect={onOpen} onReady={handleReady} play={play} />}
 
       {/* Paper rises back up to meet the page below. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-40 bg-gradient-to-t from-paper to-transparent" />
 
       {/* Copy */}
       <div className="pointer-events-none relative z-[3] mx-auto flex w-full max-w-[100rem] flex-1 flex-col px-5 pt-28 sm:px-8 lg:px-14 lg:pt-36">
-        <motion.div initial="hidden" animate="show" className="max-w-[46rem]">
+        <motion.div initial="hidden" animate={play ? "show" : "hidden"} className="max-w-[46rem]">
           <motion.p
             variants={fadeUp}
             custom={-3}
@@ -143,7 +150,7 @@ export function Hero({ books, total, publisherCount, onOpen }: HeroProps) {
         <div className="mt-auto flex items-end justify-between gap-6 pb-7 pt-[19rem] lg:pb-10 lg:pt-10">
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: play ? 1 : 0 }}
             transition={{ duration: 1.2, delay: 1.3 }}
             className="hidden items-center gap-4 font-label text-[10px] uppercase tracking-[0.3em] text-sumi-mute lg:flex"
           >
@@ -158,7 +165,7 @@ export function Hero({ books, total, publisherCount, onOpen }: HeroProps) {
           {current && (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={play ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
               transition={{ duration: 1, ease: EASE, delay: 1.1 }}
               className="pointer-events-auto w-full border-t border-sumi/80 pt-4 lg:w-[27rem]"
             >
@@ -224,7 +231,7 @@ export function Hero({ books, total, publisherCount, onOpen }: HeroProps) {
       {/* Tategaki margin note */}
       <motion.p
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        animate={{ opacity: play ? 1 : 0 }}
         transition={{ duration: 1.4, delay: 1.2 }}
         lang="ja"
         className="tategaki pointer-events-none absolute right-4 top-28 z-[3] hidden font-mincho text-[13px] tracking-[0.5em] text-sumi/55 sm:block lg:right-7 lg:top-36"

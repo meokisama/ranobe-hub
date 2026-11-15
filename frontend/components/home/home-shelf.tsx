@@ -6,6 +6,7 @@ import type { Ebook } from "@/lib/types";
 import { BookDetail } from "./book-detail";
 import { Hero } from "./hero";
 import { Library } from "./library";
+import { Splash, useSplashSkipped } from "./splash";
 
 const RING_SIZE = 10;
 
@@ -18,6 +19,11 @@ interface Selection {
 /** Hero and library share one detail view, so they live under one client boundary. */
 export function HomeShelf({ ebooks }: { ebooks: Ebook[] }) {
   const [selection, setSelection] = useState<Selection | null>(null);
+  const [heroReady, setHeroReady] = useState(false);
+  const [lifted, setLifted] = useState(false);
+  const splashSkipped = useSplashSkipped();
+  const markReady = useCallback(() => setHeroReady(true), []);
+  const lift = useCallback(() => setLifted(true), []);
 
   const newest = useMemo(
     () =>
@@ -47,7 +53,8 @@ export function HomeShelf({ ebooks }: { ebooks: Ebook[] }) {
 
   return (
     <>
-      <Hero books={newest} total={ebooks.length} publisherCount={publisherCount} onOpen={openFromRing} />
+      <Splash ready={heroReady} onLift={lift} />
+      <Hero books={newest} total={ebooks.length} publisherCount={publisherCount} onOpen={openFromRing} play={splashSkipped || lifted} onReady={markReady} />
       <Library ebooks={ebooks} onOpen={openFromLibrary} />
       <AnimatePresence>
         {selection && book && <BookDetail key="detail" book={book} position={selection.index + 1} total={selection.list.length} onClose={close} onStep={step} />}

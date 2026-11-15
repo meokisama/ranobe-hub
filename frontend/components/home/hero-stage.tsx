@@ -23,6 +23,8 @@ interface HeroStageProps {
   onSelect: (index: number) => void;
   /** First frame with something worth showing has been drawn. */
   onReady: () => void;
+  /** Hold the fly-in until this turns true (the splash has lifted). */
+  play: boolean;
 }
 
 const PAPER = "#f3eee4";
@@ -238,13 +240,15 @@ function smoothstep(edge0: number, edge1: number, x: number) {
   return t * t * (3 - 2 * t);
 }
 
-export default function HeroStage({ books, controlsRef, onFront, onSelect, onReady }: HeroStageProps) {
+export default function HeroStage({ books, controlsRef, onFront, onSelect, onReady, play }: HeroStageProps) {
   const mount = useRef<HTMLDivElement>(null);
   const callbacks = useRef({ onFront, onSelect, onReady });
+  const playing = useRef(play);
 
   useEffect(() => {
     callbacks.current = { onFront, onSelect, onReady };
-  }, [onFront, onSelect, onReady]);
+    playing.current = play;
+  }, [onFront, onSelect, onReady, play]);
 
   useEffect(() => {
     const container = mount.current;
@@ -547,7 +551,7 @@ export default function HeroStage({ books, controlsRef, onFront, onSelect, onRea
       const dt = Math.min(clock.getDelta(), 0.05);
       if (!visible || document.hidden) return;
       time += dt;
-      if (ready) intro += dt;
+      if (ready && playing.current) intro += dt;
 
       if (!dragging) {
         if (snapTarget !== null) {
