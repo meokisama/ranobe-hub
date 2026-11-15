@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { Publisher } from "@/lib/types";
@@ -68,15 +67,21 @@ export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilte
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-2 mb-6">
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-        <Input placeholder={PLACEHOLDERS[contentType]} value={search} onChange={(e) => handleSearch(e.target.value)} className="pl-9 h-12 backdrop-blur" />
-      </div>
+    <div className="mb-2 flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
+      <label className="group flex h-11 flex-1 items-center gap-3 border-b border-foreground/30 transition-colors focus-within:border-foreground">
+        <Search className="size-4 shrink-0 text-muted-foreground transition-colors group-focus-within:text-shu" strokeWidth={1.75} />
+        <input
+          placeholder={PLACEHOLDERS[contentType]}
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          aria-label="Tìm kiếm"
+          className="h-full w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:font-light placeholder:text-muted-foreground"
+        />
+      </label>
 
       {isEbook && onPublisherFilter && (
         <Select value={selectedPublisher} onValueChange={handlePublisherFilter}>
-          <SelectTrigger className="w-full md:w-[200px] data-[size=default]:h-12 backdrop-blur">
+          <SelectTrigger className="w-full rounded-full border border-foreground/25 px-4 text-[13px] data-[size=default]:h-9 md:w-[190px]">
             <SelectValue placeholder="Lọc theo nhãn hiệu" />
           </SelectTrigger>
           <SelectContent className="py-2">
@@ -91,7 +96,7 @@ export function ContentFilters({ contentType, onSearch, onSort, onPublisherFilte
       )}
 
       <Select value={sort} onValueChange={handleSort}>
-        <SelectTrigger className="w-full md:w-[200px] data-[size=default]:h-12 backdrop-blur">
+        <SelectTrigger className="w-full rounded-full border border-foreground/25 px-4 text-[13px] data-[size=default]:h-9 md:w-[190px]">
           <SelectValue placeholder="Sắp xếp theo ngày" />
         </SelectTrigger>
         <SelectContent className="py-2">

@@ -3,8 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Library, BookMarked, Archive, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowUpRight, LogOut, X } from "lucide-react";
 import { clearAdminToken } from "@/lib/auth-cookies";
 import { cn } from "@/lib/utils";
 
@@ -14,24 +13,9 @@ interface AdminSidebarProps {
 }
 
 const navItems = [
-  {
-    href: "/admin",
-    label: "Ebooks",
-    description: "Quản lý thư viện ebook",
-    icon: Library,
-  },
-  {
-    href: "/admin/konorano",
-    label: "Konorano",
-    description: "Bảng xếp hạng thường niên",
-    icon: BookMarked,
-  },
-  {
-    href: "/admin/hako",
-    label: "Hako",
-    description: "Kho lưu trữ light novel",
-    icon: Archive,
-  },
+  { href: "/admin", kanji: "壱", label: "Ebooks", description: "Thư viện ebook" },
+  { href: "/admin/konorano", kanji: "弐", label: "Konorano", description: "Bảng xếp hạng thường niên" },
+  { href: "/admin/hako", kanji: "参", label: "Hako", description: "Kho lưu trữ light novel" },
 ];
 
 export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
@@ -47,86 +31,91 @@ export function AdminSidebar({ open, onClose }: AdminSidebarProps) {
     <>
       {/* Mobile overlay */}
       <div
-        className={cn(
-          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity lg:hidden",
-          open ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
+        className={cn("fixed inset-0 z-40 bg-sumi/60 transition-opacity lg:hidden", open ? "opacity-100" : "pointer-events-none opacity-0")}
         onClick={onClose}
       />
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r bg-card text-card-foreground shadow-lg transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none",
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-sidebar text-sidebar-foreground transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Brand */}
-        <div className="relative flex h-16 items-center justify-between overflow-hidden border-b px-6">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-linear-to-r from-rose-50/80 via-pink-50/50 to-violet-50/60 dark:from-rose-950/30 dark:via-pink-950/20 dark:to-violet-950/30"
-          />
-          <Link href="/admin" className="group relative flex items-center gap-2" onClick={onClose}>
-            <Image
-              src="/header-icon.png"
-              alt="Ranobe Hub"
-              width={672}
-              height={606}
-              priority
-              className="h-9 w-auto transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105"
-            />
-            <Image src="/header-text.png" alt="ranobe hub" width={906} height={233} priority className="h-9 w-auto" />
+        <div className="flex h-16 items-center justify-between border-b px-5">
+          <Link href="/admin" className="flex items-center gap-2.5" onClick={onClose}>
+            <Image src="/header-icon.png" alt="" width={64} height={58} priority className="h-8 w-auto" />
+            <span className="font-display text-[1.3rem] leading-none tracking-[-0.03em]">
+              <span className="font-light italic">Ranobe</span> <span className="font-semibold">Hub</span>
+            </span>
           </Link>
-          <Button variant="ghost" size="icon" className="relative h-8 w-8 lg:hidden" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+          <button
+            type="button"
+            aria-label="Đóng menu"
+            className="grid size-8 cursor-pointer place-items-center rounded-md hover:bg-sidebar-accent lg:hidden"
+            onClick={onClose}
+          >
+            <X className="size-4" />
+          </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-6">
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Nội dung</p>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
-                  active
-                    ? "bg-linear-to-r from-primary to-primary/85 text-primary-foreground shadow-md shadow-primary/20"
-                    : "text-muted-foreground hover:bg-rose-50/70 hover:text-foreground dark:hover:bg-rose-950/30",
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "size-4.5 shrink-0 transition-transform group-hover:scale-110",
-                    active
-                      ? "text-primary-foreground"
-                      : "text-rose-400 group-hover:text-rose-500 dark:text-rose-300/70 dark:group-hover:text-rose-300",
-                  )}
-                />
-                <div className="flex flex-col leading-tight">
-                  <span className="font-medium">{item.label}</span>
-                  <span className={cn("text-[11px]", active ? "text-primary-foreground/70" : "text-muted-foreground/70")}>{item.description}</span>
-                </div>
-              </Link>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto px-3 py-6">
+          <p className="px-3 pb-3 font-label text-[10px] uppercase tracking-[0.26em] text-muted-foreground">Quản trị nội dung</p>
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={onClose}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors",
+                      active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent",
+                    )}
+                  >
+                    <span
+                      lang="ja"
+                      className={cn(
+                        "grid size-7 shrink-0 place-items-center font-mincho text-sm font-bold",
+                        active ? "bg-shu text-paper" : "border border-foreground/20 text-muted-foreground",
+                      )}
+                    >
+                      {item.kanji}
+                    </span>
+                    <span className="flex min-w-0 flex-col leading-tight">
+                      <span className="text-sm font-medium">{item.label}</span>
+                      <span className={cn("truncate text-[11px]", active ? "text-sidebar-primary-foreground/65" : "text-muted-foreground")}>
+                        {item.description}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </nav>
 
         {/* Footer */}
-        <div className="p-4">
-          <Button
-            variant="outline"
-            size="lg"
-            className="flex w-full justify-center gap-2 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:hover:border-rose-900/60 dark:hover:bg-rose-950/30 dark:hover:text-rose-300"
+        <div className="space-y-1 border-t p-3 text-sm">
+          <Link
+            href="/"
+            target="_blank"
+            className="flex items-center justify-between rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+          >
+            Xem trang công khai
+            <ArrowUpRight className="size-4" strokeWidth={1.75} />
+          </Link>
+          <button
+            type="button"
             onClick={handleLogout}
+            className="flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-destructive"
           >
             Đăng xuất
-          </Button>
+            <LogOut className="size-4" strokeWidth={1.75} />
+          </button>
         </div>
       </aside>
     </>

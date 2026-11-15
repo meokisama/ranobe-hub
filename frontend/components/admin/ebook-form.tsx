@@ -204,7 +204,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                   <FormItem>
                     <FormLabel>Tên sách</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
+                      <Input {...field} disabled={isSubmitting} className="font-mincho" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -218,7 +218,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                   <FormItem>
                     <FormLabel>Tác giả</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
+                      <Input {...field} disabled={isSubmitting} className="font-mincho" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -232,7 +232,7 @@ export function EbookForm({ ebook, onSuccess, onCancel }: EbookFormProps) {
                   <FormItem>
                     <FormLabel>Họa sĩ (không bắt buộc)</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
+                      <Input {...field} disabled={isSubmitting} className="font-mincho" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

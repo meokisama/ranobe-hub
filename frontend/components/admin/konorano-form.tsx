@@ -183,7 +183,7 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
                   <FormItem>
                     <FormLabel>Tên sách</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nhập tên sách" {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
+                      <Input placeholder="Nhập tên sách" {...field} disabled={isSubmitting} className="font-mincho" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -197,7 +197,7 @@ export function KonoranoForm({ konorano, onSuccess, onCancel }: KonoranoFormProp
                   <FormItem>
                     <FormLabel>Tác giả</FormLabel>
                     <FormControl>
-                      <Input placeholder="宝島社" {...field} disabled={isSubmitting} className="font-['Yu_Mincho']" />
+                      <Input placeholder="宝島社" {...field} disabled={isSubmitting} className="font-mincho" />
                     </FormControl>
                     <p className="text-xs text-muted-foreground mt-1">Để trống sẽ dùng giá trị mặc định &quot;宝島社&quot;</p>
                     <FormMessage />

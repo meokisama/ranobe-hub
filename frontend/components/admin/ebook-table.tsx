@@ -2,8 +2,6 @@
 
 import { useState, useMemo, useRef } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye } from "lucide-react";
 import { Ebook } from "@/lib/types";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
@@ -18,13 +16,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Image from "next/image";
-import Link from "next/link";
 import { ContentFilters } from "@/components/common/content-filters";
 import { Pagination } from "@/components/ui/pagination";
 import { useFuzzySearch, type FuzzyKey } from "@/lib/fuzzy-search";
 import { formatDateVi } from "@/lib/format";
 import { sortByDate, type SortOrder } from "@/lib/sort";
 import { scrollToRef } from "@/lib/utils";
+import { readerUrl } from "@/lib/site";
+import { META_CELL, NAME_CELL, RowActions } from "./row-actions";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -114,7 +113,7 @@ export function EbookTable({ ebooks, onEdit, onDeleteSuccess }: EbookTableProps)
         </div>
       )}
 
-      <div className="rounded-md border">
+      <div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -148,25 +147,13 @@ export function EbookTable({ ebooks, onEdit, onDeleteSuccess }: EbookTableProps)
                       />
                     </div>
                   </TableCell>
-                  <TableCell className="font-['Yu_Mincho']">{ebook.name}</TableCell>
-                  <TableCell className="font-['Yu_Mincho']">{ebook.author}</TableCell>
-                  <TableCell className="font-['Yu_Mincho']">{ebook.illustrator}</TableCell>
-                  <TableCell className="font-light text-center">{formatDateVi(ebook.releaseDate)}</TableCell>
-                  <TableCell className="font-light">{ebook.publisher.name}</TableCell>
+                  <TableCell lang="ja" className={NAME_CELL}>{ebook.name}</TableCell>
+                  <TableCell lang="ja" className={META_CELL}>{ebook.author}</TableCell>
+                  <TableCell lang="ja" className={META_CELL}>{ebook.illustrator}</TableCell>
+                  <TableCell className="text-center font-label text-xs tabular-nums text-muted-foreground">{formatDateVi(ebook.releaseDate)}</TableCell>
+                  <TableCell className="text-sm font-light text-muted-foreground">{ebook.publisher.name}</TableCell>
                   <TableCell className="text-end">
-                    <div className="flex justify-end gap-1">
-                      <Button size="icon" variant="outline" asChild>
-                        <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${ebook.filePath.replace(/\.epub$/i, "")}`} target="_blank">
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button size="icon" variant="outline" onClick={() => onEdit(ebook)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button size="icon" variant="outline" className="text-red-500" onClick={() => openDeleteDialog(ebook)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <RowActions readHref={readerUrl(ebook.filePath)} onEdit={() => onEdit(ebook)} onDelete={() => openDeleteDialog(ebook)} />
                   </TableCell>
                 </TableRow>
               ))
@@ -191,7 +178,7 @@ export function EbookTable({ ebooks, onEdit, onDeleteSuccess }: EbookTableProps)
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-white hover:bg-destructive/90">
               {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { readerUrl } from "@/lib/site";
+import { META_CELL, NAME_CELL, RowActions } from "./row-actions";
 import { Konorano } from "@/lib/types";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
@@ -92,7 +92,7 @@ export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess }: KonoranoTa
         <ContentFilters contentType="konorano" onSearch={setSearchQuery} onSort={setSortOrder} onFilterChange={() => setCurrentPage(1)} />
       )}
 
-      <div className="rounded-md border">
+      <div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -125,28 +125,16 @@ export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess }: KonoranoTa
                       />
                     </div>
                   </TableCell>
-                  <TableCell className="font-['Yu_Mincho']">{konorano.name}</TableCell>
-                  <TableCell className="font-['Yu_Mincho']">{konorano.author}</TableCell>
-                  <TableCell className="text-center font-light">{formatDateVi(konorano.releaseDate)}</TableCell>
+                  <TableCell lang="ja" className={NAME_CELL}>{konorano.name}</TableCell>
+                  <TableCell lang="ja" className={META_CELL}>{konorano.author}</TableCell>
+                  <TableCell className="text-center font-label text-xs tabular-nums text-muted-foreground">{formatDateVi(konorano.releaseDate)}</TableCell>
                   <TableCell className="max-w-[350px]">
-                    <Link href={konorano.viURL} target="_blank" className="block truncate text-blue-600 hover:underline" title={konorano.viURL}>
+                    <Link href={konorano.viURL} target="_blank" className="block truncate text-muted-foreground underline decoration-shu/50 underline-offset-4 hover:text-foreground" title={konorano.viURL}>
                       {konorano.viURL}
                     </Link>
                   </TableCell>
                   <TableCell className="text-end">
-                    <div className="flex justify-end gap-1">
-                      <Button size="icon" variant="outline" asChild>
-                        <Link href={`${process.env.NEXT_PUBLIC_API_URL}/reader?book=${konorano.filePath.replace(/\.epub$/i, "")}`} target="_blank">
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button size="icon" variant="outline" onClick={() => onEdit(konorano)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button size="icon" variant="outline" className="text-red-500" onClick={() => openDeleteDialog(konorano)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <RowActions readHref={readerUrl(konorano.filePath)} onEdit={() => onEdit(konorano)} onDelete={() => openDeleteDialog(konorano)} />
                   </TableCell>
                 </TableRow>
               ))
@@ -171,7 +159,7 @@ export function KonoranoTable({ konoranos, onEdit, onDeleteSuccess }: KonoranoTa
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-white hover:bg-destructive/90">
               {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>

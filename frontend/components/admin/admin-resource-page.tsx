@@ -66,10 +66,11 @@ export function AdminResourcePage<T>({ title, description, addLabel, load, rende
   }, [closeForm, refresh]);
 
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+    <div className="mx-auto max-w-[96rem] space-y-6 px-4 py-6 md:px-8 md:py-8 lg:px-12 lg:py-10">
       <AdminPageHeader
         title={title}
         description={description}
+        count={loading ? undefined : items.length}
         action={
           <Button onClick={() => openForm(null)} className="cursor-pointer">
             <PlusCircle className="h-4 w-4" />
@@ -81,7 +82,7 @@ export function AdminResourcePage<T>({ title, description, addLabel, load, rende
       {loading && items.length === 0 ? (
         <div className="flex min-h-[50vh] items-center justify-center">
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <Loader2 className="h-5 w-5 animate-spin" />
             <span className="text-sm">Đang tải dữ liệu...</span>
           </div>
         </div>

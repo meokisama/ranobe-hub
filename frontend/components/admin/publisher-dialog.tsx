@@ -287,7 +287,7 @@ export function PublisherDialog({ onClose }: PublisherDialogProps) {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 text-red-500 hover:bg-red-500/10 hover:text-red-600"
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                             onClick={() => setPublisherToDelete(publisher)}
                             title="Xóa"
                           >
@@ -314,7 +314,7 @@ export function PublisherDialog({ onClose }: PublisherDialogProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} disabled={isDeleting} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction onClick={confirmDelete} disabled={isDeleting} className="bg-destructive text-white hover:bg-destructive/90">
               {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye, BookOpen, FileText } from "lucide-react";
+import { BookOpen, FileText } from "lucide-react";
+import { RowActions } from "./row-actions";
 import { Hako } from "@/lib/types";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
@@ -92,7 +92,7 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess }: HakoTableProps) {
         <ContentFilters contentType="hako" onSearch={setSearchQuery} onSort={setSortOrder} onFilterChange={() => setCurrentPage(1)} />
       )}
 
-      <div className="rounded-md border">
+      <div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -120,22 +120,22 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess }: HakoTableProps) {
                     : null;
                 return (
                   <TableRow key={hako._id}>
-                    <TableCell className="font-mono text-xs text-muted-foreground tabular-nums">{hako.hakoId ?? "—"}</TableCell>
-                    <TableCell className="min-w-[260px] max-w-[420px] whitespace-normal break-words font-medium leading-snug">{hako.name}</TableCell>
+                    <TableCell className="font-label text-[11px] text-muted-foreground tabular-nums">{hako.hakoId ?? "—"}</TableCell>
+                    <TableCell className="min-w-[260px] max-w-[420px] whitespace-normal break-words text-[15px] font-medium leading-snug transition-colors group-hover:text-shu">{hako.name}</TableCell>
                     <TableCell className="w-[160px] max-w-[160px] truncate text-sm text-muted-foreground" title={hako.uploader || undefined}>
                       {hako.uploader || "—"}
                     </TableCell>
                     <TableCell className="w-[160px] max-w-[160px] truncate text-sm text-muted-foreground" title={hako.translator || undefined}>
                       {hako.translator || "—"}
                     </TableCell>
-                    <TableCell className="text-center font-light text-sm">{formatDateVi(hako.lastUpdated)}</TableCell>
+                    <TableCell className="text-center font-label text-xs tabular-nums text-muted-foreground">{formatDateVi(hako.lastUpdated)}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1.5">
                         {hako.epub ? (
                           <Link
                             href={hako.epub}
                             target="_blank"
-                            className="inline-flex items-center gap-1 rounded-md border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700 hover:bg-orange-100"
+                            className="inline-flex items-center gap-1 rounded-full border border-foreground/25 px-2 py-0.5 font-label text-[10px] uppercase tracking-[0.1em] text-foreground transition-colors hover:bg-foreground hover:text-background"
                             title="EPUB"
                           >
                             <BookOpen className="h-3 w-3" />
@@ -146,7 +146,7 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess }: HakoTableProps) {
                           <Link
                             href={hako.pdf}
                             target="_blank"
-                            className="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
+                            className="inline-flex items-center gap-1 rounded-full border border-foreground/25 px-2 py-0.5 font-label text-[10px] uppercase tracking-[0.1em] text-foreground transition-colors hover:bg-foreground hover:text-background"
                             title="PDF"
                           >
                             <FileText className="h-3 w-3" />
@@ -157,25 +157,7 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess }: HakoTableProps) {
                       </div>
                     </TableCell>
                     <TableCell className="text-end">
-                      <div className="flex justify-end gap-1">
-                        <Button size="icon" variant="outline" asChild disabled={!readUrl}>
-                          {readUrl ? (
-                            <Link href={readUrl} target="_blank" title="Đọc">
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          ) : (
-                            <span title="Chưa có epub" className="pointer-events-none opacity-40">
-                              <Eye className="h-4 w-4" />
-                            </span>
-                          )}
-                        </Button>
-                        <Button size="icon" variant="outline" onClick={() => onEdit(hako)} title="Chỉnh sửa">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="outline" className="text-red-500" onClick={() => openDeleteDialog(hako)} title="Xóa">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <RowActions readHref={readUrl} onEdit={() => onEdit(hako)} onDelete={() => openDeleteDialog(hako)} />
                     </TableCell>
                   </TableRow>
                 );
@@ -201,7 +183,7 @@ export function HakoTable({ hakos, onEdit, onDeleteSuccess }: HakoTableProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive text-white hover:bg-destructive/90">
               {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>
